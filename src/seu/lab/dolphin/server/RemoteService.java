@@ -1,72 +1,198 @@
 package seu.lab.dolphin.server;
 
+import java.util.List;
+
+import seu.lab.dolphin.client.ContinuousGestureEvent;
+import seu.lab.dolphin.client.Dolphin;
+import seu.lab.dolphin.client.GestureEvent;
+import seu.lab.dolphin.client.IDataReceiver;
+import seu.lab.dolphin.client.IDolphinStateCallback;
+import seu.lab.dolphin.client.IGestureListener;
+import seu.lab.dolphin.client.RealTimeData;
+import seu.lab.dolphin.client.Dolphin.DataTypeMask;
+import seu.lab.dolphin.client.Dolphin.GestureMask;
 import seu.lab.dolphinframework.MainActivity;
 import seu.lab.dolphinframework.R;
+import android.R.bool;
+import android.R.integer;
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
-import android.os.RemoteException;
+import android.os.Looper;
 import android.util.Log;
-import android.widget.RemoteViews;
+import android.widget.Toast;
 
-public class RemoteService extends Service {
+public class RemoteService extends Service{
 
-	private static final String TAG = "RemoteService";
-	private static final int NOTIFY_ID = 0;
-	private IRemoteService.Stub mBinderStub = new IRemoteService.Stub() {
+	static final String TAG = "RemoteService";
+	static final int ONGOING_NOTIFICATION = 1120;
+	Dolphin dolphin = null;
+	Context mContext = this;
+
+	IDataReceiver dataReceiver = new IDataReceiver() {
 		
 		@Override
-		public String hello(String name) throws RemoteException {
-			return "from server: hello "+name;
+		public void onData(RealTimeData arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public DataTypeMask getDataTypeMask() {
+			// TODO Auto-generated method stub
+			return null;
 		}
 	};
-	private Context mContext = this;
-	private Notification mNotification;
-
-	private NotificationManager mNotificationManager;
+	
+	IGestureListener gestureListener = new IGestureListener() {
+		
+		@Override
+		public void onGesture(GestureEvent arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void onContinuousGestureUpdate(ContinuousGestureEvent arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void onContinuousGestureStart(ContinuousGestureEvent arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void onContinuousGestureEnd() {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public GestureMask gestureMask() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	};
+	
+	IDolphinStateCallback stateCallback = new IDolphinStateCallback() {
+		
+		@Override
+		public void onNoisy() {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void onCoreReady() {
+			// TODO Auto-generated method stub
+			
+		}
+	};
+	private ActivityManager activityManager;
+	private TaskShower taskShower;
+	
+	public String hello(String name){
+		return TAG + ": hello " + name;
+	}
+	
+	public void getForeground(){
+        ComponentName cn = activityManager.getRunningTasks(1).get(0).topActivity;  
+        Log.e("Foreground", "pkg:"+cn.getPackageName());  
+        Log.e("Foreground", "cls:"+cn.getClassName());
+        final String clsString = cn.getClassName();
+        Handler handler = new Handler(Looper.getMainLooper());  
+        handler.post(new Runnable(){
+            public void run(){  
+                Toast.makeText(getApplicationContext(), 
+                		clsString,
+                		Toast.LENGTH_SHORT).show();  
+            }  
+        });  
+	}
+	
+	class TaskShower extends Thread{
+		public boolean running = true;
+		@Override
+		public void run() {
+			while(running){
+				try {
+					sleep(5*1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				getForeground();
+			}
+		}
+	}
+	
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		Log.e(TAG, "onStartCommand");
+		
+		Notification notification = new Notification(R.drawable.dolphin_server, "ticket",System.currentTimeMillis());
+		Intent notificationIntent = new Intent(this, MainActivity.class);
+		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+		notification.setLatestEventInfo(this, "title","message", pendingIntent);
+		startForeground(ONGOING_NOTIFICATION, notification);
+		
+		activityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
+		if(taskShower == null){
+			taskShower = new TaskShower();
+			taskShower.start();
+		}else if(!taskShower.isAlive()){
+			taskShower = new TaskShower();
+			taskShower.start();
+		}
+		return super.onStartCommand(intent, flags, startId);
+	}
 	
 	@Override
 	public IBinder onBind(Intent arg0) {
-		return mBinderStub;
+		Log.e(TAG, "onBind");
+		return new RemoteBinder();
+	}
+	
+	@Override
+	public void onRebind(Intent intent) {
+		Log.e(TAG, "onRebind");
+		super.onRebind(intent);
 	}
 	
 	@Override
 	public void onCreate() {
-		Log.d(TAG, TAG + " onCreate()");
-		mNotificationManager = (NotificationManager) getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+		Log.e(TAG, "onCreate");
 		super.onCreate();
 	}
 	
 	@Override
-	@Deprecated
-	public void onStart(Intent intent, int startId) {
-		setUpNotification();
-		Log.d(TAG, TAG + " onStart()");
-		super.onStart(intent, startId);
+	public boolean onUnbind(Intent intent) {
+		Log.e(TAG, "onUnbind");
+		return super.onUnbind(intent);
 	}
-	
+
 	@Override
 	public void onDestroy() {
-		mNotificationManager.cancel(NOTIFY_ID);
-		Log.d(TAG, TAG + " onDestroy()");
+		Log.e(TAG, "onDestroy");
+		taskShower.running = false;
+		stopForeground(true);
 		super.onDestroy();
 	}
-    private void setUpNotification() {  
-        int icon = R.drawable.dolphin_server;
-        CharSequence tickerText = "开始下载";  
-        long when = System.currentTimeMillis();  
-        mNotification = new Notification(icon, tickerText, when);  
-        // 放置在"正在运行"栏目中  
-        mNotification.flags = Notification.FLAG_ONGOING_EVENT;  
-        Intent intent = new Intent(this, MainActivity.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);  
-        // 指定内容意图  
-        mNotification.setLatestEventInfo(this, "dolphin", "dolphin", contentIntent);
-        mNotificationManager.notify(NOTIFY_ID, mNotification);  
-    }  
-
+	
+	public class RemoteBinder extends Binder{
+		public RemoteService getRemoteService() {
+			return RemoteService.this;
+		}
+	}
 }
