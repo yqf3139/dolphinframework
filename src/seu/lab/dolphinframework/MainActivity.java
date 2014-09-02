@@ -21,7 +21,7 @@ public class MainActivity extends Activity {
 
 	static final String TAG = "DFMainActivity";
 	ToggleButton toggleButton;
-	Context mContext = this;
+	public static Context mContext;
 	private RemoteService mService = null;
 
 	private ServiceConnection mConn = new ServiceConnection() {
@@ -46,14 +46,16 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
+		mContext = this;
+		
 		toggleButton = (ToggleButton) findViewById(R.id.toggle_service);
 		toggleButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View arg0) {
 				if(toggleButton.isChecked()){
-					startService(new Intent("seu.lab.dolphin.server.RemoteService"));
-					bindService(new Intent("seu.lab.dolphin.server.RemoteService"), mConn, Context.BIND_AUTO_CREATE);
+					startService(new Intent(RemoteService.REMOTE_SERVICE_NAME));
+					bindService(new Intent(RemoteService.REMOTE_SERVICE_NAME), mConn, Context.BIND_AUTO_CREATE);
 				}else {
 			        unbindService(mConn);
 			        mService = null;

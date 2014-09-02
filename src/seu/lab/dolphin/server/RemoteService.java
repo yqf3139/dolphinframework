@@ -33,6 +33,7 @@ import android.widget.Toast;
 public class RemoteService extends Service{
 
 	static final String TAG = "RemoteService";
+	public static final String REMOTE_SERVICE_NAME = "seu.lab.dolphin.server.REMOTE";
 	static final int ONGOING_NOTIFICATION = 1120;
 	Dolphin dolphin = null;
 	Context mContext = this;
@@ -118,13 +119,14 @@ public class RemoteService extends Service{
                 		clsString,
                 		Toast.LENGTH_SHORT).show();  
             }  
-        });  
+        });
 	}
 	
 	class TaskShower extends Thread{
 		public boolean running = true;
 		@Override
 		public void run() {
+			DolphinBroadcaster broadcaster = new DolphinBroadcaster();
 			while(running){
 				try {
 					sleep(5*1000);
@@ -133,6 +135,7 @@ public class RemoteService extends Service{
 					e.printStackTrace();
 				}
 				getForeground();
+				broadcaster.sendBroadcast(mContext);
 			}
 		}
 	}
