@@ -3,6 +3,8 @@ package seu.lab.dolphin.sysplugin;
 import java.util.ArrayList;
 import java.util.List;
 
+import seu.lab.dolphin.utility.ShellUtils;
+
 public class EventSenderForKey extends EventSender{
 	
 	public static int KEYCODE_SOFT_RIGHT 	= 2;		

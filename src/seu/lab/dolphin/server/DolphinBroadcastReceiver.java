@@ -12,7 +12,7 @@ public class DolphinBroadcastReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context ctx, Intent intent) {
 		Log.i(TAG, "onReceive start");
-		ctx.startService(new Intent(RemoteService.REMOTE_SERVICE_NAME));
+		ctx.startService(new Intent(DolphinServerVariables.REMOTE_SERVICE_NAME));
 		Log.i(TAG, "onReceive end");
 	}
 

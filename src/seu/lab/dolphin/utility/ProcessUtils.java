@@ -1,9 +1,9 @@
-package seu.lab.dolphin.sysplugin;
+package seu.lab.dolphin.utility;
 
 import java.io.InputStream;
 import java.io.OutputStream;
  
-public class ProcessModel {
+public class ProcessUtils {
  
     /**
      * 通过Android底层实现进程关闭

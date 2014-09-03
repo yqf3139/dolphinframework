@@ -1,4 +1,4 @@
-package seu.lab.dolphin.sysplugin;
+package seu.lab.dolphin.utility;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -8,39 +8,19 @@ import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
 
+
 import android.R.bool;
 import android.os.Build;
 import android.util.Log;
 
-/**    public static final String COMMAND_SU       = "su";
-    public static final String COMMAND_SH       = "sh";
-    public static final String COMMAND_EXIT     = "exit\n";
-    public static final String COMMAND_LINE_END = "\n";
- * ShellUtils
- * <ul>
- * <strong>Check root</strong>
- * <li>{@link ShellUtils#checkRootPermission()}</li>
- * </ul>
- * <ul>
- * <strong>Execte command</strong>
- * <li>{@link ShellUtils#execCommand(String, boolean)}</li>
- * <li>{@link ShellUtils#execCommand(String, boolean, boolean)}</li>
- * <li>{@link ShellUtils#execCommand(List, boolean)}</li>
- * <li>{@link ShellUtils#execCommand(List, boolean, boolean)}</li>
- * <li>{@link ShellUtils#execCommand(String[], boolean)}</li>
- * <li>{@link ShellUtils#execCommand(String[], boolean, boolean)}</li>
- * </ul>
- * 
- * @author <a href="http://www.trinea.cn" target="_blank">Trinea</a> 2013-5-16
- */
+
 public class ShellUtils {
     public static final String COMMAND_SU       = "su";
     public static String COMMAND_DOLPHIN  = "dolphinsu";
     public static final String COMMAND_SH       = "sh";
     public static final String COMMAND_EXIT     = "exit\n";
     public static final String COMMAND_LINE_END = "\n";
-    public Integer lockInteger = new Integer(0);
-	boolean loop = true;
+	public boolean loop = true;
 	private Process process;
 
 	static{
@@ -238,7 +218,7 @@ public class ShellUtils {
 	public void kill() {
         if (process != null) {
             Log.e("sh", "kill start");
-            ProcessModel.processDestroy(process);
+            ProcessUtils.processDestroy(process);
             Log.e("sh", "kill end");
         }
 	}

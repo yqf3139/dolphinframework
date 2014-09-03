@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import seu.lab.dolphin.utility.ShellUtils;
+
 import android.R.integer;
 
 public class EventSenderForSwipe extends EventSender{

@@ -1,5 +1,6 @@
 package seu.lab.dolphinframework;
-import seu.lab.dolphin.server.DaoService;
+import seu.lab.dolphin.server.DaoManager;
+import seu.lab.dolphin.server.DolphinServerVariables;
 import seu.lab.dolphin.server.RemoteService;
 import seu.lab.dolphin.server.RemoteService.RemoteBinder;
 import seu.lab.dolphin.sysplugin.EventRecordWatcher;
@@ -8,7 +9,7 @@ import seu.lab.dolphin.sysplugin.EventSenderForKey;
 import seu.lab.dolphin.sysplugin.EventSenderForPlayback;
 import seu.lab.dolphin.sysplugin.EventSenderForSwipe;
 import seu.lab.dolphin.sysplugin.EventSettings;
-import seu.lab.dolphin.sysplugin.PluginInstaller;
+import seu.lab.dolphin.sysplugin.Installer;
 import seu.lab.dolphin.sysplugin.EventSettings.ScreenSetter;
 import seu.lab.dolphinframework.R;
 import android.app.Activity;
@@ -63,11 +64,11 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				if(toggleButton.isChecked()){
-					startService(new Intent(RemoteService.REMOTE_SERVICE_NAME));
-					bindService(new Intent(RemoteService.REMOTE_SERVICE_NAME), mConn, Context.BIND_AUTO_CREATE);
+					startService(new Intent(DolphinServerVariables.REMOTE_SERVICE_NAME));
+					bindService(new Intent(DolphinServerVariables.REMOTE_SERVICE_NAME), mConn, Context.BIND_AUTO_CREATE);
 				}else {
 			        unbindService(mConn);
-			        stopService(new Intent(RemoteService.REMOTE_SERVICE_NAME));
+			        stopService(new Intent(DolphinServerVariables.REMOTE_SERVICE_NAME));
 			        mService = null;
 				}
 			}
@@ -128,7 +129,7 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void onClick(View arg0) {
-				new PluginInstaller().install(mContext);
+				new Installer().installAll(mContext);
 			}
 		});
 		settingButton.setOnClickListener(new OnClickListener() {
@@ -145,7 +146,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				DaoService.createDB(mContext);
+				DaoManager.createDB(mContext);
 			}
 		});
 	}

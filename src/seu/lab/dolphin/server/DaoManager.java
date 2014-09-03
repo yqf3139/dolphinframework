@@ -20,9 +20,8 @@ import seu.lab.dolphin.dao.SwipeEventDao;
 import seu.lab.dolphin.dao.TrainingDatasetDao;
 import seu.lab.dolphin.dao.TrainingRelationDao;
 
-public class DaoService {
+public class DaoManager {
 	
-	private static final String DATABASE_NAME = "dolphin_db";
 	public static final String TAG = "DaoService";
 	
 	private static OpenHelper helper;
@@ -68,7 +67,7 @@ public class DaoService {
 	
 	public static DaoMaster getDaoMaster(Context context){
 	    if (daoMaster == null){
-	        helper = new DaoMaster.DevOpenHelper(context, DATABASE_NAME, null);
+	        helper = new DaoMaster.DevOpenHelper(context, DolphinServerVariables.DATABASE_NAME, null);
 	        daoMaster = new DaoMaster(helper.getWritableDatabase());
 	    }
 	    return daoMaster;

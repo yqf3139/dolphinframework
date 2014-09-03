@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import seu.lab.dolphin.utility.ShellUtils;
+
 import android.util.Log;
 
 public class EventRecordWatcher extends Thread{

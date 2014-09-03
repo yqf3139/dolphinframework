@@ -3,13 +3,14 @@ package seu.lab.dolphin.sysplugin;
 import java.util.ArrayList;
 import java.util.List;
 
+import seu.lab.dolphin.server.DolphinServerVariables;
+import seu.lab.dolphin.utility.ShellUtils;
+
 import android.R.integer;
 import android.util.Log;
 
 public class EventSenderForPlayback extends EventSender{
-	
-	public String command = "sendevent /dev/input/event"+EventSettings.EVENT_ID;
-	
+		
 	static String[] testData = {
 		"0003 0057 00000000",
 		"0003 0053 00000259",
@@ -37,12 +38,9 @@ public class EventSenderForPlayback extends EventSender{
 		if(commands != null){
 			return commands;
 		}
-		Log.i("getCommandList", "dolphincall /storage/sdcard0/project_dolphin/last_events /dev/input/event"+EventSettings.EVENT_ID);
-
 		List<String> list = new ArrayList<String>();
-		Log.i(TAG, "dolphincall /storage/sdcard0/project_dolphin/last_events /dev/input/event"+EventSettings.EVENT_ID);
 
-		list.add("dolphincall /storage/sdcard0/project_dolphin/last_events /dev/input/event"+EventSettings.EVENT_ID);
+		list.add("dolphincall "+DolphinServerVariables.DOLPHIN_HOME+"/scripts/last_events /dev/input/event"+EventSettings.EVENT_ID);
 		return list;
 	}
 

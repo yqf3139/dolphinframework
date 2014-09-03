@@ -13,7 +13,9 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
-import seu.lab.dolphin.sysplugin.ShellUtils.CommandResult;
+import seu.lab.dolphin.server.DolphinServerVariables;
+import seu.lab.dolphin.utility.ShellUtils;
+import seu.lab.dolphin.utility.ShellUtils.CommandResult;
 import seu.lab.dolphinframework.MainActivity;
 
 public class EventRecorder extends Thread{
@@ -39,7 +41,9 @@ public class EventRecorder extends Thread{
         });
 		
 		CommandResult result = shell.execCommand(
-				"dolphinget /dev/input/event"+EventSettings.EVENT_ID+" /storage/sdcard0/project_dolphin/last_events "+recordSeconds,
+				"dolphinget /dev/input/event"+EventSettings.EVENT_ID+" "
+							+DolphinServerVariables.DOLPHIN_HOME
+							+"/scripts/last_events "+recordSeconds,
 				ShellUtils.COMMAND_DOLPHIN);
 		int size = result.successMsg.size();
 		for (int i = 0; i < result.successMsg.size(); i++) {
