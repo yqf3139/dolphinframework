@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import android.R.bool;
+import android.os.Build;
 import android.util.Log;
 
 /**    public static final String COMMAND_SU       = "su";
@@ -34,12 +35,18 @@ import android.util.Log;
  */
 public class ShellUtils {
     public static final String COMMAND_SU       = "su";
-    public static final String COMMAND_DOLPHIN  = "dolphinsu";
+    public static String COMMAND_DOLPHIN  = "dolphinsu";
     public static final String COMMAND_SH       = "sh";
     public static final String COMMAND_EXIT     = "exit\n";
     public static final String COMMAND_LINE_END = "\n";
+    public Integer lockInteger = new Integer(0);
 	boolean loop = true;
+	private Process process;
 
+	static{
+		if(Build.VERSION.SDK_INT >= 17)
+			COMMAND_DOLPHIN = COMMAND_SU;
+	}
     /**
      * check whether has root permission
      * 
@@ -95,7 +102,7 @@ public class ShellUtils {
      * @see ShellUtils#execCommand(String[], boolean, boolean)
      */
     public CommandResult execCommand(String command, String start, boolean isNeedResultMsg, boolean isWaiting) {
-        return execCommand(new String[] {command}, start);
+        return execCommand(new String[] {command}, start, isNeedResultMsg, isWaiting);
     }
 
     /**
@@ -130,7 +137,7 @@ public class ShellUtils {
             return new CommandResult(result, null, null);
         }
 
-        Process process = null;
+        process = null;
         BufferedReader successResult = null;
         BufferedReader errorResult = null;
         List<String> successMsg = null;
@@ -152,7 +159,8 @@ public class ShellUtils {
             os.writeBytes(COMMAND_EXIT);
             os.flush();
             
-            if(isWaiting)process.waitFor();
+            if(isWaiting && loop)
+            	process.waitFor();
             
             // get command result
             if (isNeedResultMsg) {
@@ -226,4 +234,12 @@ public class ShellUtils {
             this.errorMsg = errorMsg;
         }
     }
+
+	public void kill() {
+        if (process != null) {
+            Log.e("sh", "kill start");
+            ProcessModel.processDestroy(process);
+            Log.e("sh", "kill end");
+        }
+	}
 }

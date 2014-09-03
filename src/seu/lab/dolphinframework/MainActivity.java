@@ -1,6 +1,15 @@
 package seu.lab.dolphinframework;
+import seu.lab.dolphin.server.DaoService;
 import seu.lab.dolphin.server.RemoteService;
 import seu.lab.dolphin.server.RemoteService.RemoteBinder;
+import seu.lab.dolphin.sysplugin.EventRecordWatcher;
+import seu.lab.dolphin.sysplugin.EventRecorder;
+import seu.lab.dolphin.sysplugin.EventSenderForKey;
+import seu.lab.dolphin.sysplugin.EventSenderForPlayback;
+import seu.lab.dolphin.sysplugin.EventSenderForSwipe;
+import seu.lab.dolphin.sysplugin.EventSettings;
+import seu.lab.dolphin.sysplugin.PluginInstaller;
+import seu.lab.dolphin.sysplugin.EventSettings.ScreenSetter;
 import seu.lab.dolphinframework.R;
 import android.app.Activity;
 import android.content.ComponentName;
@@ -58,6 +67,7 @@ public class MainActivity extends Activity {
 					bindService(new Intent(RemoteService.REMOTE_SERVICE_NAME), mConn, Context.BIND_AUTO_CREATE);
 				}else {
 			        unbindService(mConn);
+			        stopService(new Intent(RemoteService.REMOTE_SERVICE_NAME));
 			        mService = null;
 				}
 			}
@@ -74,6 +84,68 @@ public class MainActivity extends Activity {
 	            	Toast.makeText(mContext, mService.hello("yqf"), Toast.LENGTH_SHORT).show(); 
 	            	mService.getForeground();
 	            }
+			}
+		});
+		
+		Button keycodeButton = (Button) findViewById(R.id.keycode_btn);
+		Button swipeButton = (Button) findViewById(R.id.swipe_btn);
+		Button playbackButton = (Button) findViewById(R.id.playback_btn);
+		Button recordButton = (Button) findViewById(R.id.record_btn);
+		Button installButton = (Button) findViewById(R.id.install_btn);
+		Button settingButton = (Button) findViewById(R.id.screen_set_btn);
+		Button createButton = (Button) findViewById(R.id.create_db_btn);
+
+
+		keycodeButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				new EventSenderForKey(EventSenderForKey.KEYCODE_HOME).start();
+			}
+		});
+		swipeButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				new EventSenderForSwipe(EventSenderForSwipe.SwipeChoice.to_down).start();
+			}
+		});
+		playbackButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				new EventSenderForPlayback().start();
+			}
+		});
+		recordButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				new EventRecordWatcher(new EventRecorder(5)).start();
+				//new EventRecorder(5).start();
+			}
+		});
+		installButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				new PluginInstaller().install(mContext);
+			}
+		});
+		settingButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				EventSettings settings = new EventSettings();
+				ScreenSetter setter = settings.new ScreenSetter(); 
+				setter.start();
+			}
+		});
+		createButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				DaoService.createDB(mContext);
 			}
 		});
 	}

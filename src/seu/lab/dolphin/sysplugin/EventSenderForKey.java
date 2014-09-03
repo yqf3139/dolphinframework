@@ -2,9 +2,6 @@ package seu.lab.dolphin.sysplugin;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.w3c.dom.ls.LSException;
-
-import android.R.integer;
 
 public class EventSenderForKey extends EventSender{
 	

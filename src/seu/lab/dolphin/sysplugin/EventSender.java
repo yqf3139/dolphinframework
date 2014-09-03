@@ -19,7 +19,11 @@ public abstract class EventSender extends Thread{
 		CommandResult result = shell.execCommand(getCommandList(), getStart());
 		for (int i = 0; i < result.successMsg.size(); i++) {
 			Log.i(TAG, "successMsg:"+result.successMsg.get(i));
+		}		
+		for (int i = 0; i < result.errorMsg.size(); i++) {
+			Log.i(TAG, "errorMsg:"+result.errorMsg.get(i));
 		}
+		Log.i(TAG, "result: "+result.result);
 		Log.i(TAG, "over");
 	}
 	
