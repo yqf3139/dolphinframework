@@ -24,9 +24,11 @@ public class EventSenderForPlayback extends EventSender{
 	};
 
 	private List<String> commands = null;
+	private String script = "";
 	
-	public EventSenderForPlayback(){
+	public EventSenderForPlayback(String script){
 		commands = null;
+		this.script = script;
 	}
 	
 	public EventSenderForPlayback(List<String> commands){
@@ -40,7 +42,7 @@ public class EventSenderForPlayback extends EventSender{
 		}
 		List<String> list = new ArrayList<String>();
 
-		list.add("dolphincall "+DolphinServerVariables.DOLPHIN_HOME+"/scripts/last_events /dev/input/event"+EventSettings.EVENT_ID);
+		list.add("dolphincall "+DolphinServerVariables.DOLPHIN_HOME+"/scripts/"+script+" /dev/input/event"+EventSettings.EVENT_ID);
 		return list;
 	}
 

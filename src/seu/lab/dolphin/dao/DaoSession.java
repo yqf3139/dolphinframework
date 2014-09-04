@@ -18,6 +18,7 @@ import seu.lab.dolphin.dao.SwipeEvent;
 import seu.lab.dolphin.dao.PlaybackEvent;
 import seu.lab.dolphin.dao.RawGestureData;
 import seu.lab.dolphin.dao.TrainingDataset;
+import seu.lab.dolphin.dao.ModelConfig;
 import seu.lab.dolphin.dao.Model;
 import seu.lab.dolphin.dao.TrainingRelation;
 
@@ -30,6 +31,7 @@ import seu.lab.dolphin.dao.SwipeEventDao;
 import seu.lab.dolphin.dao.PlaybackEventDao;
 import seu.lab.dolphin.dao.RawGestureDataDao;
 import seu.lab.dolphin.dao.TrainingDatasetDao;
+import seu.lab.dolphin.dao.ModelConfigDao;
 import seu.lab.dolphin.dao.ModelDao;
 import seu.lab.dolphin.dao.TrainingRelationDao;
 
@@ -51,6 +53,7 @@ public class DaoSession extends AbstractDaoSession {
     private final DaoConfig playbackEventDaoConfig;
     private final DaoConfig rawGestureDataDaoConfig;
     private final DaoConfig trainingDatasetDaoConfig;
+    private final DaoConfig modelConfigDaoConfig;
     private final DaoConfig modelDaoConfig;
     private final DaoConfig trainingRelationDaoConfig;
 
@@ -63,6 +66,7 @@ public class DaoSession extends AbstractDaoSession {
     private final PlaybackEventDao playbackEventDao;
     private final RawGestureDataDao rawGestureDataDao;
     private final TrainingDatasetDao trainingDatasetDao;
+    private final ModelConfigDao modelConfigDao;
     private final ModelDao modelDao;
     private final TrainingRelationDao trainingRelationDao;
 
@@ -97,6 +101,9 @@ public class DaoSession extends AbstractDaoSession {
         trainingDatasetDaoConfig = daoConfigMap.get(TrainingDatasetDao.class).clone();
         trainingDatasetDaoConfig.initIdentityScope(type);
 
+        modelConfigDaoConfig = daoConfigMap.get(ModelConfigDao.class).clone();
+        modelConfigDaoConfig.initIdentityScope(type);
+
         modelDaoConfig = daoConfigMap.get(ModelDao.class).clone();
         modelDaoConfig.initIdentityScope(type);
 
@@ -112,6 +119,7 @@ public class DaoSession extends AbstractDaoSession {
         playbackEventDao = new PlaybackEventDao(playbackEventDaoConfig, this);
         rawGestureDataDao = new RawGestureDataDao(rawGestureDataDaoConfig, this);
         trainingDatasetDao = new TrainingDatasetDao(trainingDatasetDaoConfig, this);
+        modelConfigDao = new ModelConfigDao(modelConfigDaoConfig, this);
         modelDao = new ModelDao(modelDaoConfig, this);
         trainingRelationDao = new TrainingRelationDao(trainingRelationDaoConfig, this);
 
@@ -124,6 +132,7 @@ public class DaoSession extends AbstractDaoSession {
         registerDao(PlaybackEvent.class, playbackEventDao);
         registerDao(RawGestureData.class, rawGestureDataDao);
         registerDao(TrainingDataset.class, trainingDatasetDao);
+        registerDao(ModelConfig.class, modelConfigDao);
         registerDao(Model.class, modelDao);
         registerDao(TrainingRelation.class, trainingRelationDao);
     }
@@ -138,6 +147,7 @@ public class DaoSession extends AbstractDaoSession {
         playbackEventDaoConfig.getIdentityScope().clear();
         rawGestureDataDaoConfig.getIdentityScope().clear();
         trainingDatasetDaoConfig.getIdentityScope().clear();
+        modelConfigDaoConfig.getIdentityScope().clear();
         modelDaoConfig.getIdentityScope().clear();
         trainingRelationDaoConfig.getIdentityScope().clear();
     }
@@ -176,6 +186,10 @@ public class DaoSession extends AbstractDaoSession {
 
     public TrainingDatasetDao getTrainingDatasetDao() {
         return trainingDatasetDao;
+    }
+
+    public ModelConfigDao getModelConfigDao() {
+        return modelConfigDao;
     }
 
     public ModelDao getModelDao() {

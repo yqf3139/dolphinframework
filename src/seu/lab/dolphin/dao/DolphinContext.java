@@ -13,7 +13,6 @@ public class DolphinContext {
     private String device_state;
 
     public DolphinContext() {
-    	
     }
 
     public DolphinContext(Long id) {

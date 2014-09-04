@@ -247,7 +247,7 @@ public class RemoteService extends Service {
 
 			@Override
 			public void onClick(View arg0) {
-				new EventSenderForPlayback().start();
+				new EventSenderForPlayback("last_events").start();
 			}
 		});
 

@@ -59,5 +59,10 @@
                 <category android:name="android.intent.category.DEFAULT" />  
 			</intent-filter>
 		</receiver>
+		<provider  
+		    android:enabled="true"
+		    android:exported="true"
+            android:authorities="seu.lab.dolphin.server.MODEL_PROVIDER"  
+            android:name="seu.lab.dolphin.server.ModelProvider"/>
     </application>
 </manifest>

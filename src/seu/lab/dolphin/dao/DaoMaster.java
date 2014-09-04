@@ -17,6 +17,7 @@ import seu.lab.dolphin.dao.SwipeEventDao;
 import seu.lab.dolphin.dao.PlaybackEventDao;
 import seu.lab.dolphin.dao.RawGestureDataDao;
 import seu.lab.dolphin.dao.TrainingDatasetDao;
+import seu.lab.dolphin.dao.ModelConfigDao;
 import seu.lab.dolphin.dao.ModelDao;
 import seu.lab.dolphin.dao.TrainingRelationDao;
 
@@ -38,6 +39,7 @@ public class DaoMaster extends AbstractDaoMaster {
         PlaybackEventDao.createTable(db, ifNotExists);
         RawGestureDataDao.createTable(db, ifNotExists);
         TrainingDatasetDao.createTable(db, ifNotExists);
+        ModelConfigDao.createTable(db, ifNotExists);
         ModelDao.createTable(db, ifNotExists);
         TrainingRelationDao.createTable(db, ifNotExists);
     }
@@ -53,6 +55,7 @@ public class DaoMaster extends AbstractDaoMaster {
         PlaybackEventDao.dropTable(db, ifExists);
         RawGestureDataDao.dropTable(db, ifExists);
         TrainingDatasetDao.dropTable(db, ifExists);
+        ModelConfigDao.dropTable(db, ifExists);
         ModelDao.dropTable(db, ifExists);
         TrainingRelationDao.dropTable(db, ifExists);
     }
@@ -95,6 +98,7 @@ public class DaoMaster extends AbstractDaoMaster {
         registerDaoClass(PlaybackEventDao.class);
         registerDaoClass(RawGestureDataDao.class);
         registerDaoClass(TrainingDatasetDao.class);
+        registerDaoClass(ModelConfigDao.class);
         registerDaoClass(ModelDao.class);
         registerDaoClass(TrainingRelationDao.class);
     }

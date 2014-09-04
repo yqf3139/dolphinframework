@@ -57,7 +57,7 @@ public class Installer {
 
 	}
 	
-	private static void installModel(AssetManager am, File root) throws IOException {
+	public static void installModel(AssetManager am, File root) throws IOException {
 		File modelsRoot = new File(root, "models");
 		if(modelsRoot.exists() && modelsRoot.isFile()){
 			modelsRoot.delete();

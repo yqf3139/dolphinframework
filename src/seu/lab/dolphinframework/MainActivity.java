@@ -114,7 +114,7 @@ public class MainActivity extends Activity {
 		playbackButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
-				new EventSenderForPlayback().start();
+				new EventSenderForPlayback("last_events").start();
 			}
 		});
 		recordButton.setOnClickListener(new OnClickListener() {
