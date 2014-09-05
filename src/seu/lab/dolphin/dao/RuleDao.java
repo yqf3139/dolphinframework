@@ -42,6 +42,7 @@ public class RuleDao extends AbstractDao<Rule, Long> {
 
     private Query<Rule> plugin_RulesQuery;
     private Query<Rule> gesture_RulesQuery;
+    private Query<Rule> gesture_Raw_gesuture_dataQuery;
 
     public RuleDao(DaoConfig config) {
         super(config);
@@ -164,7 +165,6 @@ public class RuleDao extends AbstractDao<Rule, Long> {
             if (plugin_RulesQuery == null) {
                 QueryBuilder<Rule> queryBuilder = queryBuilder();
                 queryBuilder.where(Properties.Plugin_id.eq(null));
-                queryBuilder.orderRaw("rule_id ASC");
                 plugin_RulesQuery = queryBuilder.build();
             }
         }
@@ -174,17 +174,30 @@ public class RuleDao extends AbstractDao<Rule, Long> {
     }
 
     /** Internal query to resolve the "rules" to-many relationship of Gesture. */
-    public List<Rule> _queryGesture_Rules(long gesture_id) {
+    public List<Rule> _queryGesture_Rules(long plugin_id) {
         synchronized (this) {
             if (gesture_RulesQuery == null) {
                 QueryBuilder<Rule> queryBuilder = queryBuilder();
-                queryBuilder.where(Properties.Gesture_id.eq(null));
-                queryBuilder.orderRaw("rule_id ASC");
+                queryBuilder.where(Properties.Plugin_id.eq(null));
                 gesture_RulesQuery = queryBuilder.build();
             }
         }
         Query<Rule> query = gesture_RulesQuery.forCurrentThread();
-        query.setParameter(0, gesture_id);
+        query.setParameter(0, plugin_id);
+        return query.list();
+    }
+
+    /** Internal query to resolve the "raw_gesuture_data" to-many relationship of Gesture. */
+    public List<Rule> _queryGesture_Raw_gesuture_data(long plugin_id) {
+        synchronized (this) {
+            if (gesture_Raw_gesuture_dataQuery == null) {
+                QueryBuilder<Rule> queryBuilder = queryBuilder();
+                queryBuilder.where(Properties.Plugin_id.eq(null));
+                gesture_Raw_gesuture_dataQuery = queryBuilder.build();
+            }
+        }
+        Query<Rule> query = gesture_Raw_gesuture_dataQuery.forCurrentThread();
+        query.setParameter(0, plugin_id);
         return query.list();
     }
 

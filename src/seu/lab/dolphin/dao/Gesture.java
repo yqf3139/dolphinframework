@@ -25,6 +25,8 @@ public class Gesture {
     private transient GestureDao myDao;
 
     private List<Rule> rules;
+    private List<Rule> raw_gesuture_data;
+    private List<TrainingRelation> training_relation;
 
     public Gesture() {
     }
@@ -111,6 +113,50 @@ public class Gesture {
     /** Resets a to-many relationship, making the next get call to query for a fresh result. */
     public synchronized void resetRules() {
         rules = null;
+    }
+
+    /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */
+    public List<Rule> getRaw_gesuture_data() {
+        if (raw_gesuture_data == null) {
+            if (daoSession == null) {
+                throw new DaoException("Entity is detached from DAO context");
+            }
+            RuleDao targetDao = daoSession.getRuleDao();
+            List<Rule> raw_gesuture_dataNew = targetDao._queryGesture_Raw_gesuture_data(id);
+            synchronized (this) {
+                if(raw_gesuture_data == null) {
+                    raw_gesuture_data = raw_gesuture_dataNew;
+                }
+            }
+        }
+        return raw_gesuture_data;
+    }
+
+    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
+    public synchronized void resetRaw_gesuture_data() {
+        raw_gesuture_data = null;
+    }
+
+    /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */
+    public List<TrainingRelation> getTraining_relation() {
+        if (training_relation == null) {
+            if (daoSession == null) {
+                throw new DaoException("Entity is detached from DAO context");
+            }
+            TrainingRelationDao targetDao = daoSession.getTrainingRelationDao();
+            List<TrainingRelation> training_relationNew = targetDao._queryGesture_Training_relation(id);
+            synchronized (this) {
+                if(training_relation == null) {
+                    training_relation = training_relationNew;
+                }
+            }
+        }
+        return training_relation;
+    }
+
+    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
+    public synchronized void resetTraining_relation() {
+        training_relation = null;
     }
 
     /** Convenient call for {@link AbstractDao#delete(Object)}. Entity must attached to an entity context. */

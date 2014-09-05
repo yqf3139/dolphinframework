@@ -32,10 +32,10 @@ public class DaoManager {
 		daoMaster = getDaoMaster(context);
 		daoMaster.createAllTables(helper.getWritableDatabase(), true);
 		
-		insertTestData(context);
+		insertDefaultData(context);
 	}
 
-	public static void insertTestData(Context context) {
+	public static void insertDefaultData(Context context) {
 		daoSession = getDaoSession(context);
 		DolphinContextDao dolphinContextDao  = daoSession.getDolphinContextDao();
 		GestureDao gestureDao = daoSession.getGestureDao();
@@ -49,15 +49,20 @@ public class DaoManager {
 		TrainingDatasetDao trainingDatasetDao = daoSession.getTrainingDatasetDao();
 		TrainingRelationDao trainingRelationDao = daoSession.getTrainingRelationDao();
 		
-		dolphinContextDao.insert(new DolphinContext(null, "com.example.app1", "still"));
-		dolphinContextDao.insert(new DolphinContext(null, "com.example.app2", "moving"));
+		/*
+		 * Dolphin Context
+		 */
 		
-		Log.e(TAG, ""+dolphinContextDao.count());
-		List<DolphinContext> dolphinContext = dolphinContextDao.loadAll();
-		for (int i = 0; i < dolphinContext.size(); i++) {
-			DolphinContext tmp = dolphinContext.get(i);
-			Log.e(TAG, tmp.getId()+":"+tmp.getActivity_name());
-		}
+		
+//		dolphinContextDao.insert(new DolphinContext(null, "com.example.app1", "still"));
+//		dolphinContextDao.insert(new DolphinContext(null, "com.example.app2", "moving"));
+		
+//		Log.e(TAG, ""+dolphinContextDao.count());
+//		List<DolphinContext> dolphinContext = dolphinContextDao.loadAll();
+//		for (int i = 0; i < dolphinContext.size(); i++) {
+//			DolphinContext tmp = dolphinContext.get(i);
+//			Log.e(TAG, tmp.getId()+":"+tmp.getActivity_name());
+//		}
 	}
 	
 	public static void dropDB(Context context) {

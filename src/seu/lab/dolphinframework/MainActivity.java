@@ -83,7 +83,7 @@ public class MainActivity extends Activity {
 	            	Toast.makeText(mContext, "null", Toast.LENGTH_SHORT).show(); 
 	            else{
 	            	Toast.makeText(mContext, mService.hello("yqf"), Toast.LENGTH_SHORT).show(); 
-	            	mService.getForeground();
+	            	mService.getForegroundActivityName();
 	            }
 			}
 		});

@@ -10,7 +10,7 @@ import de.greenrobot.dao.DaoException;
 public class RawGestureData {
 
     private Long id;
-    private Long gesture_id;
+    private long gesture_id;
 
     /** Used to resolve relations */
     private transient DaoSession daoSession;
@@ -29,7 +29,7 @@ public class RawGestureData {
         this.id = id;
     }
 
-    public RawGestureData(Long id, Long gesture_id) {
+    public RawGestureData(Long id, long gesture_id) {
         this.id = id;
         this.gesture_id = gesture_id;
     }
@@ -48,17 +48,17 @@ public class RawGestureData {
         this.id = id;
     }
 
-    public Long getGesture_id() {
+    public long getGesture_id() {
         return gesture_id;
     }
 
-    public void setGesture_id(Long gesture_id) {
+    public void setGesture_id(long gesture_id) {
         this.gesture_id = gesture_id;
     }
 
     /** To-one relationship, resolved on first access. */
     public Gesture getGesture() {
-        Long __key = this.gesture_id;
+        long __key = this.gesture_id;
         if (gesture__resolvedKey == null || !gesture__resolvedKey.equals(__key)) {
             if (daoSession == null) {
                 throw new DaoException("Entity is detached from DAO context");
@@ -74,9 +74,12 @@ public class RawGestureData {
     }
 
     public void setGesture(Gesture gesture) {
+        if (gesture == null) {
+            throw new DaoException("To-one property 'gesture_id' has not-null constraint; cannot set to-one to null");
+        }
         synchronized (this) {
             this.gesture = gesture;
-            gesture_id = gesture == null ? null : gesture.getId();
+            gesture_id = gesture.getId();
             gesture__resolvedKey = gesture_id;
         }
     }

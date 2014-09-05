@@ -10,8 +10,8 @@ import de.greenrobot.dao.DaoException;
 public class TrainingRelation {
 
     private Long id;
-    private Long training_dataset_id;
-    private Long gesture_id;
+    private long gesture_id;
+    private long traing_data_set_id;
 
     /** Used to resolve relations */
     private transient DaoSession daoSession;
@@ -19,11 +19,11 @@ public class TrainingRelation {
     /** Used for active entity operations. */
     private transient TrainingRelationDao myDao;
 
-    private TrainingDataset trainingDataset;
-    private Long trainingDataset__resolvedKey;
-
     private Gesture gesture;
     private Long gesture__resolvedKey;
+
+    private TrainingDataset trainingDataset;
+    private Long trainingDataset__resolvedKey;
 
 
     public TrainingRelation() {
@@ -33,10 +33,10 @@ public class TrainingRelation {
         this.id = id;
     }
 
-    public TrainingRelation(Long id, Long training_dataset_id, Long gesture_id) {
+    public TrainingRelation(Long id, long gesture_id, long traing_data_set_id) {
         this.id = id;
-        this.training_dataset_id = training_dataset_id;
         this.gesture_id = gesture_id;
+        this.traing_data_set_id = traing_data_set_id;
     }
 
     /** called by internal mechanisms, do not call yourself. */
@@ -53,50 +53,25 @@ public class TrainingRelation {
         this.id = id;
     }
 
-    public Long getTraining_dataset_id() {
-        return training_dataset_id;
-    }
-
-    public void setTraining_dataset_id(Long training_dataset_id) {
-        this.training_dataset_id = training_dataset_id;
-    }
-
-    public Long getGesture_id() {
+    public long getGesture_id() {
         return gesture_id;
     }
 
-    public void setGesture_id(Long gesture_id) {
+    public void setGesture_id(long gesture_id) {
         this.gesture_id = gesture_id;
     }
 
-    /** To-one relationship, resolved on first access. */
-    public TrainingDataset getTrainingDataset() {
-        Long __key = this.training_dataset_id;
-        if (trainingDataset__resolvedKey == null || !trainingDataset__resolvedKey.equals(__key)) {
-            if (daoSession == null) {
-                throw new DaoException("Entity is detached from DAO context");
-            }
-            TrainingDatasetDao targetDao = daoSession.getTrainingDatasetDao();
-            TrainingDataset trainingDatasetNew = targetDao.load(__key);
-            synchronized (this) {
-                trainingDataset = trainingDatasetNew;
-            	trainingDataset__resolvedKey = __key;
-            }
-        }
-        return trainingDataset;
+    public long getTraing_data_set_id() {
+        return traing_data_set_id;
     }
 
-    public void setTrainingDataset(TrainingDataset trainingDataset) {
-        synchronized (this) {
-            this.trainingDataset = trainingDataset;
-            training_dataset_id = trainingDataset == null ? null : trainingDataset.getId();
-            trainingDataset__resolvedKey = training_dataset_id;
-        }
+    public void setTraing_data_set_id(long traing_data_set_id) {
+        this.traing_data_set_id = traing_data_set_id;
     }
 
     /** To-one relationship, resolved on first access. */
     public Gesture getGesture() {
-        Long __key = this.gesture_id;
+        long __key = this.gesture_id;
         if (gesture__resolvedKey == null || !gesture__resolvedKey.equals(__key)) {
             if (daoSession == null) {
                 throw new DaoException("Entity is detached from DAO context");
@@ -112,10 +87,41 @@ public class TrainingRelation {
     }
 
     public void setGesture(Gesture gesture) {
+        if (gesture == null) {
+            throw new DaoException("To-one property 'gesture_id' has not-null constraint; cannot set to-one to null");
+        }
         synchronized (this) {
             this.gesture = gesture;
-            gesture_id = gesture == null ? null : gesture.getId();
+            gesture_id = gesture.getId();
             gesture__resolvedKey = gesture_id;
+        }
+    }
+
+    /** To-one relationship, resolved on first access. */
+    public TrainingDataset getTrainingDataset() {
+        long __key = this.traing_data_set_id;
+        if (trainingDataset__resolvedKey == null || !trainingDataset__resolvedKey.equals(__key)) {
+            if (daoSession == null) {
+                throw new DaoException("Entity is detached from DAO context");
+            }
+            TrainingDatasetDao targetDao = daoSession.getTrainingDatasetDao();
+            TrainingDataset trainingDatasetNew = targetDao.load(__key);
+            synchronized (this) {
+                trainingDataset = trainingDatasetNew;
+            	trainingDataset__resolvedKey = __key;
+            }
+        }
+        return trainingDataset;
+    }
+
+    public void setTrainingDataset(TrainingDataset trainingDataset) {
+        if (trainingDataset == null) {
+            throw new DaoException("To-one property 'traing_data_set_id' has not-null constraint; cannot set to-one to null");
+        }
+        synchronized (this) {
+            this.trainingDataset = trainingDataset;
+            traing_data_set_id = trainingDataset.getId();
+            trainingDataset__resolvedKey = traing_data_set_id;
         }
     }
 

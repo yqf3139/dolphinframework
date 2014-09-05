@@ -29,7 +29,7 @@ public class ModelDao extends AbstractDao<Model, Long> {
         public final static Property Id = new Property(0, Long.class, "id", true, "model_id");
         public final static Property Model_path = new Property(1, String.class, "model_path", false, "MODEL_PATH");
         public final static Property Name = new Property(2, String.class, "name", false, "NAME");
-        public final static Property Training_dataset_id = new Property(3, Long.class, "training_dataset_id", false, "TRAINING_DATASET_ID");
+        public final static Property Traing_data_set_id = new Property(3, long.class, "traing_data_set_id", false, "TRAING_DATA_SET_ID");
     };
 
     private DaoSession daoSession;
@@ -51,7 +51,7 @@ public class ModelDao extends AbstractDao<Model, Long> {
                 "'model_id' INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
                 "'MODEL_PATH' TEXT NOT NULL ," + // 1: model_path
                 "'NAME' TEXT NOT NULL ," + // 2: name
-                "'TRAINING_DATASET_ID' INTEGER);"); // 3: training_dataset_id
+                "'TRAING_DATA_SET_ID' INTEGER NOT NULL );"); // 3: traing_data_set_id
     }
 
     /** Drops the underlying database table. */
@@ -71,11 +71,7 @@ public class ModelDao extends AbstractDao<Model, Long> {
         }
         stmt.bindString(2, entity.getModel_path());
         stmt.bindString(3, entity.getName());
- 
-        Long training_dataset_id = entity.getTraining_dataset_id();
-        if (training_dataset_id != null) {
-            stmt.bindLong(4, training_dataset_id);
-        }
+        stmt.bindLong(4, entity.getTraing_data_set_id());
     }
 
     @Override
@@ -97,7 +93,7 @@ public class ModelDao extends AbstractDao<Model, Long> {
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.getString(offset + 1), // model_path
             cursor.getString(offset + 2), // name
-            cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3) // training_dataset_id
+            cursor.getLong(offset + 3) // traing_data_set_id
         );
         return entity;
     }
@@ -108,7 +104,7 @@ public class ModelDao extends AbstractDao<Model, Long> {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setModel_path(cursor.getString(offset + 1));
         entity.setName(cursor.getString(offset + 2));
-        entity.setTraining_dataset_id(cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3));
+        entity.setTraing_data_set_id(cursor.getLong(offset + 3));
      }
     
     /** @inheritdoc */
@@ -143,7 +139,7 @@ public class ModelDao extends AbstractDao<Model, Long> {
             builder.append(',');
             SqlUtils.appendColumns(builder, "T0", daoSession.getTrainingDatasetDao().getAllColumns());
             builder.append(" FROM MODEL T");
-            builder.append(" LEFT JOIN TRAINING_DATASET T0 ON T.'TRAINING_DATASET_ID'=T0.'training_dataset_id'");
+            builder.append(" LEFT JOIN TRAINING_DATASET T0 ON T.'TRAING_DATA_SET_ID'=T0.'training_dataset_id'");
             builder.append(' ');
             selectDeep = builder.toString();
         }
@@ -155,7 +151,9 @@ public class ModelDao extends AbstractDao<Model, Long> {
         int offset = getAllColumns().length;
 
         TrainingDataset trainingDataset = loadCurrentOther(daoSession.getTrainingDatasetDao(), cursor, offset);
-        entity.setTrainingDataset(trainingDataset);
+         if(trainingDataset != null) {
+            entity.setTrainingDataset(trainingDataset);
+        }
 
         return entity;    
     }

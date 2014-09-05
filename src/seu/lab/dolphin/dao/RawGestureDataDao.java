@@ -27,7 +27,7 @@ public class RawGestureDataDao extends AbstractDao<RawGestureData, Long> {
     */
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "raw_data_id");
-        public final static Property Gesture_id = new Property(1, Long.class, "gesture_id", false, "GESTURE_ID");
+        public final static Property Gesture_id = new Property(1, long.class, "gesture_id", false, "GESTURE_ID");
     };
 
     private DaoSession daoSession;
@@ -47,7 +47,7 @@ public class RawGestureDataDao extends AbstractDao<RawGestureData, Long> {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'RAW_GESTURE_DATA' (" + //
                 "'raw_data_id' INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
-                "'GESTURE_ID' INTEGER);"); // 1: gesture_id
+                "'GESTURE_ID' INTEGER NOT NULL );"); // 1: gesture_id
     }
 
     /** Drops the underlying database table. */
@@ -65,11 +65,7 @@ public class RawGestureDataDao extends AbstractDao<RawGestureData, Long> {
         if (id != null) {
             stmt.bindLong(1, id);
         }
- 
-        Long gesture_id = entity.getGesture_id();
-        if (gesture_id != null) {
-            stmt.bindLong(2, gesture_id);
-        }
+        stmt.bindLong(2, entity.getGesture_id());
     }
 
     @Override
@@ -89,7 +85,7 @@ public class RawGestureDataDao extends AbstractDao<RawGestureData, Long> {
     public RawGestureData readEntity(Cursor cursor, int offset) {
         RawGestureData entity = new RawGestureData( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
-            cursor.isNull(offset + 1) ? null : cursor.getLong(offset + 1) // gesture_id
+            cursor.getLong(offset + 1) // gesture_id
         );
         return entity;
     }
@@ -98,7 +94,7 @@ public class RawGestureDataDao extends AbstractDao<RawGestureData, Long> {
     @Override
     public void readEntity(Cursor cursor, RawGestureData entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
-        entity.setGesture_id(cursor.isNull(offset + 1) ? null : cursor.getLong(offset + 1));
+        entity.setGesture_id(cursor.getLong(offset + 1));
      }
     
     /** @inheritdoc */
@@ -145,7 +141,9 @@ public class RawGestureDataDao extends AbstractDao<RawGestureData, Long> {
         int offset = getAllColumns().length;
 
         Gesture gesture = loadCurrentOther(daoSession.getGestureDao(), cursor, offset);
-        entity.setGesture(gesture);
+         if(gesture != null) {
+            entity.setGesture(gesture);
+        }
 
         return entity;    
     }

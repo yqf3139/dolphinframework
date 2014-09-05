@@ -1,24 +1,50 @@
 package seu.lab.dolphin.server;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.regex.Pattern;
+import de.greenrobot.dao.query.Query;
+import de.greenrobot.dao.query.QueryBuilder;
 import seu.lab.dolphin.client.ContinuousGestureEvent;
 import seu.lab.dolphin.client.Dolphin;
-import seu.lab.dolphin.client.Dolphin.DataTypeMask;
-import seu.lab.dolphin.client.Dolphin.GestureMask;
 import seu.lab.dolphin.client.GestureEvent;
 import seu.lab.dolphin.client.IDataReceiver;
 import seu.lab.dolphin.client.IDolphinStateCallback;
 import seu.lab.dolphin.client.IGestureListener;
 import seu.lab.dolphin.client.RealTimeData;
+import seu.lab.dolphin.core.LinearTest;
+import seu.lab.dolphin.dao.DaoSession;
+import seu.lab.dolphin.dao.DolphinContext;
+import seu.lab.dolphin.dao.DolphinContextDao;
+import seu.lab.dolphin.dao.DolphinContextDao.Properties;
+import seu.lab.dolphin.dao.KeyEvent;
+import seu.lab.dolphin.dao.KeyEventDao;
+import seu.lab.dolphin.dao.Model;
+import seu.lab.dolphin.dao.ModelConfig;
+import seu.lab.dolphin.dao.ModelConfigDao;
+import seu.lab.dolphin.dao.ModelDao;
+import seu.lab.dolphin.dao.PlaybackEvent;
+import seu.lab.dolphin.dao.PlaybackEventDao;
+import seu.lab.dolphin.dao.Plugin;
+import seu.lab.dolphin.dao.PluginDao;
+import seu.lab.dolphin.dao.Rule;
+import seu.lab.dolphin.dao.RuleDao;
+import seu.lab.dolphin.dao.SwipeEvent;
+import seu.lab.dolphin.dao.SwipeEventDao;
 import seu.lab.dolphin.sysplugin.EventRecordWatcher;
 import seu.lab.dolphin.sysplugin.EventRecorder;
+import seu.lab.dolphin.sysplugin.EventSenderForKey;
 import seu.lab.dolphin.sysplugin.EventSenderForPlayback;
+import seu.lab.dolphin.sysplugin.EventSenderForSwipe;
 import seu.lab.dolphinframework.MainActivity;
 import seu.lab.dolphinframework.R;
+import android.R.integer;
 import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
@@ -48,7 +74,28 @@ public class RemoteService extends Service {
 	static final String TAG = "RemoteService";
 
 	static final int ONGOING_NOTIFICATION = 1120;
+	
+	static final long DEFAULT_ID = 1l;
+	
 	Context mContext = this;
+
+	DaoSession daoSession = null;
+	ModelConfigDao modelConfigDao = null;
+	PluginDao pluginDao = null;
+	DolphinContextDao dolphinContextDao = null;
+	ModelDao modelDao = null;
+	KeyEventDao keyEventDao = null;
+	SwipeEventDao swipeEventDao = null;
+	PlaybackEventDao playbackEventDao = null;
+	
+	ModelConfig currentModelConfig = null;
+	Plugin currentPlugin = null;
+	DolphinContext currentDolphinContext = null;
+	
+	ModelConfig defaultModelConfig = null;
+	Plugin defaultPlugin = null;
+	DolphinContext defaultDolphinContext = null;
+	
 
 	LinearLayout mFloatLayout;
 	WindowManager.LayoutParams wmParams;
@@ -77,19 +124,34 @@ public class RemoteService extends Service {
 		}
 
 		@Override
-		public DataTypeMask getDataTypeMask() {
+		public Bundle getDataTypeMask() {
 			// TODO Auto-generated method stub
 			return null;
 		}
+
 	};
 
 	IGestureListener gestureListener = new IGestureListener() {
 
 		@Override
 		public void onGesture(GestureEvent event) {
-			// TODO Auto-generated method stub
+			
+			// TODO broadcaster
+			// broadcaster.sendBroadcast(mContext);
+
 			if (event.isConclusion) {
 				Log.e(TAG, event.toString());
+				
+				// find rule by gesture id & plugin id
+				List<Rule> rules = currentPlugin.getRules();
+				Rule ruleToApply = null;
+				for (Rule rule : rules) {
+					if(rule.getApplied() && rule.getGesture_id() == event.type){
+						ruleToApply = rule;
+						break;
+					}
+				}
+				applyRule(ruleToApply);
 			}
 		}
 
@@ -112,9 +174,11 @@ public class RemoteService extends Service {
 		}
 
 		@Override
-		public GestureMask gestureMask() {
-			// TODO Auto-generated method stub
-			return null;
+		public ContentValues gestureMask() {
+			
+			// TODO claim the gesture you need to be true
+			
+			return new ContentValues();
 		}
 	};
 
@@ -128,13 +192,21 @@ public class RemoteService extends Service {
 
 		@Override
 		public void onCoreReady() {
-			// TODO Auto-generated method stub
 			dolphin.start();
 		}
 	};
 
 	private ActivityManager activityManager;
-	private TaskShower taskShower;
+
+	private QueryBuilder<DolphinContext> dolphinContextBuilder;
+	private QueryBuilder<Model> modelBuilder;
+
+	private Query<DolphinContext> findDolphinContextByActivityNameQuery;
+
+	private DolphinBroadcaster broadcaster;
+
+	private DolphinContextRefresher refresher;
+
 
 	public String hello(String name) {
 		return TAG + ": hello " + name;
@@ -253,69 +325,93 @@ public class RemoteService extends Service {
 
 	}
 
-	public void getForeground() {
+	public String getForegroundActivityName() {
 		ComponentName cn = activityManager.getRunningTasks(1).get(0).topActivity;
-		Log.e("Foreground", "pkg:" + cn.getPackageName());
-		Log.e("Foreground", "cls:" + cn.getClassName());
-		final String clsString = cn.getClassName();
-		Handler handler = new Handler(Looper.getMainLooper());
-		handler.post(new Runnable() {
-			public void run() {
-				Toast.makeText(getApplicationContext(), clsString,
-						Toast.LENGTH_SHORT).show();
-			}
-		});
+		return cn.getClassName();
 	}
 
-	class TaskShower extends Thread {
-		public boolean running = true;
-
-		@Override
-		public void run() {
-			DolphinBroadcaster broadcaster = new DolphinBroadcaster();
-			while (running) {
-				try {
-					sleep(5 * 1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				getForeground();
-				broadcaster.sendBroadcast(mContext);
+	
+	private void applyContext(DolphinContext dolphinContext) {
+		if(dolphinContext == null){
+			dolphinContext = defaultDolphinContext;
+		}
+		if(dolphinContext.getId() == currentDolphinContext.getId())
+			return;
+		
+		ModelConfig modelConfig = dolphinContext.getModelConfig();
+		Plugin plugin = dolphinContext.getPlugin();
+		
+		applyModels(modelConfig);
+		applyPlugin(plugin);
+	}
+	
+	private void applyModels(ModelConfig modelConfig) {
+		if(modelConfig == null){
+			modelConfig = defaultModelConfig;
+		}
+		
+		if(modelConfig.getId() != currentModelConfig.getId()){
+			String[] modelpaths = getModelPaths(modelConfig);
+			
+			try {
+				LinearTest.setModel(modelpaths);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				Log.e(TAG, e.toString());
+				Log.e(TAG, "model err");
 			}
 		}
 	}
-
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		Log.e(TAG, "onStartCommand");
-
-		Notification notification = new Notification(R.drawable.dolphin_server,
-				"ticket", System.currentTimeMillis());
-		Intent notificationIntent = new Intent(this, MainActivity.class);
-		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-				notificationIntent, 0);
-		notification
-				.setLatestEventInfo(this, "title", "message", pendingIntent);
-		startForeground(ONGOING_NOTIFICATION, notification);
-
-		createFloatView();
-
-		activityManager = (ActivityManager) mContext
-				.getSystemService(Context.ACTIVITY_SERVICE);
-//		if (taskShower == null) {
-//			taskShower = new TaskShower();
-//			taskShower.start();
-//		} else if (!taskShower.isAlive()) {
-//			taskShower = new TaskShower();
-//			taskShower.start();
-//		}
-		
-		dolphin.resume();
-		
-		return super.onStartCommand(intent, flags, startId);
+	private void applyPlugin(Plugin plugin) {
+		if(plugin == null){
+			plugin = defaultPlugin;
+		}
+		if(plugin.getId() != currentPlugin.getId()){
+			currentPlugin = plugin;
+		}
 	}
-
+	
+	private void applyRule(Rule rule) {
+		switch (rule.getEvent_type()) {
+		case 1:
+			KeyEvent keyEvent = keyEventDao.load(rule.getEvent_id());
+			if(keyEvent != null){
+				new EventSenderForKey(keyEvent.getKeycode()).start();
+			}
+			break;
+		case 2:
+			SwipeEvent swipeEvent = swipeEventDao.load(rule.getEvent_id());
+			if(swipeEvent != null){
+				int[] coordinates = new int[]{
+					swipeEvent.getX1(),
+					swipeEvent.getY1(),
+					swipeEvent.getX2(),
+					swipeEvent.getY2()
+				};
+				new EventSenderForSwipe(coordinates).start();
+			}
+			break;
+		case 3:
+			PlaybackEvent playbackEvent = playbackEventDao.load(rule.getEvent_id());
+			if(playbackEvent != null){
+				new EventSenderForPlayback(playbackEvent.getScript_name()).start();
+			}
+			break;
+		default:
+			break;
+		}
+	}
+	
+	static private String[] getModelPaths(ModelConfig modelConfig){
+		
+		String[] modelpaths = modelConfig.getModel_ids().split(Pattern.quote("+"));
+		
+		if(modelpaths.length != 5)
+			modelpaths = LinearTest.defaultModels;
+		
+		return modelpaths;
+	}
+	
 	@Override
 	public IBinder onBind(Intent arg0) {
 		Log.e(TAG, "onBind");
@@ -327,12 +423,25 @@ public class RemoteService extends Service {
 		Log.e(TAG, "onRebind");
 		super.onRebind(intent);
 	}
-
+	
 	@Override
 	public void onCreate() {
 		Log.e(TAG, "onCreate");
+		activityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
+		refresher = new DolphinContextRefresher();
+		
+		daoSession = DaoManager.getDaoSession(mContext);
+		modelConfigDao = daoSession.getModelConfigDao();
+		pluginDao = daoSession.getPluginDao();
+		dolphinContextDao = daoSession.getDolphinContextDao();
+		modelDao = daoSession.getModelDao();
+		keyEventDao = daoSession.getKeyEventDao();
+		swipeEventDao = daoSession.getSwipeEventDao();
+		playbackEventDao = daoSession.getPlaybackEventDao();
+		
 		dolphin = Dolphin.getInstance(
 				(AudioManager) getSystemService(Context.AUDIO_SERVICE), 
+				getContentResolver(),
 				stateCallback,
 				null, 
 				gestureListener);
@@ -341,6 +450,32 @@ public class RemoteService extends Service {
 		super.onCreate();
 	}
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+            Log.e(TAG, "onStartCommand");
+            
+            currentDolphinContext = defaultDolphinContext = dolphinContextDao.load(DEFAULT_ID);
+            currentModelConfig = defaultModelConfig = modelConfigDao.load(DEFAULT_ID);
+            currentPlugin = defaultPlugin = pluginDao.load(DEFAULT_ID);
+
+            dolphin.resume();
+
+            Notification notification = new Notification(R.drawable.dolphin_server,
+            		"ticket", System.currentTimeMillis());
+            Intent notificationIntent = new Intent(this, MainActivity.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+            notification.setLatestEventInfo(this, "title","message", pendingIntent);
+            
+            startForeground(ONGOING_NOTIFICATION, notification);
+            
+            createFloatView();
+
+            refresher.start();
+            
+			return super.onStartCommand(intent, flags, startId);
+    }
+
+	
 	@Override
 	public boolean onUnbind(Intent intent) {
 		Log.e(TAG, "onUnbind");
@@ -350,13 +485,15 @@ public class RemoteService extends Service {
 	@Override
 	public void onDestroy() {
 		Log.e(TAG, "onDestroy");
-		taskShower.running = false;
+		
+		refresher.stopGracefully();
+		dolphin.stop();
+
 		stopForeground(true);
+
 		if (mFloatLayout != null) {
 			mWindowManager.removeView(mFloatLayout);
 		}
-		
-		dolphin.stop();
 		
 		super.onDestroy();
 	}
@@ -366,4 +503,45 @@ public class RemoteService extends Service {
 			return RemoteService.this;
 		}
 	}
+	
+	
+	class DolphinContextRefresher extends Thread{
+		static final String TAG = "DolphinContextRefresher";
+		
+		private boolean isRunning = true;
+		
+		public void stopGracefully(){
+			Log.i(TAG,"stopGracefully");
+			isRunning = false;
+		}
+		
+		@Override
+		public void run() {
+			Log.i(TAG,"run");
+			
+			String activityName = null;
+			while (isRunning) {
+				try {
+					sleep(DolphinServerVariables.DOLPHIN_CONTEXT_FRESH_INTERVAL*1000);
+				} catch (InterruptedException e) {
+					Log.e(TAG, e.toString());
+				}
+				
+				activityName = getForegroundActivityName();
+				if(activityName.equals(currentDolphinContext.getActivity_name()))
+					continue;
+				
+				findDolphinContextByActivityNameQuery.setParameter(1, activityName);
+				List<DolphinContext> res = findDolphinContextByActivityNameQuery.list();
+				if(res.size() == 1){
+					currentDolphinContext = res.get(0);
+					applyContext(currentDolphinContext);
+				}else {
+					applyContext(null);
+				}
+			}
+			Log.i(TAG,"end");
+		}
+	}
+
 }

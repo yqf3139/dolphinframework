@@ -10,6 +10,8 @@ import de.greenrobot.dao.AbstractDao;
 import de.greenrobot.dao.Property;
 import de.greenrobot.dao.internal.SqlUtils;
 import de.greenrobot.dao.internal.DaoConfig;
+import de.greenrobot.dao.query.Query;
+import de.greenrobot.dao.query.QueryBuilder;
 
 import seu.lab.dolphin.dao.TrainingRelation;
 
@@ -27,12 +29,14 @@ public class TrainingRelationDao extends AbstractDao<TrainingRelation, Long> {
     */
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "training_relation_id");
-        public final static Property Training_dataset_id = new Property(1, Long.class, "training_dataset_id", false, "TRAINING_DATASET_ID");
-        public final static Property Gesture_id = new Property(2, Long.class, "gesture_id", false, "GESTURE_ID");
+        public final static Property Gesture_id = new Property(1, long.class, "gesture_id", false, "GESTURE_ID");
+        public final static Property Traing_data_set_id = new Property(2, long.class, "traing_data_set_id", false, "TRAING_DATA_SET_ID");
     };
 
     private DaoSession daoSession;
 
+    private Query<TrainingRelation> gesture_Training_relationQuery;
+    private Query<TrainingRelation> trainingDataset_Training_relationQuery;
 
     public TrainingRelationDao(DaoConfig config) {
         super(config);
@@ -48,8 +52,8 @@ public class TrainingRelationDao extends AbstractDao<TrainingRelation, Long> {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'TRAINING_RELATION' (" + //
                 "'training_relation_id' INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
-                "'TRAINING_DATASET_ID' INTEGER," + // 1: training_dataset_id
-                "'GESTURE_ID' INTEGER);"); // 2: gesture_id
+                "'GESTURE_ID' INTEGER NOT NULL ," + // 1: gesture_id
+                "'TRAING_DATA_SET_ID' INTEGER NOT NULL );"); // 2: traing_data_set_id
     }
 
     /** Drops the underlying database table. */
@@ -67,16 +71,8 @@ public class TrainingRelationDao extends AbstractDao<TrainingRelation, Long> {
         if (id != null) {
             stmt.bindLong(1, id);
         }
- 
-        Long training_dataset_id = entity.getTraining_dataset_id();
-        if (training_dataset_id != null) {
-            stmt.bindLong(2, training_dataset_id);
-        }
- 
-        Long gesture_id = entity.getGesture_id();
-        if (gesture_id != null) {
-            stmt.bindLong(3, gesture_id);
-        }
+        stmt.bindLong(2, entity.getGesture_id());
+        stmt.bindLong(3, entity.getTraing_data_set_id());
     }
 
     @Override
@@ -96,8 +92,8 @@ public class TrainingRelationDao extends AbstractDao<TrainingRelation, Long> {
     public TrainingRelation readEntity(Cursor cursor, int offset) {
         TrainingRelation entity = new TrainingRelation( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
-            cursor.isNull(offset + 1) ? null : cursor.getLong(offset + 1), // training_dataset_id
-            cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2) // gesture_id
+            cursor.getLong(offset + 1), // gesture_id
+            cursor.getLong(offset + 2) // traing_data_set_id
         );
         return entity;
     }
@@ -106,8 +102,8 @@ public class TrainingRelationDao extends AbstractDao<TrainingRelation, Long> {
     @Override
     public void readEntity(Cursor cursor, TrainingRelation entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
-        entity.setTraining_dataset_id(cursor.isNull(offset + 1) ? null : cursor.getLong(offset + 1));
-        entity.setGesture_id(cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2));
+        entity.setGesture_id(cursor.getLong(offset + 1));
+        entity.setTraing_data_set_id(cursor.getLong(offset + 2));
      }
     
     /** @inheritdoc */
@@ -133,6 +129,34 @@ public class TrainingRelationDao extends AbstractDao<TrainingRelation, Long> {
         return true;
     }
     
+    /** Internal query to resolve the "training_relation" to-many relationship of Gesture. */
+    public List<TrainingRelation> _queryGesture_Training_relation(long gesture_id) {
+        synchronized (this) {
+            if (gesture_Training_relationQuery == null) {
+                QueryBuilder<TrainingRelation> queryBuilder = queryBuilder();
+                queryBuilder.where(Properties.Gesture_id.eq(null));
+                gesture_Training_relationQuery = queryBuilder.build();
+            }
+        }
+        Query<TrainingRelation> query = gesture_Training_relationQuery.forCurrentThread();
+        query.setParameter(0, gesture_id);
+        return query.list();
+    }
+
+    /** Internal query to resolve the "training_relation" to-many relationship of TrainingDataset. */
+    public List<TrainingRelation> _queryTrainingDataset_Training_relation(long traing_data_set_id) {
+        synchronized (this) {
+            if (trainingDataset_Training_relationQuery == null) {
+                QueryBuilder<TrainingRelation> queryBuilder = queryBuilder();
+                queryBuilder.where(Properties.Traing_data_set_id.eq(null));
+                trainingDataset_Training_relationQuery = queryBuilder.build();
+            }
+        }
+        Query<TrainingRelation> query = trainingDataset_Training_relationQuery.forCurrentThread();
+        query.setParameter(0, traing_data_set_id);
+        return query.list();
+    }
+
     private String selectDeep;
 
     protected String getSelectDeep() {
@@ -140,12 +164,12 @@ public class TrainingRelationDao extends AbstractDao<TrainingRelation, Long> {
             StringBuilder builder = new StringBuilder("SELECT ");
             SqlUtils.appendColumns(builder, "T", getAllColumns());
             builder.append(',');
-            SqlUtils.appendColumns(builder, "T0", daoSession.getTrainingDatasetDao().getAllColumns());
+            SqlUtils.appendColumns(builder, "T0", daoSession.getGestureDao().getAllColumns());
             builder.append(',');
-            SqlUtils.appendColumns(builder, "T1", daoSession.getGestureDao().getAllColumns());
+            SqlUtils.appendColumns(builder, "T1", daoSession.getTrainingDatasetDao().getAllColumns());
             builder.append(" FROM TRAINING_RELATION T");
-            builder.append(" LEFT JOIN TRAINING_DATASET T0 ON T.'TRAINING_DATASET_ID'=T0.'training_dataset_id'");
-            builder.append(" LEFT JOIN GESTURE T1 ON T.'GESTURE_ID'=T1.'gesture_id'");
+            builder.append(" LEFT JOIN GESTURE T0 ON T.'GESTURE_ID'=T0.'gesture_id'");
+            builder.append(" LEFT JOIN TRAINING_DATASET T1 ON T.'TRAING_DATA_SET_ID'=T1.'training_dataset_id'");
             builder.append(' ');
             selectDeep = builder.toString();
         }
@@ -156,12 +180,16 @@ public class TrainingRelationDao extends AbstractDao<TrainingRelation, Long> {
         TrainingRelation entity = loadCurrent(cursor, 0, lock);
         int offset = getAllColumns().length;
 
-        TrainingDataset trainingDataset = loadCurrentOther(daoSession.getTrainingDatasetDao(), cursor, offset);
-        entity.setTrainingDataset(trainingDataset);
-        offset += daoSession.getTrainingDatasetDao().getAllColumns().length;
-
         Gesture gesture = loadCurrentOther(daoSession.getGestureDao(), cursor, offset);
-        entity.setGesture(gesture);
+         if(gesture != null) {
+            entity.setGesture(gesture);
+        }
+        offset += daoSession.getGestureDao().getAllColumns().length;
+
+        TrainingDataset trainingDataset = loadCurrentOther(daoSession.getTrainingDatasetDao(), cursor, offset);
+         if(trainingDataset != null) {
+            entity.setTrainingDataset(trainingDataset);
+        }
 
         return entity;    
     }

@@ -14,7 +14,7 @@ public class Model {
     private String model_path;
     /** Not-null value. */
     private String name;
-    private Long training_dataset_id;
+    private long traing_data_set_id;
 
     /** Used to resolve relations */
     private transient DaoSession daoSession;
@@ -33,11 +33,11 @@ public class Model {
         this.id = id;
     }
 
-    public Model(Long id, String model_path, String name, Long training_dataset_id) {
+    public Model(Long id, String model_path, String name, long traing_data_set_id) {
         this.id = id;
         this.model_path = model_path;
         this.name = name;
-        this.training_dataset_id = training_dataset_id;
+        this.traing_data_set_id = traing_data_set_id;
     }
 
     /** called by internal mechanisms, do not call yourself. */
@@ -74,17 +74,17 @@ public class Model {
         this.name = name;
     }
 
-    public Long getTraining_dataset_id() {
-        return training_dataset_id;
+    public long getTraing_data_set_id() {
+        return traing_data_set_id;
     }
 
-    public void setTraining_dataset_id(Long training_dataset_id) {
-        this.training_dataset_id = training_dataset_id;
+    public void setTraing_data_set_id(long traing_data_set_id) {
+        this.traing_data_set_id = traing_data_set_id;
     }
 
     /** To-one relationship, resolved on first access. */
     public TrainingDataset getTrainingDataset() {
-        Long __key = this.training_dataset_id;
+        long __key = this.traing_data_set_id;
         if (trainingDataset__resolvedKey == null || !trainingDataset__resolvedKey.equals(__key)) {
             if (daoSession == null) {
                 throw new DaoException("Entity is detached from DAO context");
@@ -100,10 +100,13 @@ public class Model {
     }
 
     public void setTrainingDataset(TrainingDataset trainingDataset) {
+        if (trainingDataset == null) {
+            throw new DaoException("To-one property 'traing_data_set_id' has not-null constraint; cannot set to-one to null");
+        }
         synchronized (this) {
             this.trainingDataset = trainingDataset;
-            training_dataset_id = trainingDataset == null ? null : trainingDataset.getId();
-            trainingDataset__resolvedKey = training_dataset_id;
+            traing_data_set_id = trainingDataset.getId();
+            trainingDataset__resolvedKey = traing_data_set_id;
         }
     }
 
