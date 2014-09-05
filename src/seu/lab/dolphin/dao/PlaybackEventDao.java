@@ -24,7 +24,8 @@ public class PlaybackEventDao extends AbstractDao<PlaybackEvent, Long> {
     */
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "playback_event_id");
-        public final static Property Script_name = new Property(1, String.class, "script_name", false, "SCRIPT_NAME");
+        public final static Property Name = new Property(1, String.class, "name", false, "NAME");
+        public final static Property Script_name = new Property(2, String.class, "script_name", false, "SCRIPT_NAME");
     };
 
 
@@ -41,7 +42,8 @@ public class PlaybackEventDao extends AbstractDao<PlaybackEvent, Long> {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'PLAYBACK_EVENT' (" + //
                 "'playback_event_id' INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
-                "'SCRIPT_NAME' TEXT NOT NULL );"); // 1: script_name
+                "'NAME' TEXT NOT NULL ," + // 1: name
+                "'SCRIPT_NAME' TEXT NOT NULL );"); // 2: script_name
     }
 
     /** Drops the underlying database table. */
@@ -59,7 +61,8 @@ public class PlaybackEventDao extends AbstractDao<PlaybackEvent, Long> {
         if (id != null) {
             stmt.bindLong(1, id);
         }
-        stmt.bindString(2, entity.getScript_name());
+        stmt.bindString(2, entity.getName());
+        stmt.bindString(3, entity.getScript_name());
     }
 
     /** @inheritdoc */
@@ -73,7 +76,8 @@ public class PlaybackEventDao extends AbstractDao<PlaybackEvent, Long> {
     public PlaybackEvent readEntity(Cursor cursor, int offset) {
         PlaybackEvent entity = new PlaybackEvent( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
-            cursor.getString(offset + 1) // script_name
+            cursor.getString(offset + 1), // name
+            cursor.getString(offset + 2) // script_name
         );
         return entity;
     }
@@ -82,7 +86,8 @@ public class PlaybackEventDao extends AbstractDao<PlaybackEvent, Long> {
     @Override
     public void readEntity(Cursor cursor, PlaybackEvent entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
-        entity.setScript_name(cursor.getString(offset + 1));
+        entity.setName(cursor.getString(offset + 1));
+        entity.setScript_name(cursor.getString(offset + 2));
      }
     
     /** @inheritdoc */

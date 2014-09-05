@@ -23,7 +23,7 @@ public class EventSenderForKey extends EventSender{
 	public static int KEYCODE_VOLUME_DOWN 	= 25;		
 	public static int KEYCODE_POWER 		= 26;	
 	public static int KEYCODE_CAMERA 		= 27;	
-	public static int KEYCODE_CLEAR 		= 28;	
+	public static int KEYCODE_CLEAR 		= 28;
 	public static int KEYCODE_ENTER 		= 66;	
 	public static int KEYCODE_MENU 			= 82;
 	public static int KEYCODE_NOTIFICATION 	= 83;		

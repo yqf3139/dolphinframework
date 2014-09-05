@@ -96,7 +96,6 @@ public class RemoteService extends Service {
 	Plugin defaultPlugin = null;
 	DolphinContext defaultDolphinContext = null;
 	
-
 	LinearLayout mFloatLayout;
 	WindowManager.LayoutParams wmParams;
 	WindowManager mWindowManager;
@@ -362,6 +361,7 @@ public class RemoteService extends Service {
 			}
 		}
 	}
+	
 	private void applyPlugin(Plugin plugin) {
 		if(plugin == null){
 			plugin = defaultPlugin;

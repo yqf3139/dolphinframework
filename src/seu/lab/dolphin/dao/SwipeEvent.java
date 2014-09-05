@@ -7,6 +7,8 @@ package seu.lab.dolphin.dao;
 public class SwipeEvent {
 
     private Long id;
+    /** Not-null value. */
+    private String name;
     private int x1;
     private int y1;
     private int x2;
@@ -19,8 +21,9 @@ public class SwipeEvent {
         this.id = id;
     }
 
-    public SwipeEvent(Long id, int x1, int y1, int x2, int y2) {
+    public SwipeEvent(Long id, String name, int x1, int y1, int x2, int y2) {
         this.id = id;
+        this.name = name;
         this.x1 = x1;
         this.y1 = y1;
         this.x2 = x2;
@@ -33,6 +36,16 @@ public class SwipeEvent {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    /** Not-null value. */
+    public String getName() {
+        return name;
+    }
+
+    /** Not-null value; ensure this value is available before it is saved to the database. */
+    public void setName(String name) {
+        this.name = name;
     }
 
     public int getX1() {

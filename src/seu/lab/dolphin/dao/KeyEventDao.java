@@ -24,7 +24,8 @@ public class KeyEventDao extends AbstractDao<KeyEvent, Long> {
     */
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "key_event_id");
-        public final static Property Keycode = new Property(1, int.class, "keycode", false, "KEYCODE");
+        public final static Property Name = new Property(1, String.class, "name", false, "NAME");
+        public final static Property Keycode = new Property(2, int.class, "keycode", false, "KEYCODE");
     };
 
 
@@ -41,7 +42,8 @@ public class KeyEventDao extends AbstractDao<KeyEvent, Long> {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'KEY_EVENT' (" + //
                 "'key_event_id' INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
-                "'KEYCODE' INTEGER NOT NULL );"); // 1: keycode
+                "'NAME' TEXT NOT NULL ," + // 1: name
+                "'KEYCODE' INTEGER NOT NULL );"); // 2: keycode
     }
 
     /** Drops the underlying database table. */
@@ -59,7 +61,8 @@ public class KeyEventDao extends AbstractDao<KeyEvent, Long> {
         if (id != null) {
             stmt.bindLong(1, id);
         }
-        stmt.bindLong(2, entity.getKeycode());
+        stmt.bindString(2, entity.getName());
+        stmt.bindLong(3, entity.getKeycode());
     }
 
     /** @inheritdoc */
@@ -73,7 +76,8 @@ public class KeyEventDao extends AbstractDao<KeyEvent, Long> {
     public KeyEvent readEntity(Cursor cursor, int offset) {
         KeyEvent entity = new KeyEvent( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
-            cursor.getInt(offset + 1) // keycode
+            cursor.getString(offset + 1), // name
+            cursor.getInt(offset + 2) // keycode
         );
         return entity;
     }
@@ -82,7 +86,8 @@ public class KeyEventDao extends AbstractDao<KeyEvent, Long> {
     @Override
     public void readEntity(Cursor cursor, KeyEvent entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
-        entity.setKeycode(cursor.getInt(offset + 1));
+        entity.setName(cursor.getString(offset + 1));
+        entity.setKeycode(cursor.getInt(offset + 2));
      }
     
     /** @inheritdoc */

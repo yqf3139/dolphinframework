@@ -10,6 +10,7 @@ import seu.lab.dolphin.dao.DaoSession;
 import seu.lab.dolphin.dao.DolphinContext;
 import seu.lab.dolphin.dao.DolphinContextDao;
 import seu.lab.dolphin.dao.GestureDao;
+import seu.lab.dolphin.dao.KeyEvent;
 import seu.lab.dolphin.dao.KeyEventDao;
 import seu.lab.dolphin.dao.ModelDao;
 import seu.lab.dolphin.dao.PlaybackEventDao;
@@ -49,6 +50,9 @@ public class DaoManager {
 		TrainingDatasetDao trainingDatasetDao = daoSession.getTrainingDatasetDao();
 		TrainingRelationDao trainingRelationDao = daoSession.getTrainingRelationDao();
 		
+		KeyEvent[] keyEvents = new KeyEvent[]{
+				new KeyEvent(null, name, keycode),
+		};
 		/*
 		 * Dolphin Context
 		 */
@@ -66,7 +70,8 @@ public class DaoManager {
 	}
 	
 	public static void dropDB(Context context) {
-		daoMaster = getDaoMaster(context);
+		if(daoMaster == null)
+			daoMaster = getDaoMaster(context);
 		daoMaster.dropAllTables(helper.getWritableDatabase(), true);
 	}
 	

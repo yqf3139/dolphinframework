@@ -7,6 +7,8 @@ package seu.lab.dolphin.dao;
 public class KeyEvent {
 
     private Long id;
+    /** Not-null value. */
+    private String name;
     private int keycode;
 
     public KeyEvent() {
@@ -16,8 +18,9 @@ public class KeyEvent {
         this.id = id;
     }
 
-    public KeyEvent(Long id, int keycode) {
+    public KeyEvent(Long id, String name, int keycode) {
         this.id = id;
+        this.name = name;
         this.keycode = keycode;
     }
 
@@ -27,6 +30,16 @@ public class KeyEvent {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    /** Not-null value. */
+    public String getName() {
+        return name;
+    }
+
+    /** Not-null value; ensure this value is available before it is saved to the database. */
+    public void setName(String name) {
+        this.name = name;
     }
 
     public int getKeycode() {

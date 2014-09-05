@@ -8,6 +8,8 @@ public class PlaybackEvent {
 
     private Long id;
     /** Not-null value. */
+    private String name;
+    /** Not-null value. */
     private String script_name;
 
     public PlaybackEvent() {
@@ -17,8 +19,9 @@ public class PlaybackEvent {
         this.id = id;
     }
 
-    public PlaybackEvent(Long id, String script_name) {
+    public PlaybackEvent(Long id, String name, String script_name) {
         this.id = id;
+        this.name = name;
         this.script_name = script_name;
     }
 
@@ -28,6 +31,16 @@ public class PlaybackEvent {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    /** Not-null value. */
+    public String getName() {
+        return name;
+    }
+
+    /** Not-null value; ensure this value is available before it is saved to the database. */
+    public void setName(String name) {
+        this.name = name;
     }
 
     /** Not-null value. */
