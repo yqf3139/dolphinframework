@@ -21,6 +21,8 @@ public class Installer {
 	}
 	
 	public static File installRoot() throws IOException {
+		Log.i(TAG, "installRoot");
+
 		File root = new File(DolphinServerVariables.DOLPHIN_HOME);
 		if(root.exists()){
 			FileUtils.deleteFile(root);
@@ -32,6 +34,8 @@ public class Installer {
 	}
 	
 	public static void installPlugin(AssetManager am, File root) throws IOException {
+		Log.i(TAG, "installPlugin");
+
 		String[] strings = am.list("");
 		for (int i = 0; i < strings.length; i++) {
 			Log.i(TAG, strings[i]);
@@ -45,6 +49,8 @@ public class Installer {
 	}
 	
 	public static void installScripts(AssetManager am, File root) throws IOException {
+		Log.i(TAG, "installScripts");
+
 		File modelsRoot = new File(root, "scripts");
 		if(modelsRoot.exists() && modelsRoot.isFile()){
 			modelsRoot.delete();
@@ -58,6 +64,8 @@ public class Installer {
 	}
 	
 	public static void installModel(AssetManager am, File root) throws IOException {
+		Log.i(TAG, "installModel");
+
 		File modelsRoot = new File(root, "models");
 		if(modelsRoot.exists() && modelsRoot.isFile()){
 			modelsRoot.delete();
@@ -67,12 +75,13 @@ public class Installer {
 		}
 		String[] models = am.list("models");
 		for (int i = 0; i < models.length; i++) {
-			Log.i(TAG, models[i]);
+			Log.i(TAG, "copy model: "+models[i]);
 			FileUtils.copy(am.open("models/"+models[i]),modelsRoot,models[i]);
 		}
 	}
 	
 	public static boolean installAll(Context ctx){
+		Log.i(TAG, "installAll");
 
 		File root = null;
 		try {
@@ -109,6 +118,7 @@ public class Installer {
 
 
 	public static boolean uninstallAll(){
+		Log.i(TAG, "uninstallAll");
 		ShellUtils shell = new ShellUtils();
 		CommandResult result = shell.execCommand(
 				"sh "+DolphinServerVariables.DOLPHIN_HOME+"uninstall.sh", 

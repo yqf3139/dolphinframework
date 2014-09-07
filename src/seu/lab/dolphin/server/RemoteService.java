@@ -150,7 +150,10 @@ public class RemoteService extends Service {
 						break;
 					}
 				}
-				applyRule(ruleToApply);
+				if(ruleToApply != null){
+					Log.i(TAG, "apply rule: "+ruleToApply.getName());
+					applyRule(ruleToApply);
+				}
 			}
 		}
 
@@ -196,11 +199,6 @@ public class RemoteService extends Service {
 	};
 
 	private ActivityManager activityManager;
-
-	private QueryBuilder<DolphinContext> dolphinContextBuilder;
-	private QueryBuilder<Model> modelBuilder;
-
-	private Query<DolphinContext> findDolphinContextByActivityNameQuery;
 
 	private DolphinBroadcaster broadcaster;
 
@@ -335,8 +333,10 @@ public class RemoteService extends Service {
 			dolphinContext = defaultDolphinContext;
 		}
 		if(dolphinContext.getId() == currentDolphinContext.getId())
-			return;
+			return // TODO context cannot be restore to *
 		
+		Log.i(TAG,"applyContext to "+dolphinContext.getActivity_name());
+
 		ModelConfig modelConfig = dolphinContext.getModelConfig();
 		Plugin plugin = dolphinContext.getPlugin();
 		
@@ -350,6 +350,8 @@ public class RemoteService extends Service {
 		}
 		
 		if(modelConfig.getId() != currentModelConfig.getId()){
+			Log.i(TAG,"applyModels to "+modelConfig.getModel_ids());
+
 			String[] modelpaths = getModelPaths(modelConfig);
 			
 			try {
@@ -367,6 +369,8 @@ public class RemoteService extends Service {
 			plugin = defaultPlugin;
 		}
 		if(plugin.getId() != currentPlugin.getId()){
+			Log.i(TAG,"applyPlugin to "+currentPlugin.getName());
+
 			currentPlugin = plugin;
 		}
 	}
@@ -402,12 +406,26 @@ public class RemoteService extends Service {
 		}
 	}
 	
-	static private String[] getModelPaths(ModelConfig modelConfig){
+	private String[] getModelPaths(ModelConfig modelConfig){
 		
-		String[] modelpaths = modelConfig.getModel_ids().split(Pattern.quote("+"));
-		
-		if(modelpaths.length != 5)
+		String[] modelIDs = modelConfig.getModel_ids().split(Pattern.quote("+"));
+		String[] modelpaths = null;
+				
+		if(modelIDs.length != 5)
 			modelpaths = LinearTest.defaultModels;
+		else {
+			// get model paths by the splited ids
+			modelpaths = new String[5];
+			for (int i = 1; i < 5; i++) {
+				Model model = modelDao.load(Long.parseLong(modelIDs[i]));
+				if(model == null){
+					Log.e(TAG, "database err: model lost");
+					modelpaths = LinearTest.defaultModels;
+					break;
+				}
+				modelpaths[i] = model.getModel_path();
+			}
+		}
 		
 		return modelpaths;
 	}
@@ -428,7 +446,6 @@ public class RemoteService extends Service {
 	public void onCreate() {
 		Log.e(TAG, "onCreate");
 		activityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
-		refresher = new DolphinContextRefresher();
 		
 		daoSession = DaoManager.getDaoSession(mContext);
 		modelConfigDao = daoSession.getModelConfigDao();
@@ -447,6 +464,9 @@ public class RemoteService extends Service {
 				gestureListener);
 		dolphin.switchToEarphoneSpeaker();
 		dolphin.prepare();
+		
+		refresher = new DolphinContextRefresher();
+
 		super.onCreate();
 	}
 
@@ -509,6 +529,13 @@ public class RemoteService extends Service {
 		static final String TAG = "DolphinContextRefresher";
 		
 		private boolean isRunning = true;
+		private QueryBuilder<DolphinContext> dolphinContextBuilder;
+		private Query<DolphinContext> findDolphinContextByActivityNameQuery;
+		
+		DolphinContextRefresher(){
+			dolphinContextBuilder = dolphinContextDao.queryBuilder();
+			findDolphinContextByActivityNameQuery = dolphinContextBuilder.where(Properties.Activity_name.eq("")).build();
+		}
 		
 		public void stopGracefully(){
 			Log.i(TAG,"stopGracefully");
@@ -519,6 +546,7 @@ public class RemoteService extends Service {
 		public void run() {
 			Log.i(TAG,"run");
 			
+			Query<DolphinContext> query = findDolphinContextByActivityNameQuery.forCurrentThread();
 			String activityName = null;
 			while (isRunning) {
 				try {
@@ -526,17 +554,18 @@ public class RemoteService extends Service {
 				} catch (InterruptedException e) {
 					Log.e(TAG, e.toString());
 				}
-				
 				activityName = getForegroundActivityName();
+				
+				Log.i(TAG, "matching context for "+activityName);
 				if(activityName.equals(currentDolphinContext.getActivity_name()))
 					continue;
 				
-				findDolphinContextByActivityNameQuery.setParameter(1, activityName);
-				List<DolphinContext> res = findDolphinContextByActivityNameQuery.list();
+				query.setParameter(0, activityName);
+				List<DolphinContext> res = query.list();
 				if(res.size() == 1){
-					currentDolphinContext = res.get(0);
-					applyContext(currentDolphinContext);
+					applyContext(res.get(0));
 				}else {
+					Log.i(TAG,"dolphin context not matched, apply to default context");
 					applyContext(null);
 				}
 			}

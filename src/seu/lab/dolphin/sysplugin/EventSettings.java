@@ -7,11 +7,14 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import seu.lab.dolphin.server.AppPreferences;
 import seu.lab.dolphin.utility.ShellUtils;
 import seu.lab.dolphin.utility.ShellUtils.CommandResult;
 
 import android.R.integer;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -28,52 +31,23 @@ public class EventSettings {
 	}
 
 	public class ScreenSetter extends Thread {
+		private Context mContext = null;
+		public ScreenSetter(Context context) {
+			this.mContext  = context;
+		}
 		@Override
 		public void run() {
 			Log.i(TAG, "ScreenSetter run");
 
-			setupScreen();
-
-			// List<String> stopCommandsList = new LinkedList<>();
-			// String command =
-			// "sendevent /dev/input/event"+EventSettings.EVENT_ID;
-			// String string1 = command+endData[0];
-			// String string2 = command+endData[1];
-			// for(int i=0;i<50;i++){
-			// stopCommandsList.add(string1);
-			// stopCommandsList.add(string2);
-			// }
-			// final ShellUtils catshell = new ShellUtils();
-			// new Thread(){
-			// public void run() {
-			// Log.i(TAG, "catshell run");
-			// catshell.execCommand("cat /dev/input/event"+EventSettings.EVENT_ID+" > /storage/sdcard0/project_dolphin/event_stop",
-			// ShellUtils.COMMAND_DOLPHIN,false,true);
-			// Log.i(TAG, "catshell stop");
-			//
-			// }
-			// }.start();
-			// try {
-			// sleep(500);
-			// } catch (InterruptedException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// }
-			// Log.i(TAG, "putshell run");
-			// ShellUtils putshell = new ShellUtils();
-			// putshell.execCommand(stopCommandsList,
-			// ShellUtils.COMMAND_DOLPHIN);
-			// catshell.loop = false;
-			// synchronized (catshell.lockInteger) {
-			// catshell.lockInteger.notifyAll();
-			// }
-			// Log.i(TAG, "putshell stop");
-
+			int event_id = setupScreen();
+			Editor editor = AppPreferences.getPreferences().edit();
+			editor.putInt("event_id", event_id);
+			
 			Log.i(TAG, "ScreenSetter stop");
 		}
 	}
 
-	public static void setupScreen() {
+	public static int setupScreen() {
 		CommandResult result = shell.execCommand(recordCommandsList,
 				ShellUtils.COMMAND_DOLPHIN);
 		int size = result.successMsg.size();
@@ -84,7 +58,7 @@ public class EventSettings {
 			Log.i(TAG, "errorMsg:" + result.errorMsg.get(i));
 		}
 		if (size < 1)
-			return;
+			return 0;
 
 		String tmp, time, data, event; // ,prefix,mid,num
 		Double lastTime, thisTime;
@@ -95,7 +69,7 @@ public class EventSettings {
 		tmp = result.successMsg.get(0);
 		if (tmp.length() < 37) {
 			Log.e(TAG, "tmp.length(): " + tmp.length());
-			return;
+			return 0;
 		}
 		event = tmp.substring(tmp.indexOf(':') - 1, tmp.indexOf(':'));
 		event_count[Integer.parseInt(event)]++;
@@ -131,18 +105,6 @@ public class EventSettings {
 		Log.i(TAG, "endData: " + endData[0]);
 		Log.i(TAG, "endData: " + endData[1]);
 
-		// File stop_event = new
-		// File("/storage/sdcard0/project_dolphin/stop_events");
-		// try {
-		// FileWriter fWriter = new FileWriter(stop_event);
-		// for(int i=0;i<50;i++){
-		// fWriter.write("0 "+endData[0]+"\n");
-		// fWriter.write("0 "+endData[1]+"\n");
-		// }
-		// fWriter.close();
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
+		return EVENT_ID;
 	}
 }

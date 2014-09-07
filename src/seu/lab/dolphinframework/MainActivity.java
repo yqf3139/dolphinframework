@@ -1,4 +1,5 @@
 package seu.lab.dolphinframework;
+import seu.lab.dolphin.server.AppPreferences;
 import seu.lab.dolphin.server.DaoManager;
 import seu.lab.dolphin.server.DolphinServerVariables;
 import seu.lab.dolphin.server.RemoteService;
@@ -51,12 +52,33 @@ public class MainActivity extends Activity {
 			
 		}
 	};
+	
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		mContext = this;
+		if(!AppPreferences.isInitialized(mContext)){
+			Log.i(TAG, "first run: initing Plugin & DB");
+			new Thread(){
+				@Override
+				public void run() {	
+					EventSettings settings = new EventSettings();
+					ScreenSetter setter = settings.new ScreenSetter(mContext); 
+					setter.start();
+					Installer.installAll(mContext);
+					DaoManager.createDB(mContext);
+					AppPreferences.init(mContext);
+
+				}
+			}.start();
+		}else {
+			// TODO restore prefs
+			EventSettings.EVENT_ID = AppPreferences.getPreferences().getInt("event_id", 1);
+			
+		}
+		
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
-		mContext = this;
 		
 		toggleButton = (ToggleButton) findViewById(R.id.toggle_service);
 		toggleButton.setOnClickListener(new OnClickListener() {
@@ -137,7 +159,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				EventSettings settings = new EventSettings();
-				ScreenSetter setter = settings.new ScreenSetter(); 
+				ScreenSetter setter = settings.new ScreenSetter(mContext); 
 				setter.start();
 			}
 		});

@@ -6,16 +6,28 @@ import android.content.SharedPreferences;
 
 public class AppPreferences {
 	
-	SharedPreferences userPreferences = null;
+	private static SharedPreferences userPreferences = null;
 	
-	void init(Context context){
+	public static boolean isInitialized(Context context){
 		userPreferences = context.getSharedPreferences("app", Activity.MODE_PRIVATE);
+		return userPreferences.getBoolean("init", false);
+	}
+	
+	public static void init(Context context){
+		if(userPreferences == null)
+			userPreferences = context.getSharedPreferences("app", Activity.MODE_PRIVATE);
 		SharedPreferences.Editor editor = userPreferences.edit();
 		editor.putBoolean("init", true);
 		editor.commit();
 	}
-	void clear(Context context){
-		userPreferences = context.getSharedPreferences("app", Activity.MODE_PRIVATE);
+	
+	public static SharedPreferences getPreferences(){
+		return userPreferences;
+	}
+	
+	public static void clear(Context context){
+		if(userPreferences == null)
+			userPreferences = context.getSharedPreferences("app", Activity.MODE_PRIVATE);
 		SharedPreferences.Editor editor = userPreferences.edit();
 		editor.clear();
 		editor.commit();
