@@ -10,6 +10,7 @@ import de.greenrobot.dao.DaoException;
 public class RawGestureData {
 
     private Long id;
+    private byte[] data;
     private long gesture_id;
 
     /** Used to resolve relations */
@@ -29,8 +30,9 @@ public class RawGestureData {
         this.id = id;
     }
 
-    public RawGestureData(Long id, long gesture_id) {
+    public RawGestureData(Long id, byte[] data, long gesture_id) {
         this.id = id;
+        this.data = data;
         this.gesture_id = gesture_id;
     }
 
@@ -46,6 +48,14 @@ public class RawGestureData {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public byte[] getData() {
+        return data;
+    }
+
+    public void setData(byte[] data) {
+        this.data = data;
     }
 
     public long getGesture_id() {

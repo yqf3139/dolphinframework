@@ -27,7 +27,8 @@ public class RawGestureDataDao extends AbstractDao<RawGestureData, Long> {
     */
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "raw_data_id");
-        public final static Property Gesture_id = new Property(1, long.class, "gesture_id", false, "GESTURE_ID");
+        public final static Property Data = new Property(1, byte[].class, "data", false, "DATA");
+        public final static Property Gesture_id = new Property(2, long.class, "gesture_id", false, "GESTURE_ID");
     };
 
     private DaoSession daoSession;
@@ -47,7 +48,8 @@ public class RawGestureDataDao extends AbstractDao<RawGestureData, Long> {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'RAW_GESTURE_DATA' (" + //
                 "'raw_data_id' INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
-                "'GESTURE_ID' INTEGER NOT NULL );"); // 1: gesture_id
+                "'DATA' BLOB," + // 1: data
+                "'GESTURE_ID' INTEGER NOT NULL );"); // 2: gesture_id
     }
 
     /** Drops the underlying database table. */
@@ -65,7 +67,12 @@ public class RawGestureDataDao extends AbstractDao<RawGestureData, Long> {
         if (id != null) {
             stmt.bindLong(1, id);
         }
-        stmt.bindLong(2, entity.getGesture_id());
+ 
+        byte[] data = entity.getData();
+        if (data != null) {
+            stmt.bindBlob(2, data);
+        }
+        stmt.bindLong(3, entity.getGesture_id());
     }
 
     @Override
@@ -85,7 +92,8 @@ public class RawGestureDataDao extends AbstractDao<RawGestureData, Long> {
     public RawGestureData readEntity(Cursor cursor, int offset) {
         RawGestureData entity = new RawGestureData( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
-            cursor.getLong(offset + 1) // gesture_id
+            cursor.isNull(offset + 1) ? null : cursor.getBlob(offset + 1), // data
+            cursor.getLong(offset + 2) // gesture_id
         );
         return entity;
     }
@@ -94,7 +102,8 @@ public class RawGestureDataDao extends AbstractDao<RawGestureData, Long> {
     @Override
     public void readEntity(Cursor cursor, RawGestureData entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
-        entity.setGesture_id(cursor.getLong(offset + 1));
+        entity.setData(cursor.isNull(offset + 1) ? null : cursor.getBlob(offset + 1));
+        entity.setGesture_id(cursor.getLong(offset + 2));
      }
     
     /** @inheritdoc */

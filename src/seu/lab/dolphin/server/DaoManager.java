@@ -1,5 +1,6 @@
 package seu.lab.dolphin.server;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import android.content.Context;
@@ -22,6 +23,7 @@ import seu.lab.dolphin.dao.PlaybackEvent;
 import seu.lab.dolphin.dao.PlaybackEventDao;
 import seu.lab.dolphin.dao.Plugin;
 import seu.lab.dolphin.dao.PluginDao;
+import seu.lab.dolphin.dao.RawGestureData;
 import seu.lab.dolphin.dao.RawGestureDataDao;
 import seu.lab.dolphin.dao.Rule;
 import seu.lab.dolphin.dao.RuleDao;
@@ -29,6 +31,7 @@ import seu.lab.dolphin.dao.SwipeEvent;
 import seu.lab.dolphin.dao.SwipeEventDao;
 import seu.lab.dolphin.dao.TrainingDataset;
 import seu.lab.dolphin.dao.TrainingDatasetDao;
+import seu.lab.dolphin.dao.TrainingRelation;
 import seu.lab.dolphin.dao.TrainingRelationDao;
 import seu.lab.dolphin.sysplugin.EventSenderForKey;
 
@@ -116,11 +119,11 @@ public class DaoManager {
 		long defaultModelForFN_ID = modelDao.insert(defaultModelForFN);
 		defaultTrainingDatasetForFN.setModel_id(defaultModelForFN_ID);
 
-		TrainingDataset defaultTrainingDatasetForFNFN = new TrainingDataset(null, "default training set for far near", "", 1l);
-		long defaultTrainingDatasetForFNFN_ID = trainingDatasetDao.insert(defaultTrainingDatasetForFNFN);
-		Model defaultModelForFNFN = new Model(null, "fnfn_default.dolphin", "default model for far near", defaultTrainingDatasetForFNFN_ID);
-		long defaultModelForFNFN_ID = modelDao.insert(defaultModelForFNFN);
-		defaultTrainingDatasetForFNFN.setModel_id(defaultModelForFNFN_ID);
+		TrainingDataset defaultTrainingDatasetForNFNF = new TrainingDataset(null, "default training set for far near far near", "", 1l);
+		long defaultTrainingDatasetForNFNF_ID = trainingDatasetDao.insert(defaultTrainingDatasetForNFNF);
+		Model defaultModelForNFNF = new Model(null, "nfnf_default.dolphin", "default model for far near", defaultTrainingDatasetForNFNF_ID);
+		long defaultModelForNFNF_ID = modelDao.insert(defaultModelForNFNF);
+		defaultTrainingDatasetForNFNF.setModel_id(defaultModelForNFNF_ID);
 
 		TrainingDataset defaultTrainingDatasetForCR = new TrainingDataset(null, "default training set for far near", "", 1l);
 		long defaultTrainingDatasetForCR_ID = trainingDatasetDao.insert(defaultTrainingDatasetForCR);
@@ -130,10 +133,10 @@ public class DaoManager {
 		
 		Gesture[] gestures = new Gesture[GestureEvent.gesture.length-1];
 		for (int i =1; i < gestures.length; i++) {
-			gestureDao.insert(new Gesture(null, 0, GestureEvent.gesture[i], 0, "null"));
+			gestureDao.insert(new Gesture(null, 0, GestureEvent.gesture[i], GestureEvent.learnable[i] ? 1 : 0, "null"));
 		}
 		
-		ModelConfig modelConfig = new ModelConfig(null, "null", "models+=1+2+3+4");
+		ModelConfig modelConfig = new ModelConfig(null, "null", "models://+1+2+3+4");
 		long defaultModelConfig_ID = modelConfigDao.insert(modelConfig);
 		
 		Plugin defaultPlugin = new Plugin(null, "default plugin", 1, "", "");
@@ -165,9 +168,48 @@ public class DaoManager {
 
 		};
 		dolphinContextDao.insertInTx(dolphinContexts);
+		
+		TrainingRelation[] trainingRelations = new TrainingRelation[]{
+				// nf
+				new TrainingRelation(null, GestureEvent.Gestures.PUSH_PULL.ordinal(), defaultModelForNF_ID),
+				new TrainingRelation(null, GestureEvent.Gestures.SWIPE_LEFT_L.ordinal(), defaultModelForNF_ID),
+				new TrainingRelation(null, GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal(), defaultModelForNF_ID),
+				new TrainingRelation(null, GestureEvent.Gestures.SWING_LEFT_P.ordinal(), defaultModelForNF_ID),
+				new TrainingRelation(null, GestureEvent.Gestures.SWING_RIGHT_P.ordinal(), defaultModelForNF_ID),
+
+				// fn
+				new TrainingRelation(null, GestureEvent.Gestures.PULL_PUSH.ordinal(), defaultModelForFN_ID),
+				new TrainingRelation(null, GestureEvent.Gestures.SWING_LEFT_L.ordinal(), defaultModelForFN_ID),
+				new TrainingRelation(null, GestureEvent.Gestures.SWING_RIGHT_L.ordinal(), defaultModelForFN_ID),
+				new TrainingRelation(null, GestureEvent.Gestures.SWING_LEFT_P.ordinal(), defaultModelForFN_ID),
+				new TrainingRelation(null, GestureEvent.Gestures.SWING_RIGHT_P.ordinal(), defaultModelForFN_ID),
+
+				// nfnf
+				new TrainingRelation(null, GestureEvent.Gestures.PUSH_PULL_PUSH_PULL.ordinal(), defaultModelForNFNF_ID),
+				new TrainingRelation(null, GestureEvent.Gestures.SWIPE_BACK_LEFT_L.ordinal(), defaultModelForNFNF_ID),
+				new TrainingRelation(null, GestureEvent.Gestures.SWIPE_BACK_RIGHT_L.ordinal(), defaultModelForNFNF_ID),
+				new TrainingRelation(null, GestureEvent.Gestures.SWIPE_BACK_LEFT_P.ordinal(), defaultModelForNFNF_ID),
+				new TrainingRelation(null, GestureEvent.Gestures.SWIPE_BACK_RIGHT_P.ordinal(), defaultModelForNFNF_ID),
+
+				// cr
+				new TrainingRelation(null, GestureEvent.Gestures.CROSSOVER_ANTICLOCK.ordinal(), defaultModelForCR_ID),
+				new TrainingRelation(null, GestureEvent.Gestures.CROSSOVER_CLOCKWISE.ordinal(), defaultModelForCR_ID),
+
+		};
+		trainingRelationDao.insertInTx(trainingRelations);
+		
+		readRawGesturesFromFile("",rawGestureDataDao);
 
 	}
 	
+	private static void readRawGesturesFromFile(String path, RawGestureDataDao rawGestureDataDao) {
+		// TODO Auto-generated method stub
+		RawGestureData[] rawGestureDatas = new RawGestureData[]{
+//				new RawGestureData(null, data, gesture_id),
+		};
+		rawGestureDataDao.insertInTx(rawGestureDatas);
+	}
+
 	public static void dropDB(Context context) {
 		Log.i(TAG, "dropDB");
 
@@ -192,4 +234,23 @@ public class DaoManager {
 	    }
 	    return daoSession;
 	}
+	
+	public static byte[] toByteArray(double[] doubleArray){
+	    int times = Double.SIZE / Byte.SIZE;
+	    byte[] bytes = new byte[doubleArray.length * times];
+	    for(int i=0;i<doubleArray.length;i++){
+	        ByteBuffer.wrap(bytes, i*times, times).putDouble(doubleArray[i]);
+	    }
+	    return bytes;
+	}
+
+	public static double[] toDoubleArray(byte[] byteArray){
+	    int times = Double.SIZE / Byte.SIZE;
+	    double[] doubles = new double[byteArray.length / times];
+	    for(int i=0;i<doubles.length;i++){
+	        doubles[i] = ByteBuffer.wrap(byteArray, i*times, times).getDouble();
+	    }
+	    return doubles;
+	}
+
 }

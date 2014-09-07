@@ -7,6 +7,7 @@ import de.greenrobot.dao.query.Query;
 import de.greenrobot.dao.query.QueryBuilder;
 import seu.lab.dolphin.client.ContinuousGestureEvent;
 import seu.lab.dolphin.client.Dolphin;
+import seu.lab.dolphin.client.DolphinException;
 import seu.lab.dolphin.client.GestureEvent;
 import seu.lab.dolphin.client.IDataReceiver;
 import seu.lab.dolphin.client.IDolphinStateCallback;
@@ -39,7 +40,9 @@ import seu.lab.dolphin.sysplugin.EventSenderForSwipe;
 import seu.lab.dolphinframework.MainActivity;
 import seu.lab.dolphinframework.R;
 import android.R.integer;
+import android.R.string;
 import android.app.ActivityManager;
+import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -47,6 +50,7 @@ import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap.CompressFormat;
 import android.graphics.PixelFormat;
 import android.media.AudioManager;
 import android.os.Binder;
@@ -177,10 +181,15 @@ public class RemoteService extends Service {
 
 		@Override
 		public ContentValues gestureMask() {
-			
-			// TODO claim the gesture you need to be true
-			
-			return new ContentValues();
+			// claim the gesture you need to be true
+			ContentValues mask = new ContentValues();
+			mask.putNull(GestureEvent.gesture[GestureEvent.Gestures.SWIPE_LEFT_L.ordinal()]);
+			mask.putNull(GestureEvent.gesture[GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()]);
+			mask.putNull(GestureEvent.gesture[GestureEvent.Gestures.SWIPE_LEFT_P.ordinal()]);
+			mask.putNull(GestureEvent.gesture[GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()]);
+			mask.putNull(GestureEvent.gesture[GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal()]);
+			mask.putNull(GestureEvent.gesture[GestureEvent.Gestures.PULL.ordinal()]);
+			return mask;
 		}
 	};
 
@@ -198,11 +207,13 @@ public class RemoteService extends Service {
 		}
 	};
 
-	private ActivityManager activityManager;
+	private ActivityManager mActivityManager;
 
 	private DolphinBroadcaster broadcaster;
 
 	private DolphinContextRefresher refresher;
+
+	private KeyguardManager mKeyguardManager;
 
 
 	public String hello(String name) {
@@ -210,6 +221,8 @@ public class RemoteService extends Service {
 	}
 
 	private void createFloatView() {
+		Log.i(TAG, "float view created");
+		
 		wmParams = new WindowManager.LayoutParams();
 		mWindowManager = (WindowManager) getApplication().getSystemService(
 				getApplication().WINDOW_SERVICE);
@@ -246,14 +259,12 @@ public class RemoteService extends Service {
 			public boolean onTouch(View v, MotionEvent event) {
 				switch (event.getAction()) {
 				case MotionEvent.ACTION_DOWN:
-					Log.i(TAG, "ACTION_DOWN");
 					lastX = (int) event.getRawX();
 					lastY = (int) event.getRawY();
 					paramX = wmParams.x;
 					paramY = wmParams.y;
 					break;
 				case MotionEvent.ACTION_MOVE:
-					Log.i(TAG, "ACTION_MOVE");
 					int dx = (int) event.getRawX() - lastX;
 					int dy = (int) event.getRawY() - lastY;
 					wmParams.x = paramX + dx;
@@ -323,55 +334,54 @@ public class RemoteService extends Service {
 	}
 
 	public String getForegroundActivityName() {
-		ComponentName cn = activityManager.getRunningTasks(1).get(0).topActivity;
+		ComponentName cn = mActivityManager.getRunningTasks(1).get(0).topActivity;
 		return cn.getClassName();
 	}
-
 	
 	private void applyContext(DolphinContext dolphinContext) {
 		if(dolphinContext == null){
+			Log.i(TAG,"dolphin context not matched, apply to default context");
 			dolphinContext = defaultDolphinContext;
 		}
-		if(dolphinContext.getId() == currentDolphinContext.getId())
-			return // TODO context cannot be restore to *
+		if(dolphinContext.getId() == currentDolphinContext.getId()){
+			Log.i(TAG,"dolphin context not changed");
+			return;
+		}
+		
+		currentDolphinContext = dolphinContext;
 		
 		Log.i(TAG,"applyContext to "+dolphinContext.getActivity_name());
-
-		ModelConfig modelConfig = dolphinContext.getModelConfig();
-		Plugin plugin = dolphinContext.getPlugin();
 		
-		applyModels(modelConfig);
-		applyPlugin(plugin);
+		applyModels(dolphinContext.getModelConfig());
+		applyPlugin(dolphinContext.getPlugin());
 	}
 	
 	private void applyModels(ModelConfig modelConfig) {
 		if(modelConfig == null){
+			Log.i(TAG,"modelConfig not matched, apply to default modelConfig");
 			modelConfig = defaultModelConfig;
 		}
 		
 		if(modelConfig.getId() != currentModelConfig.getId()){
 			Log.i(TAG,"applyModels to "+modelConfig.getModel_ids());
 
-			String[] modelpaths = getModelPaths(modelConfig);
+			currentModelConfig = modelConfig;
 			
-			try {
-				LinearTest.setModel(modelpaths);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				Log.e(TAG, e.toString());
-				Log.e(TAG, "model err");
-			}
+			ContentValues masks = getMasksFromModelConfig(modelConfig);
+			
+			dolphin.setGestureMask(null, masks);
+			
 		}
 	}
 	
 	private void applyPlugin(Plugin plugin) {
 		if(plugin == null){
+			Log.i(TAG,"plugin not matched, apply to default plugin");
 			plugin = defaultPlugin;
 		}
 		if(plugin.getId() != currentPlugin.getId()){
-			Log.i(TAG,"applyPlugin to "+currentPlugin.getName());
-
 			currentPlugin = plugin;
+			Log.i(TAG,"applyPlugin to "+currentPlugin.getName());
 		}
 	}
 	
@@ -406,30 +416,42 @@ public class RemoteService extends Service {
 		}
 	}
 	
-	private String[] getModelPaths(ModelConfig modelConfig){
-		
+	private ContentValues getMasksFromModelConfig(ModelConfig modelConfig){
 		String[] modelIDs = modelConfig.getModel_ids().split(Pattern.quote("+"));
 		String[] modelpaths = null;
-				
-		if(modelIDs.length != 5)
-			modelpaths = LinearTest.defaultModels;
-		else {
-			// get model paths by the splited ids
-			modelpaths = new String[5];
-			for (int i = 1; i < 5; i++) {
-				Model model = modelDao.load(Long.parseLong(modelIDs[i]));
-				if(model == null){
-					Log.e(TAG, "database err: model lost");
-					modelpaths = LinearTest.defaultModels;
-					break;
-				}
-				modelpaths[i] = model.getModel_path();
+
+		// get model paths by the splited ids
+		modelpaths = new String[5];
+		for (int i = 1; i < 5; i++) {
+			Model model = modelDao.load(Long.parseLong(modelIDs[i]));
+			if(model == null){
+				Log.e(TAG, "database err: model lost");
+				modelpaths = LinearTest.defaultModels;
+				break;
 			}
+			modelpaths[i] = model.getModel_path();
 		}
 		
-		return modelpaths;
+		ContentValues masks = new ContentValues();
+		masks.put("models", compressModelsToString(modelpaths));
+		
+		return masks;
 	}
 	
+	private String compressModelsToString(String[] modelpaths) {
+		StringBuilder sBuilder = new StringBuilder();
+		sBuilder.append("models://");
+		for (int i = 1; i < modelpaths.length; i++) {
+			sBuilder.append('+');
+			sBuilder.append(modelpaths[i]);
+		}
+		return sBuilder.toString();
+	}
+	
+    public boolean isScreenLocked() {
+        return !mKeyguardManager.inKeyguardRestrictedInputMode();
+    }
+
 	@Override
 	public IBinder onBind(Intent arg0) {
 		Log.e(TAG, "onBind");
@@ -445,8 +467,9 @@ public class RemoteService extends Service {
 	@Override
 	public void onCreate() {
 		Log.e(TAG, "onCreate");
-		activityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
-		
+		mActivityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
+        mKeyguardManager = (KeyguardManager) mContext.getSystemService(Context.KEYGUARD_SERVICE);
+
 		daoSession = DaoManager.getDaoSession(mContext);
 		modelConfigDao = daoSession.getModelConfigDao();
 		pluginDao = daoSession.getPluginDao();
@@ -456,12 +479,17 @@ public class RemoteService extends Service {
 		swipeEventDao = daoSession.getSwipeEventDao();
 		playbackEventDao = daoSession.getPlaybackEventDao();
 		
-		dolphin = Dolphin.getInstance(
-				(AudioManager) getSystemService(Context.AUDIO_SERVICE), 
-				getContentResolver(),
-				stateCallback,
-				null, 
-				gestureListener);
+		try {
+			dolphin = Dolphin.getInstance(
+					(AudioManager) getSystemService(Context.AUDIO_SERVICE), 
+					getContentResolver(),
+					stateCallback,
+					null, 
+					gestureListener);
+		} catch (DolphinException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		dolphin.switchToEarphoneSpeaker();
 		dolphin.prepare();
 		
@@ -565,7 +593,6 @@ public class RemoteService extends Service {
 				if(res.size() == 1){
 					applyContext(res.get(0));
 				}else {
-					Log.i(TAG,"dolphin context not matched, apply to default context");
 					applyContext(null);
 				}
 			}
