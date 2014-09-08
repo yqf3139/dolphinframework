@@ -1,7 +1,13 @@
 package seu.lab.dolphin.server;
 
+import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.LinkedList;
 import java.util.List;
+
+import de.greenrobot.dao.query.CountQuery;
+import de.greenrobot.dao.query.Query;
+import de.greenrobot.dao.query.QueryBuilder;
 
 import android.content.Context;
 import android.util.Log;
@@ -25,6 +31,7 @@ import seu.lab.dolphin.dao.Plugin;
 import seu.lab.dolphin.dao.PluginDao;
 import seu.lab.dolphin.dao.RawGestureData;
 import seu.lab.dolphin.dao.RawGestureDataDao;
+import seu.lab.dolphin.dao.RawGestureDataDao.Properties;
 import seu.lab.dolphin.dao.Rule;
 import seu.lab.dolphin.dao.RuleDao;
 import seu.lab.dolphin.dao.SwipeEvent;
@@ -35,29 +42,45 @@ import seu.lab.dolphin.dao.TrainingRelation;
 import seu.lab.dolphin.dao.TrainingRelationDao;
 import seu.lab.dolphin.sysplugin.EventSenderForKey;
 
-public class DaoManager {
+public class DaoManager implements IDaoManager{
 	
-	public static final String TAG = "DaoService";
+	public static final String TAG = "DaoManager";
+	private Context mContext;
 	
-	private static OpenHelper helper;
-	private static DaoMaster daoMaster;
-	private static DaoSession daoSession;
+	private static DaoManager daoManager = null;
 	
-	public static void createDB(Context context) {
+	private OpenHelper helper;
+	private DaoMaster daoMaster;
+	private DaoSession daoSession;
+	
+	private static QueryBuilder<RawGestureData> rawDataQueryBuilder;
+	private static CountQuery<RawGestureData> countQuery;
+
+	private DaoManager(Context context) {
+		mContext = context;
+		daoSession = getDaoSession();
+		rawDataQueryBuilder = daoSession.getRawGestureDataDao().queryBuilder();
+		countQuery = rawDataQueryBuilder.where(Properties.Gesture_id.eq(0)).buildCount();
+	}
+	
+	public static DaoManager getDaoManager(Context context) {
+		return daoManager == null ? daoManager = new DaoManager(context) : daoManager;
+	}
+	
+	public void createDB() {
 		Log.i(TAG, "createDB");
 		
-		daoMaster = getDaoMaster(context);
-		daoMaster.dropAllTables(helper.getWritableDatabase(), true);
-		daoMaster.createAllTables(helper.getWritableDatabase(), true);
+		daoMaster = getDaoMaster();
+		DaoMaster.dropAllTables(helper.getWritableDatabase(), true);
+		DaoMaster.createAllTables(helper.getWritableDatabase(), true);
 		
-		insertDefaultData(context);
+		insertDefaultData();
 	}
 
-	private static void insertDefaultData(Context context) {
+	private void insertDefaultData() {
 		Log.i(TAG, "insertDefaultData");
 
-		daoSession = getDaoSession(context);
-		DolphinContextDao dolphinContextDao  = daoSession.getDolphinContextDao();
+		DolphinContextDao dolphinContextDao = daoSession.getDolphinContextDao();
 		GestureDao gestureDao = daoSession.getGestureDao();
 		KeyEventDao keyEventDao = daoSession.getKeyEventDao();
 		ModelDao modelDao = daoSession.getModelDao();
@@ -107,29 +130,34 @@ public class DaoManager {
 		swipeEventDao.insertInTx(swipeEvents);
 		playbackEventDao.insert(playbackEvent);
 		
+		
 		TrainingDataset defaultTrainingDatasetForNF = new TrainingDataset(null, "default training set for near far", "", 1l);
 		long defaultTrainingDatasetForNF_ID = trainingDatasetDao.insert(defaultTrainingDatasetForNF);
 		Model defaultModelForNF = new Model(null, "nf_default.dolphin", "default model for near far", defaultTrainingDatasetForNF_ID);
 		long defaultModelForNF_ID = modelDao.insert(defaultModelForNF);
 		defaultTrainingDatasetForNF.setModel_id(defaultModelForNF_ID);
+		defaultTrainingDatasetForNF.update();
 		
 		TrainingDataset defaultTrainingDatasetForFN = new TrainingDataset(null, "default training set for far near", "", 1l);
 		long defaultTrainingDatasetForFN_ID = trainingDatasetDao.insert(defaultTrainingDatasetForFN);
 		Model defaultModelForFN = new Model(null, "fn_default.dolphin", "default model for far near", defaultTrainingDatasetForFN_ID);
 		long defaultModelForFN_ID = modelDao.insert(defaultModelForFN);
 		defaultTrainingDatasetForFN.setModel_id(defaultModelForFN_ID);
+		defaultTrainingDatasetForFN.update();
 
 		TrainingDataset defaultTrainingDatasetForNFNF = new TrainingDataset(null, "default training set for far near far near", "", 1l);
 		long defaultTrainingDatasetForNFNF_ID = trainingDatasetDao.insert(defaultTrainingDatasetForNFNF);
 		Model defaultModelForNFNF = new Model(null, "nfnf_default.dolphin", "default model for far near", defaultTrainingDatasetForNFNF_ID);
 		long defaultModelForNFNF_ID = modelDao.insert(defaultModelForNFNF);
 		defaultTrainingDatasetForNFNF.setModel_id(defaultModelForNFNF_ID);
+		defaultTrainingDatasetForNFNF.update();
 
 		TrainingDataset defaultTrainingDatasetForCR = new TrainingDataset(null, "default training set for far near", "", 1l);
 		long defaultTrainingDatasetForCR_ID = trainingDatasetDao.insert(defaultTrainingDatasetForCR);
 		Model defaultModelForCR = new Model(null, "cr_default.dolphin", "default model for far near", defaultTrainingDatasetForCR_ID);
 		long defaultModelForCR_ID = modelDao.insert(defaultModelForCR);
 		defaultTrainingDatasetForCR.setModel_id(defaultModelForCR_ID);
+		defaultTrainingDatasetForCR.update();
 		
 		Gesture[] gestures = new Gesture[GestureEvent.gesture.length-1];
 		for (int i =1; i < gestures.length; i++) {
@@ -139,10 +167,10 @@ public class DaoManager {
 		ModelConfig modelConfig = new ModelConfig(null, "null", "models://+1+2+3+4");
 		long defaultModelConfig_ID = modelConfigDao.insert(modelConfig);
 		
-		Plugin defaultPlugin = new Plugin(null, "default plugin", 1, "", "");
+		Plugin defaultPlugin = new Plugin(null, "default plugin", 1, "", "",1l);
 		long defaultPlugin_ID = pluginDao.insert(defaultPlugin);
 		
-		Plugin duokanPlugin = new Plugin(null, "duokan plugin", 1, "", "");
+		Plugin duokanPlugin = new Plugin(null, "duokan plugin", 1, "", "",1l);
 		long duokanPlugin_ID = pluginDao.insert(duokanPlugin);
 		
 		Rule[] defaultRules = new Rule[]{
@@ -165,9 +193,12 @@ public class DaoManager {
 		DolphinContext[] dolphinContexts = new DolphinContext[]{
 				new DolphinContext(null, "*", "still", defaultModelConfig_ID, defaultPlugin_ID),
 				new DolphinContext(null, "com.duokan.reader.DkMainActivity", "still", defaultModelConfig_ID, duokanPlugin_ID),
-
 		};
 		dolphinContextDao.insertInTx(dolphinContexts);
+		defaultPlugin.setDolphin_context_id(1l);
+		defaultPlugin.update();
+		duokanPlugin.setDolphin_context_id(2l);
+		duokanPlugin.update();
 		
 		TrainingRelation[] trainingRelations = new TrainingRelation[]{
 				// nf
@@ -202,7 +233,7 @@ public class DaoManager {
 
 	}
 	
-	private static void readRawGesturesFromFile(String path, RawGestureDataDao rawGestureDataDao) {
+	private void readRawGesturesFromFile(String path, RawGestureDataDao rawGestureDataDao) {
 		// TODO Auto-generated method stub
 		RawGestureData[] rawGestureDatas = new RawGestureData[]{
 //				new RawGestureData(null, data, gesture_id),
@@ -210,25 +241,26 @@ public class DaoManager {
 		rawGestureDataDao.insertInTx(rawGestureDatas);
 	}
 
-	public static void dropDB(Context context) {
+	public void dropDB() {
 		Log.i(TAG, "dropDB");
 
 		if(daoMaster == null)
-			daoMaster = getDaoMaster(context);
-		daoMaster.dropAllTables(helper.getWritableDatabase(), true);
+			daoMaster = getDaoMaster();
+		DaoMaster.dropAllTables(helper.getWritableDatabase(), true);
 	}
 	
-	public static DaoMaster getDaoMaster(Context context){
+	public DaoMaster getDaoMaster(){
 	    if (daoMaster == null){
-	        helper = new DaoMaster.DevOpenHelper(context, DolphinServerVariables.DATABASE_NAME, null);
+	        helper = new DaoMaster.DevOpenHelper(mContext, DolphinServerVariables.DATABASE_NAME, null);
 	        daoMaster = new DaoMaster(helper.getWritableDatabase());
 	    }
 	    return daoMaster;
 	}
-	public static DaoSession getDaoSession(Context context){
+	
+	public DaoSession getDaoSession(){
 	    if (daoSession == null){
 	        if (daoMaster == null){
-	            daoMaster = getDaoMaster(context);
+	            daoMaster = getDaoMaster();
 	        }
 	        daoSession = daoMaster.newSession();
 	    }
@@ -251,6 +283,145 @@ public class DaoManager {
 	        doubles[i] = ByteBuffer.wrap(byteArray, i*times, times).getDouble();
 	    }
 	    return doubles;
+	}
+
+	
+	
+	@Override
+	public List<Gesture> listAllGestures() {
+		return daoSession.getGestureDao().loadAll();
+	}
+
+	@Override
+	public List<Plugin> listAllPlugins() {
+		return daoSession.getPluginDao().loadAll();
+	}
+
+	@Override
+	public List<Gesture> listGesturesAvailble(Plugin plugin) {
+		// TODO test
+		List<Gesture> allGestures = listAllGestures();
+		List<Rule> rules = plugin.getRules();
+		List<Gesture> unusedGestures = new LinkedList<Gesture>();
+		boolean found;
+		for (Gesture gesture : allGestures) {
+			found = false;
+			for (Rule rule : rules) {
+				if(rule.getGesture_id() == gesture.getId()){
+					found = true;
+					break;
+				}
+			}
+			if(!found)unusedGestures.add(gesture);
+		}
+		return unusedGestures;
+	}
+
+	@Override
+	public List<KeyEvent> listAllKeyEvents() {
+		return daoSession.getKeyEventDao().loadAll();
+	}
+
+	@Override
+	public List<SwipeEvent> listAllSwipeEvents() {
+		return daoSession.getSwipeEventDao().loadAll();
+	}
+
+	@Override
+	public List<PlaybackEvent> listPlaybackEventsRecord(Plugin plugin) {
+		return daoSession.getPlaybackEventDao().loadAll();
+	}
+
+	@Override
+	public long addPlaybackEvent(PlaybackEvent playbackEvent) {
+		return daoSession.getPlaybackEventDao().insert(playbackEvent);
+	}
+
+	@Override
+	public long addRule(Rule rule) {
+		return daoSession.getRuleDao().insert(rule);
+	}
+
+	@Override
+	public boolean addDolphinContextAndPlugin(DolphinContext dolphinContext,
+			Plugin plugin) {
+		long plugin_id = daoSession.getPluginDao().insert(plugin);
+		
+		dolphinContext.setPlugin_id(plugin_id);
+		// TODO generate model and get id
+		dolphinContext.setModel_config_id(1l);
+		long dolphin_context_id = daoSession.getDolphinContextDao().insert(dolphinContext);
+		plugin.setDolphin_context_id(dolphin_context_id);
+		plugin.update();
+		return true;
+	}
+
+	@Override
+	public boolean deletePlaybackEvent(PlaybackEvent playbackEvent) {
+		daoSession.getPlaybackEventDao().delete(playbackEvent);
+		return true;
+	}
+
+	@Override
+	public boolean deleteRule(Rule rule) {
+		daoSession.getRuleDao().delete(rule);
+		// TODO rule changed, refresh model
+		return false;
+	}
+
+	@Override
+	public boolean deleteDolphinContextAndPlugin(Plugin plugin) {
+		// TODO Auto-generated method stub
+		// delete rules under a plugin
+		PlaybackEventDao playbackEventDao = daoSession.getPlaybackEventDao();
+		List<Rule> rules = plugin.getRules();
+		for (Rule rule : rules) {
+			if(rule.getEvent_type() == 3){
+				// delete playback events under a rule
+				PlaybackEvent playbackEvent = playbackEventDao.load(rule.getEvent_id());
+				File script = new File(DolphinServerVariables.DOLPHIN_HOME+"scripts/"+playbackEvent.getScript_name());
+				if(script.exists())script.delete();
+				playbackEventDao.delete(playbackEvent);
+			}
+		}
+		// delete the dolphin context
+
+			// delete modelconfig
+				// delete models & files
+				// delete training set
+		// delete plugin
+		return false;
+	}
+
+	@Override
+	public boolean updatePlugin(Plugin plugin) {
+		daoSession.getPluginDao().update(plugin);
+		return true;
+	}
+
+	@Override
+	public boolean updateRuleWithoutGestureChanged(Rule rule) {
+		daoSession.getRuleDao().update(rule);
+		return true;
+	}
+
+	@Override
+	public boolean updateRuleWithGestureChanged(Rule rule) {
+		// TODO update models
+		daoSession.getRuleDao().update(rule);
+		return false;
+	}
+
+	@Override
+	public long addRawGestureData(RawGestureData rawGestureData) {
+		return daoSession.getRawGestureDataDao().insert(rawGestureData);
+	}
+
+	@Override
+	public long countGestureRawData(Gesture gesture) {
+		CountQuery<RawGestureData> query = countQuery.forCurrentThread();
+		query.setParameter(1, gesture.getId());
+		return query.count();
 	}
 
 }

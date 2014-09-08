@@ -10,6 +10,8 @@ import de.greenrobot.dao.AbstractDao;
 import de.greenrobot.dao.Property;
 import de.greenrobot.dao.internal.SqlUtils;
 import de.greenrobot.dao.internal.DaoConfig;
+import de.greenrobot.dao.query.Query;
+import de.greenrobot.dao.query.QueryBuilder;
 
 import seu.lab.dolphin.dao.RawGestureData;
 
@@ -33,6 +35,7 @@ public class RawGestureDataDao extends AbstractDao<RawGestureData, Long> {
 
     private DaoSession daoSession;
 
+    private Query<RawGestureData> gesture_Raw_gesuture_dataQuery;
 
     public RawGestureDataDao(DaoConfig config) {
         super(config);
@@ -129,6 +132,20 @@ public class RawGestureDataDao extends AbstractDao<RawGestureData, Long> {
         return true;
     }
     
+    /** Internal query to resolve the "raw_gesuture_data" to-many relationship of Gesture. */
+    public List<RawGestureData> _queryGesture_Raw_gesuture_data(long gesture_id) {
+        synchronized (this) {
+            if (gesture_Raw_gesuture_dataQuery == null) {
+                QueryBuilder<RawGestureData> queryBuilder = queryBuilder();
+                queryBuilder.where(Properties.Gesture_id.eq(null));
+                gesture_Raw_gesuture_dataQuery = queryBuilder.build();
+            }
+        }
+        Query<RawGestureData> query = gesture_Raw_gesuture_dataQuery.forCurrentThread();
+        query.setParameter(0, gesture_id);
+        return query.list();
+    }
+
     private String selectDeep;
 
     protected String getSelectDeep() {

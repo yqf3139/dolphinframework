@@ -25,7 +25,7 @@ public class Gesture {
     private transient GestureDao myDao;
 
     private List<Rule> rules;
-    private List<Rule> raw_gesuture_data;
+    private List<RawGestureData> raw_gesuture_data;
     private List<TrainingRelation> training_relation;
 
     public Gesture() {
@@ -116,13 +116,13 @@ public class Gesture {
     }
 
     /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */
-    public List<Rule> getRaw_gesuture_data() {
+    public List<RawGestureData> getRaw_gesuture_data() {
         if (raw_gesuture_data == null) {
             if (daoSession == null) {
                 throw new DaoException("Entity is detached from DAO context");
             }
-            RuleDao targetDao = daoSession.getRuleDao();
-            List<Rule> raw_gesuture_dataNew = targetDao._queryGesture_Raw_gesuture_data(id);
+            RawGestureDataDao targetDao = daoSession.getRawGestureDataDao();
+            List<RawGestureData> raw_gesuture_dataNew = targetDao._queryGesture_Raw_gesuture_data(id);
             synchronized (this) {
                 if(raw_gesuture_data == null) {
                     raw_gesuture_data = raw_gesuture_dataNew;

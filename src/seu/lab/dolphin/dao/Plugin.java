@@ -18,12 +18,16 @@ public class Plugin {
     private String discription;
     /** Not-null value. */
     private String icon_path;
+    private long dolphin_context_id;
 
     /** Used to resolve relations */
     private transient DaoSession daoSession;
 
     /** Used for active entity operations. */
     private transient PluginDao myDao;
+
+    private DolphinContext dolphinContext;
+    private Long dolphinContext__resolvedKey;
 
     private List<Rule> rules;
 
@@ -34,12 +38,13 @@ public class Plugin {
         this.id = id;
     }
 
-    public Plugin(Long id, String name, int plugin_type, String discription, String icon_path) {
+    public Plugin(Long id, String name, int plugin_type, String discription, String icon_path, long dolphin_context_id) {
         this.id = id;
         this.name = name;
         this.plugin_type = plugin_type;
         this.discription = discription;
         this.icon_path = icon_path;
+        this.dolphin_context_id = dolphin_context_id;
     }
 
     /** called by internal mechanisms, do not call yourself. */
@@ -92,6 +97,42 @@ public class Plugin {
     /** Not-null value; ensure this value is available before it is saved to the database. */
     public void setIcon_path(String icon_path) {
         this.icon_path = icon_path;
+    }
+
+    public long getDolphin_context_id() {
+        return dolphin_context_id;
+    }
+
+    public void setDolphin_context_id(long dolphin_context_id) {
+        this.dolphin_context_id = dolphin_context_id;
+    }
+
+    /** To-one relationship, resolved on first access. */
+    public DolphinContext getDolphinContext() {
+        long __key = this.dolphin_context_id;
+        if (dolphinContext__resolvedKey == null || !dolphinContext__resolvedKey.equals(__key)) {
+            if (daoSession == null) {
+                throw new DaoException("Entity is detached from DAO context");
+            }
+            DolphinContextDao targetDao = daoSession.getDolphinContextDao();
+            DolphinContext dolphinContextNew = targetDao.load(__key);
+            synchronized (this) {
+                dolphinContext = dolphinContextNew;
+            	dolphinContext__resolvedKey = __key;
+            }
+        }
+        return dolphinContext;
+    }
+
+    public void setDolphinContext(DolphinContext dolphinContext) {
+        if (dolphinContext == null) {
+            throw new DaoException("To-one property 'dolphin_context_id' has not-null constraint; cannot set to-one to null");
+        }
+        synchronized (this) {
+            this.dolphinContext = dolphinContext;
+            dolphin_context_id = dolphinContext.getId();
+            dolphinContext__resolvedKey = dolphin_context_id;
+        }
     }
 
     /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */

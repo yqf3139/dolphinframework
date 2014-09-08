@@ -15,14 +15,6 @@
         android:text="service switch" />
 
     <Button
-        android:id="@+id/test_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/toggle_service"
-        android:layout_toRightOf="@+id/toggle_service"
-        android:text="test_btn" />
-
-    <Button
         android:id="@+id/keycode_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -30,52 +22,51 @@
         android:layout_below="@+id/toggle_service"
         android:text="keycode" />
 
-    <Button
-        android:id="@+id/screen_set_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/install_btn"
-        android:layout_below="@+id/install_btn"
-        android:text="screen setting" />
+	<Button
+	    android:id="@+id/record_btn"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignLeft="@+id/keycode_btn"
+	    android:layout_below="@+id/keycode_btn"
+	    android:text="record" />
 
-    <Button
-        android:id="@+id/playback_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/keycode_btn"
-        android:layout_below="@+id/swipe_btn"
-        android:text="playback" />
+	<Button
+	    android:id="@+id/playback_btn"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignLeft="@+id/record_btn"
+	    android:layout_below="@+id/record_btn"
+	    android:text="playback" />
 
-    <Button
-        android:id="@+id/install_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/keycode_btn"
-        android:layout_below="@+id/keycode_btn"
-        android:text="install" />
+	<Button
+	    android:id="@+id/test_btn"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignLeft="@+id/playback_btn"
+	    android:layout_below="@+id/swipe_btn"
+	    android:text="test_btn" />
 
-    <Button
-        android:id="@+id/swipe_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignRight="@+id/install_btn"
-        android:layout_below="@+id/screen_set_btn"
-        android:text="swipe" />
+	<Button
+	    android:id="@+id/swipe_btn"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignRight="@+id/record_btn"
+	    android:layout_below="@+id/playback_btn"
+	    android:text="swipe" />
 
-    <Button
-        android:id="@+id/record_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/playback_btn"
-        android:layout_below="@+id/playback_btn"
-        android:text="record" />
+	<ToggleButton
+	    android:id="@+id/toggle_sfv"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:layout_alignLeft="@+id/swipe_btn"
+	    android:layout_below="@+id/test_btn"
+	    android:text="toggle_sfv" />
 
-    <Button
-        android:id="@+id/create_db_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/swipe_btn"
-        android:layout_below="@+id/record_btn"
-        android:text="create db" />
+	<SurfaceView
+	    android:id="@+id/SurfaceView01"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentLeft="true"
+	    android:layout_below="@+id/toggle_sfv" />
 
 </RelativeLayout>

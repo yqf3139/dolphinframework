@@ -203,7 +203,14 @@ public class RemoteService extends Service {
 
 		@Override
 		public void onCoreReady() {
-			dolphin.start();
+			Log.e(TAG, "on core ready");
+    		refresher = new DolphinContextRefresher();
+            refresher.start();
+			try {
+				dolphin.start();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	};
 
@@ -452,6 +459,27 @@ public class RemoteService extends Service {
         return !mKeyguardManager.inKeyguardRestrictedInputMode();
     }
 
+    public void startRecognition() {
+    	Log.e(TAG, "starting dolphin");
+		try {
+			dolphin.prepare();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+    
+    public void stopRecognition() {
+    	Log.e(TAG, "stoping dolphin");
+    	refresher.stopGracefully();
+		try {
+			dolphin.stop();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+    
 	@Override
 	public IBinder onBind(Intent arg0) {
 		Log.e(TAG, "onBind");
@@ -470,7 +498,7 @@ public class RemoteService extends Service {
 		mActivityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
         mKeyguardManager = (KeyguardManager) mContext.getSystemService(Context.KEYGUARD_SERVICE);
 
-		daoSession = DaoManager.getDaoSession(mContext);
+		daoSession = DaoManager.getDaoManager(mContext).getDaoSession();
 		modelConfigDao = daoSession.getModelConfigDao();
 		pluginDao = daoSession.getPluginDao();
 		dolphinContextDao = daoSession.getDolphinContextDao();
@@ -479,6 +507,19 @@ public class RemoteService extends Service {
 		swipeEventDao = daoSession.getSwipeEventDao();
 		playbackEventDao = daoSession.getPlaybackEventDao();
 		
+        currentDolphinContext = defaultDolphinContext = dolphinContextDao.load(DEFAULT_ID);
+        currentModelConfig = defaultModelConfig = modelConfigDao.load(DEFAULT_ID);
+        currentPlugin = defaultPlugin = pluginDao.load(DEFAULT_ID);
+		
+        Notification notification = new Notification(R.drawable.dolphin_server,
+        		"ticket", System.currentTimeMillis());
+        Intent notificationIntent = new Intent(mContext, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, notificationIntent, 0);
+        notification.setLatestEventInfo(mContext, "title","message", pendingIntent);
+        
+        startForeground(ONGOING_NOTIFICATION, notification);
+        createFloatView();
+        
 		try {
 			dolphin = Dolphin.getInstance(
 					(AudioManager) getSystemService(Context.AUDIO_SERVICE), 
@@ -491,36 +532,32 @@ public class RemoteService extends Service {
 			e.printStackTrace();
 		}
 		dolphin.switchToEarphoneSpeaker();
-		dolphin.prepare();
 		
-		refresher = new DolphinContextRefresher();
-
 		super.onCreate();
+	}
+	
+	public void borrowDataReceiver(IDataReceiver receiver) {
+		dolphin.setDataReceiver(receiver);
+
+	}
+	
+	public void returnDataReceiver() {
+		dolphin.setDataReceiver(null);
+	}
+	
+	public void borrowGestureListener(IGestureListener listener) throws DolphinException {
+		dolphin.setGestureListener(listener);
+	}
+	
+	public void returnGestureListener() throws DolphinException {
+		dolphin.setGestureListener(gestureListener);
 	}
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-            Log.e(TAG, "onStartCommand");
-            
-            currentDolphinContext = defaultDolphinContext = dolphinContextDao.load(DEFAULT_ID);
-            currentModelConfig = defaultModelConfig = modelConfigDao.load(DEFAULT_ID);
-            currentPlugin = defaultPlugin = pluginDao.load(DEFAULT_ID);
-
-            dolphin.resume();
-
-            Notification notification = new Notification(R.drawable.dolphin_server,
-            		"ticket", System.currentTimeMillis());
-            Intent notificationIntent = new Intent(this, MainActivity.class);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-            notification.setLatestEventInfo(this, "title","message", pendingIntent);
-            
-            startForeground(ONGOING_NOTIFICATION, notification);
-            
-            createFloatView();
-
-            refresher.start();
-            
-			return super.onStartCommand(intent, flags, startId);
+        Log.e(TAG, "onStartCommand");
+        
+		return super.onStartCommand(intent, flags, startId);
     }
 
 	
@@ -533,17 +570,19 @@ public class RemoteService extends Service {
 	@Override
 	public void onDestroy() {
 		Log.e(TAG, "onDestroy");
-		
-		refresher.stopGracefully();
-		dolphin.stop();
-
-		stopForeground(true);
-
 		if (mFloatLayout != null) {
+			Log.e(TAG, "remove float layout");
 			mWindowManager.removeView(mFloatLayout);
 		}
+		stopForeground(true);
+
+		refresher.stopGracefully();
 		
+		stopRecognition();
+
 		super.onDestroy();
+		
+		Log.e(TAG, "onDestroy end");
 	}
 
 	public class RemoteBinder extends Binder {
@@ -596,7 +635,7 @@ public class RemoteService extends Service {
 					applyContext(null);
 				}
 			}
-			Log.i(TAG,"end");
+			Log.i(TAG,"run end");
 		}
 	}
 
