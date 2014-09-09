@@ -28,8 +28,9 @@ public class ModelDao extends AbstractDao<Model, Long> {
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "model_id");
         public final static Property Model_path = new Property(1, String.class, "model_path", false, "MODEL_PATH");
-        public final static Property Name = new Property(2, String.class, "name", false, "NAME");
-        public final static Property Traing_data_set_id = new Property(3, long.class, "traing_data_set_id", false, "TRAING_DATA_SET_ID");
+        public final static Property Output = new Property(2, String.class, "output", false, "OUTPUT");
+        public final static Property Name = new Property(3, String.class, "name", false, "NAME");
+        public final static Property Traing_data_set_id = new Property(4, long.class, "traing_data_set_id", false, "TRAING_DATA_SET_ID");
     };
 
     private DaoSession daoSession;
@@ -50,8 +51,9 @@ public class ModelDao extends AbstractDao<Model, Long> {
         db.execSQL("CREATE TABLE " + constraint + "'MODEL' (" + //
                 "'model_id' INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
                 "'MODEL_PATH' TEXT NOT NULL ," + // 1: model_path
-                "'NAME' TEXT NOT NULL ," + // 2: name
-                "'TRAING_DATA_SET_ID' INTEGER NOT NULL );"); // 3: traing_data_set_id
+                "'OUTPUT' TEXT NOT NULL ," + // 2: output
+                "'NAME' TEXT NOT NULL ," + // 3: name
+                "'TRAING_DATA_SET_ID' INTEGER NOT NULL );"); // 4: traing_data_set_id
     }
 
     /** Drops the underlying database table. */
@@ -70,8 +72,9 @@ public class ModelDao extends AbstractDao<Model, Long> {
             stmt.bindLong(1, id);
         }
         stmt.bindString(2, entity.getModel_path());
-        stmt.bindString(3, entity.getName());
-        stmt.bindLong(4, entity.getTraing_data_set_id());
+        stmt.bindString(3, entity.getOutput());
+        stmt.bindString(4, entity.getName());
+        stmt.bindLong(5, entity.getTraing_data_set_id());
     }
 
     @Override
@@ -92,8 +95,9 @@ public class ModelDao extends AbstractDao<Model, Long> {
         Model entity = new Model( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.getString(offset + 1), // model_path
-            cursor.getString(offset + 2), // name
-            cursor.getLong(offset + 3) // traing_data_set_id
+            cursor.getString(offset + 2), // output
+            cursor.getString(offset + 3), // name
+            cursor.getLong(offset + 4) // traing_data_set_id
         );
         return entity;
     }
@@ -103,8 +107,9 @@ public class ModelDao extends AbstractDao<Model, Long> {
     public void readEntity(Cursor cursor, Model entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setModel_path(cursor.getString(offset + 1));
-        entity.setName(cursor.getString(offset + 2));
-        entity.setTraing_data_set_id(cursor.getLong(offset + 3));
+        entity.setOutput(cursor.getString(offset + 2));
+        entity.setName(cursor.getString(offset + 3));
+        entity.setTraing_data_set_id(cursor.getLong(offset + 4));
      }
     
     /** @inheritdoc */

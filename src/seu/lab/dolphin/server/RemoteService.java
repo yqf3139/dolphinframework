@@ -1,12 +1,17 @@
 package seu.lab.dolphin.server;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import de.greenrobot.dao.query.Query;
 import de.greenrobot.dao.query.QueryBuilder;
 import seu.lab.dolphin.client.ContinuousGestureEvent;
 import seu.lab.dolphin.client.Dolphin;
+import seu.lab.dolphin.client.DolphinCoreVariables;
 import seu.lab.dolphin.client.DolphinException;
 import seu.lab.dolphin.client.GestureEvent;
 import seu.lab.dolphin.client.IDataReceiver;
@@ -51,6 +56,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap.CompressFormat;
+import android.graphics.MaskFilter;
 import android.graphics.PixelFormat;
 import android.media.AudioManager;
 import android.os.Binder;
@@ -127,7 +133,7 @@ public class RemoteService extends Service {
 		}
 
 		@Override
-		public Bundle getDataTypeMask() {
+		public JSONObject getDataTypeMask() {
 			// TODO Auto-generated method stub
 			return null;
 		}
@@ -180,16 +186,26 @@ public class RemoteService extends Service {
 		}
 
 		@Override
-		public ContentValues gestureMask() {
+		public JSONObject getGestureConfig() {
 			// claim the gesture you need to be true
-			ContentValues mask = new ContentValues();
-			mask.putNull(GestureEvent.gesture[GestureEvent.Gestures.SWIPE_LEFT_L.ordinal()]);
-			mask.putNull(GestureEvent.gesture[GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()]);
-			mask.putNull(GestureEvent.gesture[GestureEvent.Gestures.SWIPE_LEFT_P.ordinal()]);
-			mask.putNull(GestureEvent.gesture[GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()]);
-			mask.putNull(GestureEvent.gesture[GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal()]);
-			mask.putNull(GestureEvent.gesture[GestureEvent.Gestures.PULL.ordinal()]);
-			return mask;
+			
+			JSONObject config = new JSONObject();
+			JSONObject masks = new JSONObject();
+			
+			try {
+				masks.put(""+GestureEvent.Gestures.SWIPE_LEFT_L.ordinal(),true);
+				masks.put(""+GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal(),true);
+				masks.put(""+GestureEvent.Gestures.SWIPE_LEFT_P.ordinal(),true);
+				masks.put(""+GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal(),true);
+				masks.put(""+GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal(),true);
+				masks.put(""+GestureEvent.Gestures.PULL.ordinal(),true);
+				config.put("masks", masks);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			return config;
 		}
 	};
 
@@ -359,11 +375,16 @@ public class RemoteService extends Service {
 		
 		Log.i(TAG,"applyContext to "+dolphinContext.getActivity_name());
 		
-		applyModels(dolphinContext.getModelConfig());
+		try {
+			applyModelConfig(dolphinContext.getModelConfig());
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		applyPlugin(dolphinContext.getPlugin());
 	}
 	
-	private void applyModels(ModelConfig modelConfig) {
+	private void applyModelConfig(ModelConfig modelConfig) throws JSONException {
 		if(modelConfig == null){
 			Log.i(TAG,"modelConfig not matched, apply to default modelConfig");
 			modelConfig = defaultModelConfig;
@@ -374,10 +395,33 @@ public class RemoteService extends Service {
 
 			currentModelConfig = modelConfig;
 			
-			ContentValues masks = getMasksFromModelConfig(modelConfig);
+			JSONObject config = new JSONObject();
+			JSONObject masks = new JSONObject(modelConfig.getMasks());
+			JSONArray models = new JSONArray();
+			JSONArray outputs = new JSONArray();
 			
-			dolphin.setGestureMask(null, masks);
+			JSONArray modelIDs = new JSONArray(modelConfig.getModel_ids());
+
+			// get model paths by the splited ids
+			boolean err = false;
+			for (int i = 0; i < 4; i++) {
+				Model model = modelDao.load((long)modelIDs.getInt(i));
+				if(model == null){
+					Log.e(TAG, "database err: model lost");
+					err = true;
+					break;
+				}
+				models.put(model.getModel_path());
+				outputs.put(new JSONArray(model.getOutput()));
+			}
 			
+			if(!err){
+				config.put("models", models);
+				config.put("masks", masks);
+				config.put("outputs", outputs);
+			}
+			
+			dolphin.setGestureConfig(null, config);
 		}
 	}
 	
@@ -421,28 +465,6 @@ public class RemoteService extends Service {
 		default:
 			break;
 		}
-	}
-	
-	private ContentValues getMasksFromModelConfig(ModelConfig modelConfig){
-		String[] modelIDs = modelConfig.getModel_ids().split(Pattern.quote("+"));
-		String[] modelpaths = null;
-
-		// get model paths by the splited ids
-		modelpaths = new String[5];
-		for (int i = 1; i < 5; i++) {
-			Model model = modelDao.load(Long.parseLong(modelIDs[i]));
-			if(model == null){
-				Log.e(TAG, "database err: model lost");
-				modelpaths = LinearTest.defaultModels;
-				break;
-			}
-			modelpaths[i] = model.getModel_path();
-		}
-		
-		ContentValues masks = new ContentValues();
-		masks.put("models", compressModelsToString(modelpaths));
-		
-		return masks;
 	}
 	
 	private String compressModelsToString(String[] modelpaths) {
@@ -530,26 +552,29 @@ public class RemoteService extends Service {
 		} catch (DolphinException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		dolphin.switchToEarphoneSpeaker();
 		
 		super.onCreate();
 	}
 	
-	public void borrowDataReceiver(IDataReceiver receiver) {
+	public void borrowDataReceiver(IDataReceiver receiver) throws DolphinException {
 		dolphin.setDataReceiver(receiver);
 
 	}
 	
-	public void returnDataReceiver() {
+	public void returnDataReceiver() throws DolphinException {
 		dolphin.setDataReceiver(null);
 	}
 	
-	public void borrowGestureListener(IGestureListener listener) throws DolphinException {
+	public void borrowGestureListener(IGestureListener listener) throws DolphinException, JSONException {
 		dolphin.setGestureListener(listener);
 	}
 	
-	public void returnGestureListener() throws DolphinException {
+	public void returnGestureListener() throws DolphinException, JSONException {
 		dolphin.setGestureListener(gestureListener);
 	}
 
@@ -624,7 +649,7 @@ public class RemoteService extends Service {
 				activityName = getForegroundActivityName();
 				
 				Log.i(TAG, "matching context for "+activityName);
-				if(activityName.equals(currentDolphinContext.getActivity_name()))
+				if(activityName.equals(currentDolphinContext.getActivity_name()))==
 					continue;
 				
 				query.setParameter(0, activityName);

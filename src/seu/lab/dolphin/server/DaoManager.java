@@ -1,17 +1,26 @@
 package seu.lab.dolphin.server;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.StreamCorruptedException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
+
+import org.json.JSONException;
 
 import de.greenrobot.dao.query.CountQuery;
 import de.greenrobot.dao.query.Query;
 import de.greenrobot.dao.query.QueryBuilder;
 
+import android.R.integer;
 import android.content.Context;
 import android.util.Log;
 import seu.lab.dolphin.client.GestureEvent;
+import seu.lab.dolphin.client.GestureData.RichFeatureData;
 import seu.lab.dolphin.dao.DaoMaster;
 import seu.lab.dolphin.dao.DaoMaster.OpenHelper;
 import seu.lab.dolphin.dao.DaoSession;
@@ -56,6 +65,31 @@ public class DaoManager implements IDaoManager{
 	private static QueryBuilder<RawGestureData> rawDataQueryBuilder;
 	private static CountQuery<RawGestureData> countQuery;
 
+	private static final int[] featureToGestureID = {
+		0,//dummy
+		GestureEvent.Gestures.PUSH_PULL.ordinal(),
+		GestureEvent.Gestures.SWIPE_LEFT_L.ordinal(),
+		GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal(),
+		GestureEvent.Gestures.SWIPE_LEFT_P.ordinal(),
+		GestureEvent.Gestures.SWIPE_RIGHT_P.ordinal(),
+
+		GestureEvent.Gestures.PULL_PUSH.ordinal(),
+		GestureEvent.Gestures.SWING_LEFT_L.ordinal(),
+		GestureEvent.Gestures.SWING_RIGHT_L.ordinal(),
+		GestureEvent.Gestures.SWING_LEFT_P.ordinal(),
+		GestureEvent.Gestures.SWING_RIGHT_P.ordinal(),
+
+		GestureEvent.Gestures.PUSH_PULL_PUSH_PULL.ordinal(),
+		GestureEvent.Gestures.SWIPE_BACK_LEFT_L.ordinal(),
+		GestureEvent.Gestures.SWIPE_BACK_RIGHT_L.ordinal(),
+		GestureEvent.Gestures.SWIPE_BACK_LEFT_P.ordinal(),
+		GestureEvent.Gestures.SWIPE_BACK_RIGHT_P.ordinal(),
+
+		GestureEvent.Gestures.CROSSOVER_CLOCKWISE.ordinal(),
+		GestureEvent.Gestures.CROSSOVER_ANTICLOCK.ordinal(),
+
+	};
+	
 	private DaoManager(Context context) {
 		mContext = context;
 		daoSession = getDaoSession();
@@ -74,10 +108,15 @@ public class DaoManager implements IDaoManager{
 		DaoMaster.dropAllTables(helper.getWritableDatabase(), true);
 		DaoMaster.createAllTables(helper.getWritableDatabase(), true);
 		
-		insertDefaultData();
+		try {
+			insertDefaultData();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
-	private void insertDefaultData() {
+	private void insertDefaultData() throws JSONException {
 		Log.i(TAG, "insertDefaultData");
 
 		DolphinContextDao dolphinContextDao = daoSession.getDolphinContextDao();
@@ -133,38 +172,62 @@ public class DaoManager implements IDaoManager{
 		
 		TrainingDataset defaultTrainingDatasetForNF = new TrainingDataset(null, "default training set for near far", "", 1l);
 		long defaultTrainingDatasetForNF_ID = trainingDatasetDao.insert(defaultTrainingDatasetForNF);
-		Model defaultModelForNF = new Model(null, "nf_default.dolphin", "default model for near far", defaultTrainingDatasetForNF_ID);
+		String outputForNF = DolphinServerVariables.DEFAULT_MODEL_CONFIG.getJSONArray("outputs").getJSONArray(0).toString();
+		Model defaultModelForNF = new Model(null, 
+				"nf_default.dolphin", 
+				outputForNF,
+				"default model for near far", 
+				defaultTrainingDatasetForNF_ID);
 		long defaultModelForNF_ID = modelDao.insert(defaultModelForNF);
 		defaultTrainingDatasetForNF.setModel_id(defaultModelForNF_ID);
 		defaultTrainingDatasetForNF.update();
 		
 		TrainingDataset defaultTrainingDatasetForFN = new TrainingDataset(null, "default training set for far near", "", 1l);
 		long defaultTrainingDatasetForFN_ID = trainingDatasetDao.insert(defaultTrainingDatasetForFN);
-		Model defaultModelForFN = new Model(null, "fn_default.dolphin", "default model for far near", defaultTrainingDatasetForFN_ID);
+		String outputForFN = DolphinServerVariables.DEFAULT_MODEL_CONFIG.getJSONArray("outputs").getJSONArray(1).toString();
+		Model defaultModelForFN = new Model(
+				null, 
+				"fn_default.dolphin", 
+				outputForFN,
+				"default model for far near", 
+				defaultTrainingDatasetForFN_ID);
 		long defaultModelForFN_ID = modelDao.insert(defaultModelForFN);
 		defaultTrainingDatasetForFN.setModel_id(defaultModelForFN_ID);
 		defaultTrainingDatasetForFN.update();
 
 		TrainingDataset defaultTrainingDatasetForNFNF = new TrainingDataset(null, "default training set for far near far near", "", 1l);
 		long defaultTrainingDatasetForNFNF_ID = trainingDatasetDao.insert(defaultTrainingDatasetForNFNF);
-		Model defaultModelForNFNF = new Model(null, "nfnf_default.dolphin", "default model for far near", defaultTrainingDatasetForNFNF_ID);
+		String outputForNFNF = DolphinServerVariables.DEFAULT_MODEL_CONFIG.getJSONArray("outputs").getJSONArray(2).toString();
+		Model defaultModelForNFNF = new Model(
+				null,
+				"nfnf_default.dolphin",
+				outputForNFNF,
+				"default model for far near",
+				defaultTrainingDatasetForNFNF_ID);
 		long defaultModelForNFNF_ID = modelDao.insert(defaultModelForNFNF);
 		defaultTrainingDatasetForNFNF.setModel_id(defaultModelForNFNF_ID);
 		defaultTrainingDatasetForNFNF.update();
 
 		TrainingDataset defaultTrainingDatasetForCR = new TrainingDataset(null, "default training set for far near", "", 1l);
 		long defaultTrainingDatasetForCR_ID = trainingDatasetDao.insert(defaultTrainingDatasetForCR);
-		Model defaultModelForCR = new Model(null, "cr_default.dolphin", "default model for far near", defaultTrainingDatasetForCR_ID);
+		String outputForCR = DolphinServerVariables.DEFAULT_MODEL_CONFIG.getJSONArray("outputs").getJSONArray(3).toString();
+		Model defaultModelForCR = new Model(
+				null, 
+				"cr_default.dolphin",
+				outputForCR,
+				"default model for far near", 
+				defaultTrainingDatasetForCR_ID);
 		long defaultModelForCR_ID = modelDao.insert(defaultModelForCR);
 		defaultTrainingDatasetForCR.setModel_id(defaultModelForCR_ID);
 		defaultTrainingDatasetForCR.update();
 		
-		Gesture[] gestures = new Gesture[GestureEvent.gesture.length-1];
-		for (int i =1; i < gestures.length; i++) {
+		for (int i = 1; i < GestureEvent.gesture.length; i++) {
 			gestureDao.insert(new Gesture(null, 0, GestureEvent.gesture[i], GestureEvent.learnable[i] ? 1 : 0, "null"));
 		}
 		
-		ModelConfig modelConfig = new ModelConfig(null, "null", "models://+1+2+3+4");
+		String defaultMasks = DolphinServerVariables.DEFAULT_MODEL_CONFIG.getJSONObject("masks").toString();
+
+		ModelConfig modelConfig = new ModelConfig(null, defaultMasks, "[1,2,3,4]");
 		long defaultModelConfig_ID = modelConfigDao.insert(modelConfig);
 		
 		Plugin defaultPlugin = new Plugin(null, "default plugin", 1, "", "",1l);
@@ -229,16 +292,42 @@ public class DaoManager implements IDaoManager{
 		};
 		trainingRelationDao.insertInTx(trainingRelations);
 		
-		readRawGesturesFromFile("",rawGestureDataDao);
+		try {
+			readRawGesturesFromFile(mContext.getAssets().open("default.data"),rawGestureDataDao);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Log.i(TAG, "insertDefaultData end");
 
 	}
+
 	
-	private void readRawGesturesFromFile(String path, RawGestureDataDao rawGestureDataDao) {
-		// TODO Auto-generated method stub
-		RawGestureData[] rawGestureDatas = new RawGestureData[]{
-//				new RawGestureData(null, data, gesture_id),
-		};
+	private void readRawGesturesFromFile(InputStream inputStream, RawGestureDataDao rawGestureDataDao) throws StreamCorruptedException, IOException, ClassNotFoundException {
+		Log.i(TAG, "readRawGesturesFromFile");
+		
+		ObjectInputStream ois = new ObjectInputStream(inputStream);
+		List<RawGestureData> rawGestureDatas = new LinkedList<RawGestureData>();
+		
+		List<RichFeatureData> richFeatureDatas = (List<RichFeatureData>) ois.readObject();
+		
+		RichFeatureData data;
+
+		for (int i = 0; i < richFeatureDatas.size(); i++) {
+			data = richFeatureDatas.get(i);
+			rawGestureDatas.add(new RawGestureData(null, toByteArray(data.data), featureToGestureID[data.feature_id]));
+		}
+		
 		rawGestureDataDao.insertInTx(rawGestureDatas);
+		
+		ois.close();
+		inputStream.close();
+		
+		Log.i(TAG, "readRawGesturesFromFile end");
+
 	}
 
 	public void dropDB() {
@@ -285,7 +374,9 @@ public class DaoManager implements IDaoManager{
 	    return doubles;
 	}
 
-	
+	/*
+	 * implements IDaoManager
+	 */
 	
 	@Override
 	public List<Gesture> listAllGestures() {
@@ -364,7 +455,7 @@ public class DaoManager implements IDaoManager{
 
 	@Override
 	public boolean deleteRule(Rule rule) {
-		daoSession.getRuleDao().delete(rule);
+		rule.delete();
 		// TODO rule changed, refresh model
 		return false;
 	}
@@ -385,30 +476,49 @@ public class DaoManager implements IDaoManager{
 			}
 		}
 		// delete the dolphin context
-
+		DolphinContext dolphinContext = plugin.getDolphinContext();
+		ModelConfig modelConfig = dolphinContext.getModelConfig();
+		
 			// delete modelconfig
 				// delete models & files
-				// delete training set
+		String[] modelString = modelConfig.getModel_ids().split(Pattern.quote("+"));
+		for (int i = 1; i < 5; i++) {
+			Model model = daoSession.getModelDao().load(Long.parseLong(modelString[i]));
+			// delete training set & training relations
+			TrainingDataset dataset = model.getTrainingDataset();
+			daoSession.getTrainingRelationDao().deleteInTx(dataset.getTraining_relation());
+			dataset.delete();
+			
+			File modelFile = new File(DolphinServerVariables.DOLPHIN_HOME+"models/"+model.getModel_path());
+			if(modelFile.exists())modelFile.delete();
+			model.delete();
+		}
+		
+		daoSession.getModelConfigDao().delete(modelConfig);
+		dolphinContext.delete();
+		
 		// delete plugin
+		plugin.delete();
+
 		return false;
 	}
 
 	@Override
 	public boolean updatePlugin(Plugin plugin) {
-		daoSession.getPluginDao().update(plugin);
+		plugin.update();
 		return true;
 	}
 
 	@Override
 	public boolean updateRuleWithoutGestureChanged(Rule rule) {
-		daoSession.getRuleDao().update(rule);
+		rule.update();
 		return true;
 	}
 
 	@Override
 	public boolean updateRuleWithGestureChanged(Rule rule) {
 		// TODO update models
-		daoSession.getRuleDao().update(rule);
+		rule.update();
 		return false;
 	}
 

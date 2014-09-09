@@ -12,8 +12,6 @@ public class ModelProvider extends ContentProvider{
 
 	static final String TAG = "ModelProvider";
 
-
-	
 	@Override
 	public int delete(Uri arg0, String arg1, String[] arg2) {
 		// TODO Auto-generated method stub
@@ -40,7 +38,7 @@ public class ModelProvider extends ContentProvider{
 		
 		//if not, train new one or return default
 
-		return DolphinServerVariables.defaultModelUri;
+		return Uri.parse(DolphinServerVariables.DEFAULT_MODEL_CONFIG.toString());
 	}
 
 	@Override

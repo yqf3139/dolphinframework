@@ -1,4 +1,7 @@
 package seu.lab.dolphinframework;
+import org.json.JSONObject;
+
+import seu.lab.dolphin.client.DolphinException;
 import seu.lab.dolphin.client.IDataReceiver;
 import seu.lab.dolphin.client.RealTimeData;
 import seu.lab.dolphin.server.AppPreferences;
@@ -41,7 +44,6 @@ public class MainActivity extends Activity {
 	ToggleButton toggleButton;
 	public static Context mContext;
 	private RemoteService mService = null;
-
 	
 	private Paint tPaint;
 	private SurfaceView sfv;
@@ -61,7 +63,7 @@ public class MainActivity extends Activity {
 		}
 		
 		@Override
-		public Bundle getDataTypeMask() {
+		public JSONObject getDataTypeMask() {
 			// TODO Auto-generated method stub
 			return null;
 		}
@@ -150,9 +152,19 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				if(toogle_sfv.isChecked()){
-					mService.borrowDataReceiver(receiver);
+					try {
+						mService.borrowDataReceiver(receiver);
+					} catch (DolphinException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}else {
-					mService.returnDataReceiver();
+					try {
+						mService.returnDataReceiver();
+					} catch (DolphinException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		});

@@ -13,6 +13,8 @@ public class Model {
     /** Not-null value. */
     private String model_path;
     /** Not-null value. */
+    private String output;
+    /** Not-null value. */
     private String name;
     private long traing_data_set_id;
 
@@ -33,9 +35,10 @@ public class Model {
         this.id = id;
     }
 
-    public Model(Long id, String model_path, String name, long traing_data_set_id) {
+    public Model(Long id, String model_path, String output, String name, long traing_data_set_id) {
         this.id = id;
         this.model_path = model_path;
+        this.output = output;
         this.name = name;
         this.traing_data_set_id = traing_data_set_id;
     }
@@ -62,6 +65,16 @@ public class Model {
     /** Not-null value; ensure this value is available before it is saved to the database. */
     public void setModel_path(String model_path) {
         this.model_path = model_path;
+    }
+
+    /** Not-null value. */
+    public String getOutput() {
+        return output;
+    }
+
+    /** Not-null value; ensure this value is available before it is saved to the database. */
+    public void setOutput(String output) {
+        this.output = output;
     }
 
     /** Not-null value. */
