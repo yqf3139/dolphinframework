@@ -10,7 +10,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import de.greenrobot.dao.query.CountQuery;
 import de.greenrobot.dao.query.Query;
@@ -18,6 +20,7 @@ import de.greenrobot.dao.query.QueryBuilder;
 
 import android.R.integer;
 import android.content.Context;
+import android.database.Cursor;
 import android.util.Log;
 import seu.lab.dolphin.client.GestureEvent;
 import seu.lab.dolphin.client.GestureData.RichFeatureData;
@@ -49,6 +52,7 @@ import seu.lab.dolphin.dao.TrainingDataset;
 import seu.lab.dolphin.dao.TrainingDatasetDao;
 import seu.lab.dolphin.dao.TrainingRelation;
 import seu.lab.dolphin.dao.TrainingRelationDao;
+import seu.lab.dolphin.learn.DolphinTrainner;
 import seu.lab.dolphin.sysplugin.EventSenderForKey;
 
 public class DaoManager implements IDaoManager{
@@ -111,8 +115,7 @@ public class DaoManager implements IDaoManager{
 		try {
 			insertDefaultData();
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.e(TAG, e.toString());
 		}
 	}
 
@@ -227,8 +230,11 @@ public class DaoManager implements IDaoManager{
 		
 		String defaultMasks = DolphinServerVariables.DEFAULT_MODEL_CONFIG.getJSONObject("masks").toString();
 
-		ModelConfig modelConfig = new ModelConfig(null, defaultMasks, "[1,2,3,4]");
-		long defaultModelConfig_ID = modelConfigDao.insert(modelConfig);
+		ModelConfig defaultModelConfig = new ModelConfig(null, defaultMasks, "[1,2,3,4]");
+		long defaultModelConfig_ID = modelConfigDao.insert(defaultModelConfig);
+		
+		ModelConfig duokanModelConfig = new ModelConfig(null, "{}", "[]");
+		long duokanModelConfig_ID = modelConfigDao.insert(duokanModelConfig);
 		
 		Plugin defaultPlugin = new Plugin(null, "default plugin", 1, "", "",1l);
 		long defaultPlugin_ID = pluginDao.insert(defaultPlugin);
@@ -243,6 +249,7 @@ public class DaoManager implements IDaoManager{
 				new Rule(null, "default to right l", "", true, 2, 4l, defaultPlugin_ID, (long)GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()),
 				new Rule(null, "default to rgiht p", "", true, 2, 4l, defaultPlugin_ID, (long)GestureEvent.Gestures.SWIPE_RIGHT_P.ordinal()),
 				new Rule(null, "default to home", "", true, 1, 12l, defaultPlugin_ID, (long)GestureEvent.Gestures.PULL.ordinal()),
+				new Rule(null, "default to home 2", "", true, 1, 12l, defaultPlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL.ordinal()),
 				new Rule(null, "default to last record", "", true, 3, 1l, defaultPlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal()),
 				
 				// duokan rules
@@ -255,7 +262,7 @@ public class DaoManager implements IDaoManager{
 		
 		DolphinContext[] dolphinContexts = new DolphinContext[]{
 				new DolphinContext(null, "*", "still", defaultModelConfig_ID, defaultPlugin_ID),
-				new DolphinContext(null, "com.duokan.reader.DkMainActivity", "still", defaultModelConfig_ID, duokanPlugin_ID),
+				new DolphinContext(null, "com.duokan.reader.DkMainActivity", "still", duokanModelConfig_ID, duokanPlugin_ID),
 		};
 		dolphinContextDao.insertInTx(dolphinContexts);
 		defaultPlugin.setDolphin_context_id(1l);
@@ -295,11 +302,9 @@ public class DaoManager implements IDaoManager{
 		try {
 			readRawGesturesFromFile(mContext.getAssets().open("default.data"),rawGestureDataDao);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.e(TAG, e.toString());
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.e(TAG, e.toString());
 		}
 		Log.i(TAG, "insertDefaultData end");
 
@@ -374,6 +379,155 @@ public class DaoManager implements IDaoManager{
 	    return doubles;
 	}
 
+	public JSONArray getModel_idsFromMasks(JSONObject masks){
+		
+		boolean[] boolmasks = new boolean[GestureEvent.gesture.length];
+		
+		for (int i = 1; i < boolmasks.length; i++) {
+			if(masks.has(""+i))
+				boolmasks[i] = true;
+		}
+		
+		return getModel_idsFromMasks(masks,boolmasks);
+	}
+	
+	public JSONArray getModel_idsFromMasks(boolean[] boolmasks){
+		JSONObject masks = new JSONObject();
+		try {
+			for (int i = 1; i < boolmasks.length; i++) {
+				if(boolmasks[i])
+						masks.put(""+i, true);
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return getModel_idsFromMasks(masks,boolmasks);
+	}
+	
+	public JSONArray getModel_idsFromMasks(JSONObject masks, boolean[] boolmasks){
+		// TODO
+		// split the masks , find the four gesture group
+		// for each group
+		// if should learn , > 2
+		// getSingleModelConfig
+		// else put null
+	
+		// aggregate the ids into one array
+		JSONArray modelIds = new JSONArray();
+		
+		for (int i = 0; i < 4; i++) {
+			modelIds.put(getSingleModel_idWrapper(
+					i, 
+					DolphinServerVariables.GESTURE_GROUP[i][0], 
+					DolphinServerVariables.GESTURE_GROUP[i][1],
+					DolphinServerVariables.GESTURE_GROUP[i][2], 
+					boolmasks));
+		}
+
+		return modelIds;
+	}
+		
+	long getSingleModel_idWrapper(int idx, int main, int start, int over, boolean[] boolmasks){
+		List<Long> gestureIds = new LinkedList<Long>();
+		if(boolmasks[main])
+			gestureIds.add((long) main);
+		for (int i = start; i <= over; i++) {
+			if(boolmasks[i])
+				gestureIds.add((long) i);
+		}
+		if(gestureIds.size() < 2)return 0l;
+		
+		GestureDao dao = daoSession.getGestureDao();
+		Gesture[] gestures = new Gesture[gestureIds.size()];
+		for (int i = 0; i < gestures.length; i++) {
+			gestures[i] = dao.load(gestureIds.get(i));
+		}
+		
+		return getSingleModel_id(DolphinServerVariables.MODEL_PREFIX[idx], gestures);
+		
+	}
+	
+	public long getSingleModel_id(String prefix,Gesture[] gestures){
+		
+		// if the input gestures set -> model exists
+		// sqlite> select s, group_concat(g) from (select traing_data_set_id as s, gesture_id as g from training_relation order by gesture_id) group by s;
+		
+		String ids = "";
+		String modelpath = prefix;
+
+		for (int i = 0; i < gestures.length-1; i++) {
+			ids += gestures[i].getId()+",";
+			modelpath += gestures[i].getId()+"_";
+		}
+		ids += gestures[gestures.length-1].getId();
+		modelpath += gestures[gestures.length-1].getId()+".dolphin";
+
+		Cursor cursor = daoSession.getTrainingRelationDao().getDatabase().rawQuery(
+				"select s from (select traing_data_set_id as s, gesture_id as g from training_relation order by gesture_id) group by s having group_concat(g) = ?",
+				new String[]{ids}
+		);
+		if(cursor.getCount() > 0){
+			cursor.moveToFirst();
+			long trainset_id = cursor.getLong(0);
+			// return the model id
+			return daoSession.getTrainingDatasetDao().load(trainset_id).getModel_id();
+		}
+
+		// else generate models and outputs <- gestures
+		JSONArray output = null;
+		try {
+			 output = DolphinTrainner.createModel(modelpath, gestures);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// save the new models file , training relations dao
+		TrainingDataset dataset = new TrainingDataset(null, modelpath, "", 0l);
+		long dataset_id = daoSession.getTrainingDatasetDao().insert(dataset);
+
+		Model model = new Model(null, modelpath, output.toString(), modelpath, dataset_id);
+		long model_id = daoSession.getModelDao().insert(model);
+		dataset.setModel_id(model_id);
+		dataset.update();
+		
+		TrainingRelation[] relations = new TrainingRelation[gestures.length];
+		for (int i = 0; i < relations.length; i++) {
+			relations[i] = new TrainingRelation(null, gestures[i].getId(), dataset_id);
+		}
+		daoSession.getTrainingRelationDao().insertInTx(relations);
+		// return single model id
+		return model_id;
+	}
+	
+	public boolean updatePluginWithRuleChanged(Plugin plugin) {
+		// get masks
+		List<Rule> rules = plugin.getRules();
+//		boolean[] masks = new boolean[GestureEvent.gesture.length];
+//		for (int i = 0; i < rules.size(); i++) {
+//			masks[(int) rules.get(i).getGesture_id()] = true;
+//		}
+		JSONObject masks = new JSONObject();
+		
+		try {
+			for (int i = 0; i < rules.size(); i++) {
+				masks.put(""+rules.get(i).getGesture_id(), true);
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		ModelConfig config = plugin.getDolphinContext().getModelConfig();
+		JSONArray model_ids = getModel_idsFromMasks(masks);
+		config.setMasks(masks.toString());
+		config.setModel_ids(model_ids.toString());
+		daoSession.getModelConfigDao().update(config);
+		return true;
+	}
+	
 	/*
 	 * implements IDaoManager
 	 */
@@ -430,7 +584,11 @@ public class DaoManager implements IDaoManager{
 
 	@Override
 	public long addRule(Rule rule) {
-		return daoSession.getRuleDao().insert(rule);
+		long id = daoSession.getRuleDao().insert(rule);
+		
+		updatePluginWithRuleChanged(rule.getPlugin());
+		
+		return id;
 	}
 
 	@Override
@@ -439,11 +597,14 @@ public class DaoManager implements IDaoManager{
 		long plugin_id = daoSession.getPluginDao().insert(plugin);
 		
 		dolphinContext.setPlugin_id(plugin_id);
-		// TODO generate model and get id
-		dolphinContext.setModel_config_id(1l);
+		dolphinContext.setModelConfig(new ModelConfig(null, "", ""));
 		long dolphin_context_id = daoSession.getDolphinContextDao().insert(dolphinContext);
 		plugin.setDolphin_context_id(dolphin_context_id);
 		plugin.update();
+		
+		// TODO generate model and get id
+		updatePluginWithRuleChanged(plugin);
+		
 		return true;
 	}
 
@@ -455,7 +616,9 @@ public class DaoManager implements IDaoManager{
 
 	@Override
 	public boolean deleteRule(Rule rule) {
+		Plugin plugin = rule.getPlugin();
 		rule.delete();
+		updatePluginWithRuleChanged(plugin);
 		// TODO rule changed, refresh model
 		return false;
 	}
@@ -474,6 +637,8 @@ public class DaoManager implements IDaoManager{
 				if(script.exists())script.delete();
 				playbackEventDao.delete(playbackEvent);
 			}
+			// delete rules
+			rule.delete();
 		}
 		// delete the dolphin context
 		DolphinContext dolphinContext = plugin.getDolphinContext();
@@ -481,18 +646,18 @@ public class DaoManager implements IDaoManager{
 		
 			// delete modelconfig
 				// delete models & files
-		String[] modelString = modelConfig.getModel_ids().split(Pattern.quote("+"));
-		for (int i = 1; i < 5; i++) {
-			Model model = daoSession.getModelDao().load(Long.parseLong(modelString[i]));
-			// delete training set & training relations
-			TrainingDataset dataset = model.getTrainingDataset();
-			daoSession.getTrainingRelationDao().deleteInTx(dataset.getTraining_relation());
-			dataset.delete();
-			
-			File modelFile = new File(DolphinServerVariables.DOLPHIN_HOME+"models/"+model.getModel_path());
-			if(modelFile.exists())modelFile.delete();
-			model.delete();
-		}
+//		String[] modelString = modelConfig.getModel_ids().split(Pattern.quote("+"));
+//		for (int i = 1; i < 5; i++) {
+//			Model model = daoSession.getModelDao().load(Long.parseLong(modelString[i]));
+//			// delete training set & training relations
+//			TrainingDataset dataset = model.getTrainingDataset();
+//			daoSession.getTrainingRelationDao().deleteInTx(dataset.getTraining_relation());
+//			dataset.delete();
+//			
+//			File modelFile = new File(DolphinServerVariables.DOLPHIN_HOME+"models/"+model.getModel_path());
+//			if(modelFile.exists())modelFile.delete();
+//			model.delete();
+//		}
 		
 		daoSession.getModelConfigDao().delete(modelConfig);
 		dolphinContext.delete();
@@ -510,18 +675,21 @@ public class DaoManager implements IDaoManager{
 	}
 
 	@Override
-	public boolean updateRuleWithoutGestureChanged(Rule rule) {
+	public boolean updateRule(Rule rule) {
 		rule.update();
 		return true;
 	}
 
-	@Override
-	public boolean updateRuleWithGestureChanged(Rule rule) {
-		// TODO update models
-		rule.update();
-		return false;
-	}
-
+//	@Override
+//	public boolean updateRuleWithGestureChanged(Rule rule) {
+//		rule.update();
+//		// TODO update models
+//
+//		// updatePluginWithRuleChanged(rule.getPlugin());
+//		
+//		return false;
+//	}
+	
 	@Override
 	public long addRawGestureData(RawGestureData rawGestureData) {
 		return daoSession.getRawGestureDataDao().insert(rawGestureData);
@@ -532,6 +700,49 @@ public class DaoManager implements IDaoManager{
 		CountQuery<RawGestureData> query = countQuery.forCurrentThread();
 		query.setParameter(1, gesture.getId());
 		return query.count();
+	}
+	
+	@Override
+	public void refreshGesture(Gesture gesture){
+		// find all the models that uses this gesture, refresh these models
+		List<TrainingRelation> relations = gesture.getTraining_relation();
+		for (int i = 0; i < relations.size(); i++) {
+			refreshModel(relations.get(i).getTrainingDataset().getModel());
+		}
+	}
+	
+	@Override
+	public void refreshModel(Model model){
+		TrainingDataset dataset = model.getTrainingDataset();
+		List<TrainingRelation> relations = dataset.getTraining_relation();
+		
+		// find all the gestures in the model
+		Gesture[] gestures = new Gesture[relations.size()];
+		for (int i = 0; i < gestures.length; i++) {
+			gestures[i] = relations.get(i).getGesture();
+		}
+		
+		try {
+			DolphinTrainner.createModel(model.getModel_path(), gestures);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public KeyEvent getKeyEvent(long id) {
+		return daoSession.getKeyEventDao().load(id);
+	}
+
+	@Override
+	public SwipeEvent getSwipeEvent(long id) {
+		return daoSession.getSwipeEventDao().load(id);
+	}
+
+	@Override
+	public PlaybackEvent getPlaybackEvent(long id) {
+		return daoSession.getPlaybackEventDao().load(id);
 	}
 
 }

@@ -7,6 +7,7 @@ import android.R.integer;
 import seu.lab.dolphin.dao.DolphinContext;
 import seu.lab.dolphin.dao.Gesture;
 import seu.lab.dolphin.dao.KeyEvent;
+import seu.lab.dolphin.dao.Model;
 import seu.lab.dolphin.dao.PlaybackEvent;
 import seu.lab.dolphin.dao.Plugin;
 import seu.lab.dolphin.dao.RawGestureData;
@@ -22,6 +23,10 @@ public interface IDaoManager {
 	List<SwipeEvent> listAllSwipeEvents();
 	List<PlaybackEvent> listPlaybackEventsRecord(Plugin plugin);
 	
+	KeyEvent getKeyEvent(long id);
+	SwipeEvent getSwipeEvent(long id);
+	PlaybackEvent getPlaybackEvent(long id);
+	
 	long addPlaybackEvent(PlaybackEvent playbackEvent);
 	long addRule(Rule rule);
 	boolean addDolphinContextAndPlugin(DolphinContext dolphinContext, Plugin plugin);
@@ -31,9 +36,11 @@ public interface IDaoManager {
 	boolean deleteDolphinContextAndPlugin(Plugin plugin);
 	
 	boolean updatePlugin(Plugin plugin);
-	boolean updateRuleWithoutGestureChanged(Rule rule);
-	boolean updateRuleWithGestureChanged(Rule rule);
+	boolean updateRule(Rule rule);
+//	boolean updateRuleWithGestureChanged(Rule rule);
 
 	long addRawGestureData(RawGestureData rawGestureData);
 	long countGestureRawData(Gesture gesture);
+	void refreshGesture(Gesture gesture);
+	void refreshModel(Model model);
 }

@@ -14,6 +14,28 @@ public class DolphinServerVariables {
 	public static final String MODEL_PROVIDE_NAME = "seu.lab.dolphin.server.MODEL_PROVIDER";
 	public static final int DOLPHIN_CONTEXT_FRESH_INTERVAL = 2;
 	
+	public static final String[] MODEL_PREFIX = new String[]{
+		"nf_","fn_","nfnf_","cr_"
+	};
+	
+	public static final int[][] GESTURE_GROUP = {
+		{GestureEvent.Gestures.PUSH_PULL.ordinal(), 
+		GestureEvent.Gestures.SWIPE_LEFT_L.ordinal(), 
+		GestureEvent.Gestures.SWIPE_RIGHT_P.ordinal()},
+		
+		{GestureEvent.Gestures.PULL_PUSH.ordinal(), 
+		GestureEvent.Gestures.SWING_LEFT_L.ordinal(), 
+		GestureEvent.Gestures.SWING_RIGHT_P.ordinal()},
+		
+		{GestureEvent.Gestures.PUSH_PULL_PUSH_PULL.ordinal(), 
+		GestureEvent.Gestures.SWIPE_BACK_LEFT_L.ordinal(), 
+		GestureEvent.Gestures.SWIPE_BACK_RIGHT_P.ordinal()},
+		
+		{GestureEvent.Gestures.CROSSOVER_CLOCKWISE.ordinal(), 
+		GestureEvent.Gestures.CROSSOVER_CLOCKWISE.ordinal(), 
+		GestureEvent.Gestures.CROSSOVER_ANTICLOCK.ordinal()},
+	};
+	
 	public static JSONObject DEFAULT_MODEL_CONFIG = new JSONObject();
 	static{
 		JSONObject masks = new JSONObject();
@@ -21,7 +43,6 @@ public class DolphinServerVariables {
 			try {
 				masks.put(""+i, true);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -39,7 +60,7 @@ public class DolphinServerVariables {
 		.put(GestureEvent.Gestures.SWING_LEFT_L.ordinal())
 		.put(GestureEvent.Gestures.SWING_RIGHT_L.ordinal())
 		.put(GestureEvent.Gestures.SWING_LEFT_P.ordinal())
-		.put(GestureEvent.Gestures.SWIPE_RIGHT_P.ordinal()));
+		.put(GestureEvent.Gestures.SWING_RIGHT_P.ordinal()));
 		outputs.put(new JSONArray()
 		.put(GestureEvent.Gestures.PUSH_PULL_PUSH_PULL.ordinal())
 		.put(GestureEvent.Gestures.SWIPE_BACK_LEFT_L.ordinal())
@@ -55,7 +76,6 @@ public class DolphinServerVariables {
 			DEFAULT_MODEL_CONFIG.put("models", models);
 			DEFAULT_MODEL_CONFIG.put("outputs", outputs);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
