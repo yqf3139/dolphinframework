@@ -1,4 +1,4 @@
-package seu.lab.dolphinframework;
+package seu.lab.dolphinframework.main;
 
 import java.util.List;
 
@@ -6,6 +6,7 @@ import seu.lab.dolphin.client.GestureEvent;
 import seu.lab.dolphin.dao.Gesture;
 import seu.lab.dolphin.dao.RawGestureData;
 import seu.lab.dolphin.server.DaoManager;
+import seu.lab.dolphinframework.R;
 import android.R.color;
 import android.app.Activity;
 import android.content.Context;

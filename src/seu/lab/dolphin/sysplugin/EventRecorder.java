@@ -16,7 +16,7 @@ import android.widget.Toast;
 import seu.lab.dolphin.server.DolphinServerVariables;
 import seu.lab.dolphin.utility.ShellUtils;
 import seu.lab.dolphin.utility.ShellUtils.CommandResult;
-import seu.lab.dolphinframework.MainActivity;
+import seu.lab.dolphinframework.main.MainActivity;
 
 public class EventRecorder extends Thread{
 

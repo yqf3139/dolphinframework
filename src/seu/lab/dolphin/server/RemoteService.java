@@ -42,8 +42,8 @@ import seu.lab.dolphin.sysplugin.EventRecorder;
 import seu.lab.dolphin.sysplugin.EventSenderForKey;
 import seu.lab.dolphin.sysplugin.EventSenderForPlayback;
 import seu.lab.dolphin.sysplugin.EventSenderForSwipe;
-import seu.lab.dolphinframework.MainActivity;
 import seu.lab.dolphinframework.R;
+import seu.lab.dolphinframework.fragment.FragmentMainActivity;
 import android.R.integer;
 import android.R.string;
 import android.app.ActivityManager;
@@ -55,7 +55,6 @@ import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap.CompressFormat;
 import android.graphics.MaskFilter;
 import android.graphics.PixelFormat;
 import android.media.AudioManager;
@@ -289,42 +288,31 @@ public class RemoteService extends Service {
 	private PowerManager mPowerManager;
 
 
-
 	public String hello(String name) {
 		return TAG + ": hello " + name;
 	}
 
 	private void createFloatView() {
-		Log.i(TAG, "float view created");
+		Log.i(TAG, "Float View created");
 		
 		wmParams = new WindowManager.LayoutParams();
-		mWindowManager = (WindowManager) getApplication().getSystemService(
-				getApplication().WINDOW_SERVICE);
+		mWindowManager = (WindowManager) getApplication().getSystemService(getApplication().WINDOW_SERVICE);
 		wmParams.type = LayoutParams.TYPE_PHONE;
-
 		wmParams.format = PixelFormat.RGBA_8888;
-
 		wmParams.flags = LayoutParams.FLAG_NOT_FOCUSABLE;
-
 		wmParams.gravity = Gravity.LEFT | Gravity.TOP;
-
-		wmParams.x = 0;
-		wmParams.y = 0;
-
+		wmParams.x = wmParams.y = 0;
 		wmParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
 		wmParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-
 		LayoutInflater inflater = LayoutInflater.from(getApplication());
+		
 		mFloatLayout = (LinearLayout) inflater.inflate(R.layout.float_layout,null);
-		mWindowManager.addView(mFloatLayout, wmParams);
 		mFloatbarImage = (ImageView) mFloatLayout.findViewById(R.id.float_bar);
-		mFloatRecordButton = (Button) mFloatLayout
-				.findViewById(R.id.float_record_button);
-		mFloatPlaybackButton = (Button) mFloatLayout
-				.findViewById(R.id.float_playback_button);
-		mFloatLayout.measure(View.MeasureSpec.makeMeasureSpec(0,
-				View.MeasureSpec.UNSPECIFIED), View.MeasureSpec
-				.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+		mFloatRecordButton = (Button) mFloatLayout.findViewById(R.id.float_record_button);
+		mFloatPlaybackButton = (Button) mFloatLayout.findViewById(R.id.float_playback_button);
+		mFloatLayout.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), 
+				View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+		
 		mFloatLayout.setOnTouchListener(new OnTouchListener() {
 			int lastX, lastY;
 			int paramX, paramY;
@@ -349,6 +337,7 @@ public class RemoteService extends Service {
 				return false;
 			}
 		});
+		
 		mFloatRecordButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -397,6 +386,7 @@ public class RemoteService extends Service {
 				}
 			}
 		});
+		
 		mFloatPlaybackButton.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -407,6 +397,14 @@ public class RemoteService extends Service {
 
 	}
 
+	public void showFloatView() {
+		mWindowManager.addView(mFloatLayout, wmParams);
+	}
+	
+	public void hideFloatView() {
+		mWindowManager.removeView(mFloatLayout);
+	}
+	
 	public String getForegroundActivityName() {
 		ComponentName cn = mActivityManager.getRunningTasks(1).get(0).topActivity;
 		return cn.getClassName();
@@ -554,8 +552,9 @@ public class RemoteService extends Service {
     
     public void stopRecognition() {
     	Log.e(TAG, "stoping dolphin");
-    	if(refresher != null)
-    		refresher.stopGracefully();
+		if(refresher != null) {
+			refresher.stopGracefully();
+		}
 		try {
 			dolphin.stop();
 		} catch (Exception e) {
@@ -593,7 +592,7 @@ public class RemoteService extends Service {
 		
         Notification notification = new Notification(R.drawable.dolphin_server,
         		"ticket", System.currentTimeMillis());
-        Intent notificationIntent = new Intent(mContext, MainActivity.class);
+        Intent notificationIntent = new Intent(mContext, seu.lab.dolphinframework.main.MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, notificationIntent, 0);
         notification.setLatestEventInfo(mContext, "title","message", pendingIntent);
         
@@ -660,9 +659,9 @@ public class RemoteService extends Service {
 			mWindowManager.removeView(mFloatLayout);
 		}
 		stopForeground(true);
-
-		refresher.stopGracefully();
-		
+		if(refresher != null) {
+			refresher.stopGracefully();
+		}
 		stopRecognition();
 
 		super.onDestroy();

@@ -1,4 +1,4 @@
-package seu.lab.dolphinframework;
+package seu.lab.dolphinframework.main;
 import java.io.IOException;
 
 import org.json.JSONArray;
@@ -21,6 +21,7 @@ import seu.lab.dolphin.sysplugin.EventSettings;
 import seu.lab.dolphin.sysplugin.Installer;
 import seu.lab.dolphin.sysplugin.EventSettings.ScreenSetter;
 import seu.lab.dolphinframework.R;
+import seu.lab.dolphinframework.fragment.FragmentMainActivity;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -46,7 +47,7 @@ public class MainActivity extends Activity {
 	static final String TAG = "DFMainActivity";
 	ToggleButton toggle_service;
 	public static Context mContext;
-	private RemoteService mService = null;
+	public static RemoteService mService = null;
 	
 	private SurfaceView sfv;
 
@@ -227,48 +228,15 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void onClick(View arg0) {
-				startActivity(new Intent(getApplicationContext(), GraphActivity.class));
-				
+				//startActivity(new Intent(getApplicationContext(), GraphActivity.class));
+				Intent i=new Intent(MainActivity.this,FragmentMainActivity.class);
+				startActivity(i);
 			}
 		});
 		
-//		Button keycodeButton = (Button) findViewById(R.id.keycode_btn);
-//		Button swipeButton = (Button) findViewById(R.id.swipe_btn);
-//		Button playbackButton = (Button) findViewById(R.id.playback_btn);
-//		Button recordButton = (Button) findViewById(R.id.record_btn);
-//		Button installButton = (Button) findViewById(R.id.install_btn);
-//		Button settingButton = (Button) findViewById(R.id.screen_set_btn);
-//		Button createButton = (Button) findViewById(R.id.create_db_btn);
 		Button trainButton = (Button) findViewById(R.id.train);
 
 
-//		keycodeButton.setOnClickListener(new OnClickListener() {
-//			
-//			@Override
-//			public void onClick(View arg0) {
-//				new EventSenderForKey(EventSenderForKey.KEYCODE_HOME).start();
-//			}
-//		});
-//		swipeButton.setOnClickListener(new OnClickListener() {
-//			
-//			@Override
-//			public void onClick(View arg0) {
-//				new EventSenderForSwipe(EventSenderForSwipe.SwipeChoice.to_down).start();
-//			}
-//		});
-//		playbackButton.setOnClickListener(new OnClickListener() {
-//			@Override
-//			public void onClick(View arg0) {
-//				new EventSenderForPlayback("last_events").start();
-//			}
-//		});
-//		recordButton.setOnClickListener(new OnClickListener() {
-//			
-//			@Override
-//			public void onClick(View arg0) {
-//				new EventRecordWatcher(new EventRecorder(5)).start();
-//			}
-//		});
 		trainButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -276,17 +244,6 @@ public class MainActivity extends Activity {
 				new Thread(){
 					@Override
 					public void run() {
-//						try {
-//							DolphinTrainner.train_raw_data(getAssets().open("default.data"));
-//						} catch (ClassNotFoundException e1) {
-//							// TODO Auto-generated catch block
-//							e1.printStackTrace();
-//						} catch (IOException e1) {
-//							// TODO Auto-generated catch block
-//							e1.printStackTrace();
-//						}
-						
-//						if(true)return;
 						
 						GestureDao dao = DaoManager.getDaoManager(mContext).getDaoSession().getGestureDao();
 
@@ -338,30 +295,7 @@ public class MainActivity extends Activity {
 				
 			}
 		});
-//		installButton.setOnClickListener(new OnClickListener() {
-//			
-//			@Override
-//			public void onClick(View arg0) {
-//				new Installer().installAll(mContext);
-//			}
-//		});
-//		settingButton.setOnClickListener(new OnClickListener() {
-//			
-//			@Override
-//			public void onClick(View arg0) {
-//				EventSettings settings = new EventSettings();
-//				ScreenSetter setter = settings.new ScreenSetter(mContext); 
-//				setter.start();
-//			}
-//		});
-//		createButton.setOnClickListener(new OnClickListener() {
-//			
-//			@Override
-//			public void onClick(View arg0) {
-//				// TODO Auto-generated method stub
-//				DaoManager.createDB(mContext);
-//			}
-//		});
+		
 		
 		startService(new Intent(DolphinServerVariables.REMOTE_SERVICE_NAME));
 		bindService(new Intent(DolphinServerVariables.REMOTE_SERVICE_NAME), mConn, Context.BIND_AUTO_CREATE);
