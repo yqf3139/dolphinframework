@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.util.Log;
 
+import seu.lab.dolphin.server.DolphinServerVariables;
 import seu.lab.dolphin.utility.ShellUtils;
 import seu.lab.dolphin.utility.ShellUtils.CommandResult;
 
@@ -17,7 +18,10 @@ public abstract class EventSender extends Thread {
 	public void run() {
 		Log.i(TAG, "start");
 
-		CommandResult result = shell.execCommand(getCommandList(), getStart());
+		List<String> cList = getCommandList();
+		CommandResult result = shell.execCommand(cList, getStart());
+		Log.i(TAG, cList.get(0));
+		
 		for (int i = 0; i < result.successMsg.size(); i++) {
 			Log.i(TAG, "successMsg:" + result.successMsg.get(i));
 		}

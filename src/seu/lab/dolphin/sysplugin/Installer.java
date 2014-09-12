@@ -24,12 +24,11 @@ public class Installer {
 		Log.i(TAG, "installRoot");
 
 		File root = new File(DolphinServerVariables.DOLPHIN_HOME);
-		if(root.exists()){
-			FileUtils.deleteFile(root);
-		}
+		
 		if(!root.mkdir()){
 			Log.i(TAG, "mkdir()");
 		}
+		
 		return root;
 	}
 	

@@ -276,6 +276,18 @@ public class MainActivity extends Activity {
 				new Thread(){
 					@Override
 					public void run() {
+//						try {
+//							DolphinTrainner.train_raw_data(getAssets().open("default.data"));
+//						} catch (ClassNotFoundException e1) {
+//							// TODO Auto-generated catch block
+//							e1.printStackTrace();
+//						} catch (IOException e1) {
+//							// TODO Auto-generated catch block
+//							e1.printStackTrace();
+//						}
+						
+//						if(true)return;
+						
 						GestureDao dao = DaoManager.getDaoManager(mContext).getDaoSession().getGestureDao();
 
 //						DaoManager.getDaoManager(mContext).getSingleModel_id(

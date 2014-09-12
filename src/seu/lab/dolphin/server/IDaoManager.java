@@ -35,6 +35,8 @@ public interface IDaoManager {
 	boolean deleteRule(Rule rule);
 	boolean deleteDolphinContextAndPlugin(Plugin plugin);
 	
+	boolean deleteRawGestureData(RawGestureData rawGestureData);
+	
 	boolean updatePlugin(Plugin plugin);
 	boolean updateRule(Rule rule);
 //	boolean updateRuleWithGestureChanged(Rule rule);

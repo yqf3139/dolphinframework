@@ -309,7 +309,6 @@ public class DaoManager implements IDaoManager{
 		Log.i(TAG, "insertDefaultData end");
 
 	}
-
 	
 	private void readRawGesturesFromFile(InputStream inputStream, RawGestureDataDao rawGestureDataDao) throws StreamCorruptedException, IOException, ClassNotFoundException {
 		Log.i(TAG, "readRawGesturesFromFile");
@@ -711,6 +710,7 @@ public class DaoManager implements IDaoManager{
 		return query.count();
 	}
 	
+	
 	@Override
 	public void refreshGesture(Gesture gesture){
 		// find all the models that uses this gesture, refresh these models
@@ -752,6 +752,12 @@ public class DaoManager implements IDaoManager{
 	@Override
 	public PlaybackEvent getPlaybackEvent(long id) {
 		return daoSession.getPlaybackEventDao().load(id);
+	}
+
+	@Override
+	public boolean deleteRawGestureData(RawGestureData rawGestureData) {
+		rawGestureData.delete();
+		return true;
 	}
 
 }

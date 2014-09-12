@@ -1,22 +1,15 @@
 package seu.lab.dolphin.sysplugin;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import seu.lab.dolphin.server.AppPreferences;
 import seu.lab.dolphin.utility.ShellUtils;
 import seu.lab.dolphin.utility.ShellUtils.CommandResult;
 
-import android.R.integer;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.util.Log;
-import android.widget.Toast;
 
 public class EventSettings {
 	public static int EVENT_ID = 7;
@@ -42,7 +35,9 @@ public class EventSettings {
 			int event_id = setupScreen();
 			Editor editor = AppPreferences.getPreferences().edit();
 			editor.putInt("event_id", event_id);
-			
+			editor.commit();
+			Log.i(TAG, "ScreenSetter commit event_id"+event_id);
+
 			Log.i(TAG, "ScreenSetter stop");
 		}
 	}

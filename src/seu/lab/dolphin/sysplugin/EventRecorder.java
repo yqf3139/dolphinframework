@@ -30,6 +30,7 @@ public class EventRecorder extends Thread{
 	
 	@Override
 	public void run() {
+		Log.i(TAG, "run");
         Handler handler1 = new Handler(Looper.getMainLooper());  
         handler1.post(new Runnable(){
             public void run(){  
@@ -45,6 +46,10 @@ public class EventRecorder extends Thread{
 							+DolphinServerVariables.DOLPHIN_HOME
 							+"scripts/last_events "+recordSeconds,
 				ShellUtils.COMMAND_DOLPHIN);
+		Log.i(TAG, "dolphinget /dev/input/event"+EventSettings.EVENT_ID+" "
+				+DolphinServerVariables.DOLPHIN_HOME
+				+"scripts/last_events "+recordSeconds);
+
 		int size = result.successMsg.size();
 		for (int i = 0; i < result.successMsg.size(); i++) {
 			Log.i(TAG, "successMsg:"+result.successMsg.get(i));
