@@ -43,7 +43,7 @@ public class EventRecorder extends Thread{
 		CommandResult result = shell.execCommand(
 				"dolphinget /dev/input/event"+EventSettings.EVENT_ID+" "
 							+DolphinServerVariables.DOLPHIN_HOME
-							+"/scripts/last_events "+recordSeconds,
+							+"scripts/last_events "+recordSeconds,
 				ShellUtils.COMMAND_DOLPHIN);
 		int size = result.successMsg.size();
 		for (int i = 0; i < result.successMsg.size(); i++) {

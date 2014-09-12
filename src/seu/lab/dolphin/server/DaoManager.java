@@ -528,6 +528,15 @@ public class DaoManager implements IDaoManager{
 		return true;
 	}
 	
+	public void updateAllPlugins(){
+		List<Plugin> plugins = listAllPlugins();
+		for (int i = 0; i < plugins.size(); i++) {
+			if(plugins.get(i).getDolphin_context_id() == 1l)
+				continue;
+			updatePluginWithRuleChanged(plugins.get(i));
+		}
+	}
+		
 	/*
 	 * implements IDaoManager
 	 */

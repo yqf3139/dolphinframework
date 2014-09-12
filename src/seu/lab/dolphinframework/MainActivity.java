@@ -1,6 +1,5 @@
 package seu.lab.dolphinframework;
 import java.io.IOException;
-import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -12,36 +11,27 @@ import seu.lab.dolphin.client.IDataReceiver;
 import seu.lab.dolphin.client.RealTimeData;
 import seu.lab.dolphin.dao.Gesture;
 import seu.lab.dolphin.dao.GestureDao;
-import seu.lab.dolphin.dao.Plugin;
 import seu.lab.dolphin.learn.DolphinTrainner;
 import seu.lab.dolphin.server.AppPreferences;
 import seu.lab.dolphin.server.DaoManager;
 import seu.lab.dolphin.server.DolphinServerVariables;
 import seu.lab.dolphin.server.RemoteService;
 import seu.lab.dolphin.server.RemoteService.RemoteBinder;
-import seu.lab.dolphin.sysplugin.EventRecordWatcher;
-import seu.lab.dolphin.sysplugin.EventRecorder;
-import seu.lab.dolphin.sysplugin.EventSenderForKey;
-import seu.lab.dolphin.sysplugin.EventSenderForPlayback;
-import seu.lab.dolphin.sysplugin.EventSenderForSwipe;
 import seu.lab.dolphin.sysplugin.EventSettings;
 import seu.lab.dolphin.sysplugin.Installer;
 import seu.lab.dolphin.sysplugin.EventSettings.ScreenSetter;
 import seu.lab.dolphinframework.R;
-import android.R.integer;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceView;
@@ -63,7 +53,7 @@ public class MainActivity extends Activity {
 	Drawer drawer;
 	
 	public MainActivity() {
-
+		
 	}
 	
 	IDataReceiver receiver = new IDataReceiver() {
@@ -161,6 +151,7 @@ public class MainActivity extends Activity {
 	};
 	private ToggleButton toogle_sfv;
 	
+
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -177,12 +168,9 @@ public class MainActivity extends Activity {
 					Installer.installAll(mContext);
 					DaoManager daoManager = DaoManager.getDaoManager(mContext);
 					daoManager.createDB();
+					daoManager.updateAllPlugins();
 					AppPreferences.init(mContext);
 
-					List<Plugin> plugins = daoManager.listAllPlugins();
-					for (int i = 0; i < plugins.size(); i++) {
-						daoManager.updatePluginWithRuleChanged(plugins.get(i));
-					}
 				}
 			}.start();
 		}else {
@@ -239,12 +227,8 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void onClick(View arg0) {
-	            if(mService == null)
-	            	Toast.makeText(mContext, "null", Toast.LENGTH_SHORT).show(); 
-	            else{
-	            	Toast.makeText(mContext, mService.hello("yqf"), Toast.LENGTH_SHORT).show(); 
-	            	mService.getForegroundActivityName();
-	            }
+				startActivity(new Intent(getApplicationContext(), GraphActivity.class));
+				
 			}
 		});
 		
@@ -294,49 +278,49 @@ public class MainActivity extends Activity {
 					public void run() {
 						GestureDao dao = DaoManager.getDaoManager(mContext).getDaoSession().getGestureDao();
 
-						DaoManager.getDaoManager(mContext).getSingleModel_id(
-								DolphinServerVariables.MODEL_PREFIX[3],
-								new Gesture[]{
-								dao.load((long) GestureEvent.Gestures.CROSSOVER_CLOCKWISE.ordinal()),
-								dao.load((long) GestureEvent.Gestures.CROSSOVER_ANTICLOCK.ordinal()),
-						});
+//						DaoManager.getDaoManager(mContext).getSingleModel_id(
+//								DolphinServerVariables.MODEL_PREFIX[3],
+//								new Gesture[]{
+//								dao.load((long) GestureEvent.Gestures.CROSSOVER_CLOCKWISE.ordinal()),
+//								dao.load((long) GestureEvent.Gestures.CROSSOVER_ANTICLOCK.ordinal()),
+//						});
 						
-//						DolphinTrainner trainner = new DolphinTrainner();
-//						try {
-//							JSONArray output;
-//							output = DolphinTrainner.createModel("nf_default.dolphin", new Gesture[]{
-//								dao.load((long) GestureEvent.Gestures.PUSH_PULL.ordinal()),
-//								dao.load((long) GestureEvent.Gestures.SWIPE_LEFT_L.ordinal()),
-//								dao.load((long) GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()),
-//								dao.load((long) GestureEvent.Gestures.SWIPE_LEFT_P.ordinal()),
-//								dao.load((long) GestureEvent.Gestures.SWIPE_RIGHT_P.ordinal()),
-//							});
-//							System.err.println(output.toString());
-//							output = DolphinTrainner.createModel("fn_default.dolphin", new Gesture[]{
-//									dao.load((long) GestureEvent.Gestures.PULL_PUSH.ordinal()),
-//									dao.load((long) GestureEvent.Gestures.SWING_LEFT_L.ordinal()),
-//									dao.load((long) GestureEvent.Gestures.SWING_RIGHT_L.ordinal()),
-//									dao.load((long) GestureEvent.Gestures.SWING_LEFT_P.ordinal()),
-//									dao.load((long) GestureEvent.Gestures.SWING_RIGHT_P.ordinal()),
-//								});
-//							System.err.println(output.toString());
-//							output = DolphinTrainner.createModel("nfnf_default.dolphin", new Gesture[]{
-//									dao.load((long) GestureEvent.Gestures.PUSH_PULL_PUSH_PULL.ordinal()),
-//									dao.load((long) GestureEvent.Gestures.SWIPE_BACK_LEFT_L.ordinal()),
-//									dao.load((long) GestureEvent.Gestures.SWIPE_BACK_RIGHT_L.ordinal()),
-//									dao.load((long) GestureEvent.Gestures.SWIPE_BACK_LEFT_P.ordinal()),
-//									dao.load((long) GestureEvent.Gestures.SWIPE_BACK_RIGHT_P.ordinal()),
-//								});
-//							System.err.println(output.toString());
-//							output = DolphinTrainner.createModel("cr_default.dolphin", new Gesture[]{
-//									dao.load((long) GestureEvent.Gestures.CROSSOVER_CLOCKWISE.ordinal()),
-//									dao.load((long) GestureEvent.Gestures.CROSSOVER_ANTICLOCK.ordinal()),
-//								});
-//							System.err.println(output.toString());
-//						} catch (IOException e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						}
+						DolphinTrainner trainner = new DolphinTrainner();
+						try {
+							JSONArray output;
+							output = DolphinTrainner.createModel("nf_default.dolphin", new Gesture[]{
+								dao.load((long) GestureEvent.Gestures.PUSH_PULL.ordinal()),
+								dao.load((long) GestureEvent.Gestures.SWIPE_LEFT_L.ordinal()),
+								dao.load((long) GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()),
+								dao.load((long) GestureEvent.Gestures.SWIPE_LEFT_P.ordinal()),
+								dao.load((long) GestureEvent.Gestures.SWIPE_RIGHT_P.ordinal()),
+							});
+							System.err.println(output.toString());
+							output = DolphinTrainner.createModel("fn_default.dolphin", new Gesture[]{
+									dao.load((long) GestureEvent.Gestures.PULL_PUSH.ordinal()),
+									dao.load((long) GestureEvent.Gestures.SWING_LEFT_L.ordinal()),
+									dao.load((long) GestureEvent.Gestures.SWING_RIGHT_L.ordinal()),
+									dao.load((long) GestureEvent.Gestures.SWING_LEFT_P.ordinal()),
+									dao.load((long) GestureEvent.Gestures.SWING_RIGHT_P.ordinal()),
+								});
+							System.err.println(output.toString());
+							output = DolphinTrainner.createModel("nfnf_default.dolphin", new Gesture[]{
+									dao.load((long) GestureEvent.Gestures.PUSH_PULL_PUSH_PULL.ordinal()),
+									dao.load((long) GestureEvent.Gestures.SWIPE_BACK_LEFT_L.ordinal()),
+									dao.load((long) GestureEvent.Gestures.SWIPE_BACK_RIGHT_L.ordinal()),
+									dao.load((long) GestureEvent.Gestures.SWIPE_BACK_LEFT_P.ordinal()),
+									dao.load((long) GestureEvent.Gestures.SWIPE_BACK_RIGHT_P.ordinal()),
+								});
+							System.err.println(output.toString());
+							output = DolphinTrainner.createModel("cr_default.dolphin", new Gesture[]{
+									dao.load((long) GestureEvent.Gestures.CROSSOVER_CLOCKWISE.ordinal()),
+									dao.load((long) GestureEvent.Gestures.CROSSOVER_ANTICLOCK.ordinal()),
+								});
+							System.err.println(output.toString());
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 				}.start();
 				

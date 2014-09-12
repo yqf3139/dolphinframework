@@ -65,6 +65,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -89,8 +90,9 @@ public class RemoteService extends Service {
 	
 	Context mContext = this;
 
-	private boolean sreenlocked = false;
-	
+	private boolean screenlocked = false;
+	private boolean screenOn = true;
+
 	DaoSession daoSession = null;
 	ModelConfigDao modelConfigDao = null;
 	PluginDao pluginDao = null;
@@ -143,8 +145,6 @@ public class RemoteService extends Service {
 	};
 
 	IGestureListener gestureListener = new IGestureListener() {
-
-		long lastpushtime = 0;
 		
 		@Override
 		public void onGesture(GestureEvent event) {
@@ -153,17 +153,50 @@ public class RemoteService extends Service {
 			// broadcaster.sendBroadcast(mContext);
 
 			if(!event.isConclusion){
-				if(sreenlocked && event.type == GestureEvent.Gestures.PUSH.ordinal())
-					lastpushtime = System.currentTimeMillis();
 				return;
 			}
 			
 			Log.e(TAG, event.toString());
 			
-			if(sreenlocked &&event.type == GestureEvent.Gestures.PUSH.ordinal()){
-				long duration = System.currentTimeMillis() - lastpushtime;
-				if(duration > 1000 && duration < 5000){
+			screenlocked = isScreenLocked();
+			screenOn = isScreenOn();
+			
+			// screen off and locked, light it
+			if(screenlocked && !screenOn){
+				long duration = event.duration;
+				if(duration > 1000 && event.type == GestureEvent.Gestures.PUSH.ordinal()){
 					new EventSenderForKey(EventSenderForKey.KEYCODE_POWER).start();
+					Log.e(TAG, "slow light");
+					return;
+				}
+				if(event.isFast){
+					new EventSenderForKey(EventSenderForKey.KEYCODE_POWER).start();
+					Log.e(TAG, "fast light");
+					
+					new Thread(){
+						public void run() {
+							try {
+								sleep(1500);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							new EventSenderForPlayback("unlock_script").start();
+							Log.e(TAG, "fast unlock");
+						}
+					}.start();
+
+					return;
+				}
+			}
+			
+			// screen on and locked, unlock it
+			if(screenlocked && screenOn){
+				long duration = event.duration;
+				if(event.isFast){
+					new EventSenderForPlayback("unlock_script").start();
+					Log.e(TAG, "unlock");
+
 				}
 				return;
 			}
@@ -253,6 +286,8 @@ public class RemoteService extends Service {
 	private DolphinContextRefresher refresher;
 
 	private KeyguardManager mKeyguardManager;
+	private PowerManager mPowerManager;
+
 
 
 	public String hello(String name) {
@@ -502,6 +537,10 @@ public class RemoteService extends Service {
     public boolean isScreenLocked() {
         return mKeyguardManager.inKeyguardRestrictedInputMode();
     }
+    
+    public boolean isScreenOn() {
+		return mPowerManager.isScreenOn();
+	}
 
     public void startRecognition() {
     	Log.e(TAG, "starting dolphin");
@@ -541,7 +580,8 @@ public class RemoteService extends Service {
 		Log.e(TAG, "onCreate");
 		mActivityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
         mKeyguardManager = (KeyguardManager) mContext.getSystemService(Context.KEYGUARD_SERVICE);
-
+        mPowerManager = (PowerManager)getSystemService(Context.POWER_SERVICE);
+        
 		daoSession = DaoManager.getDaoManager(mContext).getDaoSession();
 		modelConfigDao = daoSession.getModelConfigDao();
 		pluginDao = daoSession.getPluginDao();
@@ -673,8 +713,13 @@ public class RemoteService extends Service {
 					Log.e(TAG, e.toString());
 				}
 				
-				sreenlocked = isScreenLocked();
-				if(sreenlocked){
+				screenlocked = isScreenLocked();
+				screenOn = isScreenOn();
+				Log.i(TAG, "screenlocked "+screenlocked);
+				Log.i(TAG, "screenOn "+screenOn);
+
+				if(screenlocked){
+					Log.i(TAG, "screenlocked");
 					applyContext(null);
 					continue;
 				}
