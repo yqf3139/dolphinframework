@@ -4,9 +4,12 @@ import java.util.List;
 
 import seu.lab.dolphin.dao.Plugin;
 import seu.lab.dolphin.dao.Rule;
+import seu.lab.dolphin.server.DaoManager;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -20,6 +23,8 @@ import seu.lab.dolphinframework.R;
 
 public class TabExpansionDetailActivity extends Activity {
 	
+	static final String TAG = "TabExpansionDetailActivity";
+	
 	private TextView plug_name;
 	private TextView plug_instruction;
 	private ListView lv_plug_actions;
@@ -29,6 +34,8 @@ public class TabExpansionDetailActivity extends Activity {
 	private PlugActionAdapter adapter = null;
 	
 	private Plugin plugin = null;
+	
+	private Context mContext = this;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -51,8 +58,6 @@ public class TabExpansionDetailActivity extends Activity {
 		adapter = new PlugActionAdapter(TabExpansionDetailActivity.this);
 		adapter.add(plugin);
 		lv_plug_actions.setAdapter(adapter);
-		
-		
 		
 		//button:add a new action
 		bt_new_action.setOnClickListener(new OnClickListener() {
@@ -83,4 +88,21 @@ public class TabExpansionDetailActivity extends Activity {
             }  
         });  
 	}
+	
+	
+	@Override
+	protected void onPause() {
+		Log.i(TAG, "onPause");
+		// TODO test
+		new Thread(){
+			public void run() {
+				// TODO dirty
+				Log.i(TAG, "updatePluginWithRuleChanged");
+
+				DaoManager.getDaoManager(mContext).updatePluginWithRuleChanged(plugin);
+			};
+		}.start();
+		super.onStop();
+	}
+
 }

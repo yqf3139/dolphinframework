@@ -3,5 +3,6 @@
 
     <color name="deep_sky_blue">#00BFFF</color>
     <color name="transparent">#000000</color>
+    <color name="white">#FFFFFF</color>
     
 </resources>

@@ -5,57 +5,29 @@
     tools:context="${relativePackage}.${activityClass}" >
 
     <Button
-        android:id="@+id/train"
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/toggle_service"
-        android:layout_alignBottom="@+id/toggle_service"
-        android:layout_toRightOf="@+id/toggle_service"
-        android:text="train" />
-
-    <ToggleButton
-        android:id="@+id/toggle_service"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:text="service switch" />
-
-    <ToggleButton
-        android:id="@+id/toggle_sfv"
+        android:id="@+id/test_btn"
+        style="?android:attr/buttonStyleSmall"        
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:text="toggle_sfv" />
+        android:text="test" />
 
     <Button
-        android:id="@+id/test_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toLeftOf="@+id/toggle_sfv"
-        android:text="test_btn" />
-
-    <FrameLayout
+        android:id="@+id/train"
+        style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_below="@+id/toggle_sfv" >
+        android:layout_alignParentTop="true"
+        android:text="train" />
 
-        <SurfaceView
-            android:id="@+id/SurfaceView01"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content" />
-        
-        <ImageView
-            android:id="@+id/imageView1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:scaleType="fitCenter"
-            android:src="@drawable/single_dolphin_clear" />
-
-    </FrameLayout>
+    <Button
+        android:id="@+id/start_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:text="start" />
 
 </RelativeLayout>

@@ -1,5 +1,6 @@
 package seu.lab.dolphinframework.fragment;
 
+import seu.lab.dolphin.client.Dolphin;
 import seu.lab.dolphin.server.RemoteService;
 import seu.lab.dolphinframework.R;
 import seu.lab.dolphinframework.main.GuideActivity;
@@ -123,6 +124,7 @@ public class FragmentMainActivity extends Activity implements OnClickListener {
 			} else {
 				transaction.show(tab_index);
 			}
+			
 			break;
 		case 1:
 			(tab_btn_gesture.findViewById(R.id.btn_gesture_pressed)).setBackgroundColor(getcolor_pressed);
@@ -153,7 +155,6 @@ public class FragmentMainActivity extends Activity implements OnClickListener {
 		(tab_btn_expansion.findViewById(R.id.btn_expansion_pressed)).setBackgroundColor(getcolor_normal);
 
 	}
-
 	
 	@SuppressLint("NewApi")
 	private void hideFragments(FragmentTransaction transaction) {
@@ -168,4 +169,16 @@ public class FragmentMainActivity extends Activity implements OnClickListener {
 		}
 	}
 
+	@Override
+	protected void onResume() {
+		if(mService == null){
+			
+		}else if(mService.getDolphinState() == Dolphin.States.WORKING.ordinal()){
+			switch_dolphin.setChecked(true);
+		}else {
+			switch_dolphin.setChecked(false);
+		}
+		super.onResume();
+	}
+	
 }

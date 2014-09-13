@@ -379,7 +379,7 @@ public class DaoManager implements IDaoManager{
 	}
 
 	public JSONArray getModel_idsFromMasks(JSONObject masks){
-		
+
 		boolean[] boolmasks = new boolean[GestureEvent.gesture.length];
 		
 		for (int i = 1; i < boolmasks.length; i++) {
@@ -406,6 +406,8 @@ public class DaoManager implements IDaoManager{
 	}
 	
 	public JSONArray getModel_idsFromMasks(JSONObject masks, boolean[] boolmasks){
+		Log.i(TAG, "getModel_idsFromMasks");
+
 		// TODO
 		// split the masks , find the four gesture group
 		// for each group
@@ -429,6 +431,8 @@ public class DaoManager implements IDaoManager{
 	}
 		
 	long getSingleModel_idWrapper(int idx, int main, int start, int over, boolean[] boolmasks){
+		Log.i(TAG, "getSingleModel_idWrapper");
+
 		List<Long> gestureIds = new LinkedList<Long>();
 		if(boolmasks[main])
 			gestureIds.add((long) main);
@@ -449,7 +453,8 @@ public class DaoManager implements IDaoManager{
 	}
 	
 	public long getSingleModel_id(String prefix,Gesture[] gestures){
-		
+		Log.i(TAG, "getSingleModel_id");
+
 		// if the input gestures set -> model exists
 		// sqlite> select s, group_concat(g) from (select traing_data_set_id as s, gesture_id as g from training_relation order by gesture_id) group by s;
 		
@@ -468,19 +473,22 @@ public class DaoManager implements IDaoManager{
 				new String[]{ids}
 		);
 		if(cursor.getCount() > 0){
+			Log.i(TAG, "getSingleModel_id already has one");
+
 			cursor.moveToFirst();
 			long trainset_id = cursor.getLong(0);
 			// return the model id
 			return daoSession.getTrainingDatasetDao().load(trainset_id).getModel_id();
 		}
 
+		Log.i(TAG, "getSingleModel_id create new model");
+
 		// else generate models and outputs <- gestures
 		JSONArray output = null;
 		try {
 			 output = DolphinTrainner.createModel(modelpath, gestures);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.e(TAG, e.toString());
 		}
 		
 		// save the new models file , training relations dao
@@ -502,7 +510,9 @@ public class DaoManager implements IDaoManager{
 	}
 	
 	public boolean updatePluginWithRuleChanged(Plugin plugin) {
+		Log.i(TAG, "updatePluginWithRuleChanged");
 		// get masks
+		//plugin.refresh();
 		List<Rule> rules = plugin.getRules();
 //		boolean[] masks = new boolean[GestureEvent.gesture.length];
 //		for (int i = 0; i < rules.size(); i++) {
@@ -553,6 +563,7 @@ public class DaoManager implements IDaoManager{
 	@Override
 	public List<Gesture> listGesturesAvailble(Plugin plugin) {
 		// TODO test
+		plugin.refresh();
 		List<Gesture> allGestures = listAllGestures();
 		List<Rule> rules = plugin.getRules();
 		List<Gesture> unusedGestures = new LinkedList<Gesture>();
@@ -594,8 +605,9 @@ public class DaoManager implements IDaoManager{
 	public long addRule(Rule rule) {
 		long id = daoSession.getRuleDao().insert(rule);
 		
-		updatePluginWithRuleChanged(rule.getPlugin());
+		//updatePluginWithRuleChanged(rule.getPlugin());
 		
+		rule.getPlugin().refresh();
 		return id;
 	}
 
@@ -626,7 +638,8 @@ public class DaoManager implements IDaoManager{
 	public boolean deleteRule(Rule rule) {
 		Plugin plugin = rule.getPlugin();
 		rule.delete();
-		updatePluginWithRuleChanged(plugin);
+		plugin.refresh();
+		// updatePluginWithRuleChanged(plugin);
 		// TODO rule changed, refresh model
 		return false;
 	}

@@ -8,16 +8,26 @@ public class UserPreferences {
 	
 	static SharedPreferences userPreferences = null;
 	
-	static void init(Context context){
-		userPreferences = context.getSharedPreferences("user", Activity.MODE_PRIVATE);
+	public static void init(Context context){
+		if(userPreferences == null)
+			userPreferences = context.getSharedPreferences("user", Activity.MODE_PRIVATE);
 		SharedPreferences.Editor editor = userPreferences.edit();
 		editor.putBoolean("init	", true);
 		editor.commit();
 	}
-	static void clear(Context context){
-		userPreferences = context.getSharedPreferences("user", Activity.MODE_PRIVATE);
+	public static void clear(Context context){
+		if(userPreferences == null)
+			userPreferences = context.getSharedPreferences("user", Activity.MODE_PRIVATE);
 		SharedPreferences.Editor editor = userPreferences.edit();
 		editor.clear();
 		editor.commit();
 	}
+	public static boolean needUnlockScreen = true;
+	
+	public static void resume(Context context){
+		if(userPreferences == null)
+			userPreferences = context.getSharedPreferences("user", Activity.MODE_PRIVATE);
+		needUnlockScreen = userPreferences.getBoolean("unlock_screen", true);
+	}
+	
 }

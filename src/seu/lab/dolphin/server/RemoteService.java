@@ -440,42 +440,7 @@ public class RemoteService extends Service {
 		}
 		
 		if(modelConfig.getId() != currentModelConfig.getId()){
-			Log.i(TAG,"applyModels to "+modelConfig.getModel_ids());
-
-			currentModelConfig = modelConfig;
-
-			JSONObject config = new JSONObject();
-			JSONObject masks = new JSONObject(modelConfig.getMasks());
-			JSONArray models = new JSONArray();
-			JSONArray outputs = new JSONArray();
-			
-			JSONArray modelIDs = new JSONArray(modelConfig.getModel_ids());
-
-			// get model paths by the splited ids
-			boolean err = false;
-			for (int i = 0; i < 4; i++) {
-				if(modelIDs.getInt(i) == 0){
-					models.put("");
-					outputs.put(new JSONArray("[]"));
-					continue;
-				}
-				Model model = modelDao.load((long)modelIDs.getInt(i));
-				if(model == null){
-					Log.e(TAG, "database err: model lost");
-					err = true;
-					break;
-				}
-				models.put(model.getModel_path());
-				outputs.put(new JSONArray(model.getOutput()));
-			}
-			
-			if(!err){
-				config.put("models", models);
-				config.put("masks", masks);
-				config.put("outputs", outputs);
-			}
-			
-			dolphin.setGestureConfig(null, config);
+			applyModelConfigForce(modelConfig);
 		}
 	}
 	
@@ -485,10 +450,53 @@ public class RemoteService extends Service {
 			plugin = defaultPlugin;
 		}
 		if(plugin.getId() != currentPlugin.getId()){
-			currentPlugin = plugin;
-			currentPlugin.refresh();
-			Log.i(TAG,"applyPlugin to "+currentPlugin.getName());
+			applyPluginForce(plugin);
 		}
+	}
+	
+	private void applyModelConfigForce(ModelConfig modelConfig) throws JSONException {
+		Log.i(TAG,"applyModels to "+modelConfig.getModel_ids());
+
+		currentModelConfig = modelConfig;
+
+		JSONObject config = new JSONObject();
+		JSONObject masks = new JSONObject(modelConfig.getMasks());
+		JSONArray models = new JSONArray();
+		JSONArray outputs = new JSONArray();
+		
+		JSONArray modelIDs = new JSONArray(modelConfig.getModel_ids());
+
+		// get model paths by the splited ids
+		boolean err = false;
+		for (int i = 0; i < 4; i++) {
+			if(modelIDs.getInt(i) == 0){
+				models.put("");
+				outputs.put(new JSONArray("[]"));
+				continue;
+			}
+			Model model = modelDao.load((long)modelIDs.getInt(i));
+			if(model == null){
+				Log.e(TAG, "database err: model lost");
+				err = true;
+				break;
+			}
+			models.put(model.getModel_path());
+			outputs.put(new JSONArray(model.getOutput()));
+		}
+		
+		if(!err){
+			config.put("models", models);
+			config.put("masks", masks);
+			config.put("outputs", outputs);
+		}
+		
+		dolphin.setGestureConfig(null, config);
+	}
+	
+	private void applyPluginForce(Plugin plugin) {
+		currentPlugin = plugin;
+		currentPlugin.refresh();
+		Log.i(TAG,"applyPlugin to "+currentPlugin.getName());
 	}
 	
 	private void applyRule(Rule rule) {
@@ -703,6 +711,15 @@ public class RemoteService extends Service {
 		public void run() {
 			Log.i(TAG,"run");
 			
+	        
+	        try {
+				applyModelConfigForce(currentDolphinContext.getModelConfig());
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	        applyPluginForce(currentDolphinContext.getPlugin());
+			
 			Query<DolphinContext> query = findDolphinContextByActivityNameQuery.forCurrentThread();
 			String activityName = null;
 			while (isRunning) {
@@ -717,6 +734,11 @@ public class RemoteService extends Service {
 				Log.i(TAG, "screenlocked "+screenlocked);
 				Log.i(TAG, "screenOn "+screenOn);
 
+				if(!UserPreferences.needUnlockScreen){
+					screenlocked = false;
+					screenOn = true;
+				}
+				
 				if(screenlocked){
 					Log.i(TAG, "screenlocked");
 					applyContext(null);
@@ -727,7 +749,8 @@ public class RemoteService extends Service {
 				
 				Log.i(TAG, "matching context for "+activityName);
 				
-				Log.e(TAG, "currentDolphinContext "+(currentDolphinContext == null));
+				Log.i(TAG, "currentModelConfig.getModel_ids"+currentModelConfig.getModel_ids());
+				Log.i(TAG, "currentModelConfig.getMasks"+currentModelConfig.getMasks());
 
 				if(activityName.equals(currentDolphinContext.getActivity_name()))
 					continue;

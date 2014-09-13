@@ -33,10 +33,10 @@ public class EventSettings {
 			Log.i(TAG, "ScreenSetter run");
 
 			int event_id = setupScreen();
-			Editor editor = AppPreferences.getPreferences().edit();
+			Editor editor = AppPreferences.getPreferences(mContext).edit();
 			editor.putInt("event_id", event_id);
 			editor.commit();
-			Log.i(TAG, "ScreenSetter commit event_id"+event_id);
+			Log.i(TAG, "ScreenSetter commited event_id"+event_id);
 
 			Log.i(TAG, "ScreenSetter stop");
 		}

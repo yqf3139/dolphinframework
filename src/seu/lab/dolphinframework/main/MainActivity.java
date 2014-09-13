@@ -1,5 +1,6 @@
 package seu.lab.dolphinframework.main;
 import java.io.IOException;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -9,14 +10,17 @@ import seu.lab.dolphin.client.DolphinException;
 import seu.lab.dolphin.client.GestureEvent;
 import seu.lab.dolphin.client.IDataReceiver;
 import seu.lab.dolphin.client.RealTimeData;
+import seu.lab.dolphin.dao.DaoSession;
 import seu.lab.dolphin.dao.Gesture;
 import seu.lab.dolphin.dao.GestureDao;
+import seu.lab.dolphin.dao.Plugin;
 import seu.lab.dolphin.learn.DolphinTrainner;
 import seu.lab.dolphin.server.AppPreferences;
 import seu.lab.dolphin.server.DaoManager;
 import seu.lab.dolphin.server.DolphinServerVariables;
 import seu.lab.dolphin.server.RemoteService;
 import seu.lab.dolphin.server.RemoteService.RemoteBinder;
+import seu.lab.dolphin.server.UserPreferences;
 import seu.lab.dolphin.sysplugin.EventSettings;
 import seu.lab.dolphin.sysplugin.Installer;
 import seu.lab.dolphin.sysplugin.EventSettings.ScreenSetter;
@@ -45,90 +49,14 @@ import android.widget.ToggleButton;
 public class MainActivity extends Activity {
 
 	static final String TAG = "DFMainActivity";
-	ToggleButton toggle_service;
 	public static Context mContext;
 	public static RemoteService mService = null;
-	
-	private SurfaceView sfv;
-
-	Drawer drawer;
-	
-	public MainActivity() {
-		
-	}
-	
-	IDataReceiver receiver = new IDataReceiver() {
-		
-		@Override
-		public void onData(RealTimeData arg0) {
-			drawer.simpleDraw(arg0.radius, arg0.feature_info, arg0.normal_info);
-		}
-		
-		@Override
-		public JSONObject getDataTypeMask() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-	};
-	
-	class Drawer{
-		int w_screen;
-        int h_screen;
-        int density;
-    	private Paint mainPaint;
-    	private Paint extraPaint;
-
-    	
-    	Drawer(){
-    		DisplayMetrics dm = getResources().getDisplayMetrics();
-    		w_screen = dm.widthPixels;
-            h_screen = dm.heightPixels;
-            density = dm.densityDpi;
-    		mainPaint = new Paint();
-    		mainPaint.setColor(Color.CYAN);
-    		mainPaint.setStrokeWidth(1);
-    		mainPaint.setAntiAlias(true);
-    		
-    		extraPaint = new Paint();
-    		extraPaint.setColor(Color.BLUE);
-    		extraPaint.setStrokeWidth(20);
-    		extraPaint.setAntiAlias(true);
-    	}
-        
-    	private void simpleDraw(double radius, double[] feature, double[] info ) {
-    		Canvas canvas = sfv.getHolder().lockCanvas(new Rect(0, 0, w_screen, sfv.getHeight()));
-    		if(canvas == null)return;
-    		canvas.drawColor(Color.WHITE);
-    		//canvas.drawBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.single_dolphin), 100, 100, mainPaint);
-    		mainPaint.setAlpha((int) (100*(radius + 1)/4)+50);
-    		canvas.drawCircle(w_screen/2, sfv.getHeight()/2, (float) (((radius + 1) * w_screen/6) + w_screen/8), mainPaint);
-    		
-    		int middle = 100;
-    		if (null != feature) {
-    			for (int i = 0; i < feature.length; i++) {
-    				canvas.drawLine(20 * i + 50, middle, 20 * i + 50, middle
-    						- (float) feature[i] * 1000, extraPaint);
-    			}
-    		}
-    		middle = sfv.getHeight();
-    		if (null != info) {
-    			for (int i = 0; i < info.length; i++) {
-    				canvas.drawLine(10 * i - 800, middle, 10 * i - 800, middle
-    						- (float) info[i] * 600, extraPaint);
-    			}
-    		}
-    		canvas.save();
-    		sfv.getHolder().unlockCanvasAndPost(canvas);
-    	}
-    	
-	}
 	
 	private ServiceConnection mConn = new ServiceConnection() {
 		
 		@Override
 		public void onServiceDisconnected(ComponentName arg0) {
 			Log.d(TAG, "Service Disconnected.");
-						
             Toast.makeText(mContext, TAG + " Service Disconnected.", Toast.LENGTH_SHORT).show();
             mService = null;
 		}
@@ -137,27 +65,15 @@ public class MainActivity extends Activity {
 		public void onServiceConnected(ComponentName arg0, IBinder binder) {
 			mService = ((RemoteBinder)binder).getRemoteService();
 			Log.d(TAG, " Service Connected.");
-
-			if(mService == null){
-				
-			}else if(mService.getDolphinState() == Dolphin.States.WORKING.ordinal()){
-				toggle_service.setChecked(true);
-			}else {
-				toggle_service.setChecked(false);
-			}
 			
-            Toast.makeText(mContext, mService.hello("yqf"), Toast.LENGTH_SHORT).show();  
+            Toast.makeText(mContext, mService.hello(""), Toast.LENGTH_SHORT).show();  
 			
 		}
 	};
-	private ToggleButton toogle_sfv;
-	
-
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		mContext = this;
-		drawer = new Drawer();
 		if(!AppPreferences.isInitialized(mContext)){
 			Log.i(TAG, "first run: initing Plugin & DB");
 			new Thread(){
@@ -171,60 +87,35 @@ public class MainActivity extends Activity {
 					daoManager.createDB();
 					daoManager.updateAllPlugins();
 					AppPreferences.init(mContext);
-
+					UserPreferences.init(mContext);
 				}
 			}.start();
 		}else {
 			// TODO restore prefs
-			EventSettings.EVENT_ID = AppPreferences.getPreferences().getInt("event_id", 1);
-			
+			AppPreferences.resume(mContext);
+			UserPreferences.resume(mContext);
 		}
 		
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
-		sfv = (SurfaceView) this.findViewById(R.id.SurfaceView01);
 
-		toggle_service = (ToggleButton) findViewById(R.id.toggle_service);
-		toggle_service.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View arg0) {
-				if(toggle_service.isChecked()){
-					Log.e(TAG, "starting recognize");
-					mService.startRecognition();
-				}else {
-					Log.e(TAG, "stop recognize");
-					mService.stopRecognition();
-				}
-			}
-		});
-		
-		toogle_sfv = (ToggleButton) findViewById(R.id.toggle_sfv);
-		toogle_sfv.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View arg0) {
-				if(toogle_sfv.isChecked()){
-					try {
-						mService.borrowDataReceiver(receiver);
-					} catch (DolphinException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}else {
-					try {
-						mService.returnDataReceiver();
-					} catch (DolphinException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			}
-		});
 		
 		Button test = (Button) findViewById(R.id.test_btn);
 		test.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				//startActivity(new Intent(getApplicationContext(), GraphActivity.class));
+				DaoManager manager = DaoManager.getDaoManager(mContext);
+				DaoSession session = manager.getDaoSession();
+				Plugin plugin = session.getPluginDao().load(1l);
+//				List<Pla>manager.listPlaybackEventsRecord(plugin);
+			}
+		});
+
+		Button start = (Button) findViewById(R.id.start_btn);
+		start.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View arg0) {
@@ -236,7 +127,6 @@ public class MainActivity extends Activity {
 		
 		Button trainButton = (Button) findViewById(R.id.train);
 
-
 		trainButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -246,13 +136,6 @@ public class MainActivity extends Activity {
 					public void run() {
 						
 						GestureDao dao = DaoManager.getDaoManager(mContext).getDaoSession().getGestureDao();
-
-//						DaoManager.getDaoManager(mContext).getSingleModel_id(
-//								DolphinServerVariables.MODEL_PREFIX[3],
-//								new Gesture[]{
-//								dao.load((long) GestureEvent.Gestures.CROSSOVER_CLOCKWISE.ordinal()),
-//								dao.load((long) GestureEvent.Gestures.CROSSOVER_ANTICLOCK.ordinal()),
-//						});
 						
 						DolphinTrainner trainner = new DolphinTrainner();
 						try {
@@ -296,7 +179,6 @@ public class MainActivity extends Activity {
 			}
 		});
 		
-		
 		startService(new Intent(DolphinServerVariables.REMOTE_SERVICE_NAME));
 		bindService(new Intent(DolphinServerVariables.REMOTE_SERVICE_NAME), mConn, Context.BIND_AUTO_CREATE);
 
@@ -304,26 +186,11 @@ public class MainActivity extends Activity {
 	
 	@Override
 	protected void onResume() {
-		if(mService == null){
-			
-		}else if(mService.getDolphinState() == Dolphin.States.WORKING.ordinal()){
-			toggle_service.setChecked(true);
-		}else {
-			toggle_service.setChecked(false);
-		}
 		super.onResume();
 	}
 	
 	@Override
 	protected void onPause() {
-		if(toogle_sfv.isChecked()){
-			try {
-				mService.returnDataReceiver();
-			} catch (DolphinException e) {
-				Log.e(TAG, e.toString());
-			}
-			toogle_sfv.setChecked(false);
-		}
 		super.onPause();
 	}
 	

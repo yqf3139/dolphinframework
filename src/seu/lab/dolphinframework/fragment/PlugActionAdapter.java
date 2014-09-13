@@ -101,10 +101,14 @@ public class PlugActionAdapter extends BaseAdapter {
 		
 		final View cV = convertView;
 		holder.plug_action_gesture.setOnClickListener(new OnClickListener() {
+			
+			private List<Gesture> gestures;
+			private ArrayList<String> gestures_name;
+
 			@Override
 			public void onClick(View v) {
-				final List<Gesture> gestures = DaoManager.getDaoManager(context).listAllGestures();
-				final List<String> gestures_name = new ArrayList<String>();
+				gestures = DaoManager.getDaoManager(context).listGesturesAvailble(plugin);
+				gestures_name = new ArrayList<String>();
 				for(Gesture i : gestures) {
 					gestures_name.add(i.getName());
 				}
@@ -116,7 +120,11 @@ public class PlugActionAdapter extends BaseAdapter {
 						if(!rule.getGesture().equals(gestures.get(arg1))) {
 							Toast.makeText(context, "Changed", Toast.LENGTH_SHORT).show();
 							((Button) cV.findViewById(R.id.button_plug_action_gesture)).setText(gestures_name.get(arg1));
-							// 修改手势-同步到数据库
+							
+							// TODO 修改手势-同步到数据库
+							rule.setGesture(gestures.get(arg1));
+							DaoManager.getDaoManager(context).updateRule(rule);
+							
 						}
 						dialog.dismiss();
 					}
@@ -153,7 +161,11 @@ public class PlugActionAdapter extends BaseAdapter {
 										// Toast.makeText(context, "Changed", Toast.LENGTH_SHORT).show();
 										Log.i("Click", "Changed");
 										((Button) cV.findViewById(R.id.button_plug_action_function)).setText(keyevent_names.get(arg1));
-										// 修改按键-同步到数据库
+										
+										// TODO 修改按键-同步到数据库
+										rule.setEvent_type(1);
+										rule.setEvent_id(keyevents.get(arg1).getId());
+										DaoManager.getDaoManager(context).updateRule(rule);
 									}
 								}
 							}).setNegativeButton("取消", null).show();
@@ -172,7 +184,10 @@ public class PlugActionAdapter extends BaseAdapter {
 									if(!DaoManager.getDaoManager(context).getSwipeEvent(rule.getEvent_id()).equals(swipeevents.get(arg1))) {
 										Log.i("Click", "Changed");
 										((Button) cV.findViewById(R.id.button_plug_action_function)).setText(swipeevent_names.get(arg1));
-										// 修改滑动-同步到数据库
+										// TODO 修改滑动-同步到数据库
+										rule.setEvent_type(2);
+										rule.setEvent_id(swipeevents.get(arg1).getId());
+										DaoManager.getDaoManager(context).updateRule(rule);
 									}
 								}
 							}).setNegativeButton("取消", null).show();
@@ -191,7 +206,10 @@ public class PlugActionAdapter extends BaseAdapter {
 									if(!DaoManager.getDaoManager(context).getPlaybackEvent(rule.getEvent_id()).equals(pbevents.get(arg1))) {
 										Log.i("Click", "Changed");
 										((Button) cV.findViewById(R.id.button_plug_action_function)).setText(pbevent_names.get(arg1));
-										// 修改录制-同步到数据库
+										// TODO 修改录制-同步到数据库
+										rule.setEvent_type(3);
+										rule.setEvent_id(pbevents.get(arg1).getId());
+										DaoManager.getDaoManager(context).updateRule(rule);
 									}
 								}
 							}).setNegativeButton("取消", null).show();
