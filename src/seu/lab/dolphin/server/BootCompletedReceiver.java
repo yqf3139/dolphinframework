@@ -11,7 +11,9 @@ public class BootCompletedReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		Log.d("BootCompletedReceiver", "recevie boot completed ... ");
-		
-		context.startService(new Intent(context, RemoteService.class));
+		if(UserPreferences.needAutoStart){
+			Log.d("BootCompletedReceiver", "auto start service");
+			context.startService(new Intent(context, RemoteService.class));
+		}
 	}
 }

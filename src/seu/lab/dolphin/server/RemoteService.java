@@ -91,6 +91,8 @@ public class RemoteService extends Service {
 
 	private boolean screenlocked = false;
 	private boolean screenOn = true;
+	private boolean inMotion = false;
+
 
 	DaoSession daoSession = null;
 	ModelConfigDao modelConfigDao = null;
@@ -109,23 +111,20 @@ public class RemoteService extends Service {
 	Plugin defaultPlugin = null;
 	DolphinContext defaultDolphinContext = null;
 	
-	LinearLayout mFloatLayout;
-	WindowManager.LayoutParams wmParams;
-	WindowManager mWindowManager;
-	Button mFloatRecordButton;
-	Button mFloatPlaybackButton;
-	ImageView mFloatbarImage;
+	long lastEventTime = 0l;
 
-	Handler mHandler = new Handler() {
+	FloatViewManager floatViewManager = null; 
+	
+	MotionSensor motionSensor = null;
+	MotionSensorCallback motionSensorCallback = new MotionSensorCallback() {
+		
 		@Override
-		public void handleMessage(Message msg) {
-			super.handleMessage(msg);
-			Bundle bundle = msg.getData();
-			String Text = bundle.getString("text");
-			mFloatRecordButton.setText(Text);
+		public void onMotionStateChanged(boolean isInMotion) {
+			inMotion = isInMotion;
+			Log.i(TAG, "isInMotion: "+isInMotion);
 		}
 	};
-
+	
 	Dolphin dolphin = null;
 	IDataReceiver dataReceiver = new IDataReceiver() {
 
@@ -151,9 +150,16 @@ public class RemoteService extends Service {
 			// TODO broadcaster
 			// broadcaster.sendBroadcast(mContext);
 
+			if(inMotion){
+				Log.i(TAG, "inMotion mask enable, GestureEvent dropped");
+				return;
+			}
+			
 			if(!event.isConclusion){
 				return;
 			}
+			
+			lastEventTime = System.currentTimeMillis();
 			
 			Log.e(TAG, event.toString());
 			
@@ -257,7 +263,9 @@ public class RemoteService extends Service {
 		}
 	};
 
+
 	IDolphinStateCallback stateCallback = new IDolphinStateCallback() {
+
 
 		@Override
 		public void onNoisy() {
@@ -268,8 +276,11 @@ public class RemoteService extends Service {
 		@Override
 		public void onCoreReady() {
 			Log.e(TAG, "on core ready");
+			inMotion = false;
     		refresher = new DolphinContextRefresher();
             refresher.start();
+            if(UserPreferences.needMotionMask)
+        		motionSensor.start();
 			try {
 				dolphin.start();
 			} catch (Exception e) {
@@ -292,119 +303,7 @@ public class RemoteService extends Service {
 		return TAG + ": hello " + name;
 	}
 
-	private void createFloatView() {
-		Log.i(TAG, "Float View created");
-		
-		wmParams = new WindowManager.LayoutParams();
-		mWindowManager = (WindowManager) getApplication().getSystemService(getApplication().WINDOW_SERVICE);
-		wmParams.type = LayoutParams.TYPE_PHONE;
-		wmParams.format = PixelFormat.RGBA_8888;
-		wmParams.flags = LayoutParams.FLAG_NOT_FOCUSABLE;
-		wmParams.gravity = Gravity.LEFT | Gravity.TOP;
-		wmParams.x = wmParams.y = 0;
-		wmParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
-		wmParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-		LayoutInflater inflater = LayoutInflater.from(getApplication());
-		
-		mFloatLayout = (LinearLayout) inflater.inflate(R.layout.float_layout,null);
-		mFloatbarImage = (ImageView) mFloatLayout.findViewById(R.id.float_bar);
-		mFloatRecordButton = (Button) mFloatLayout.findViewById(R.id.float_record_button);
-		mFloatPlaybackButton = (Button) mFloatLayout.findViewById(R.id.float_playback_button);
-		mFloatLayout.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), 
-				View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-		
-		mFloatLayout.setOnTouchListener(new OnTouchListener() {
-			int lastX, lastY;
-			int paramX, paramY;
 
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				switch (event.getAction()) {
-				case MotionEvent.ACTION_DOWN:
-					lastX = (int) event.getRawX();
-					lastY = (int) event.getRawY();
-					paramX = wmParams.x;
-					paramY = wmParams.y;
-					break;
-				case MotionEvent.ACTION_MOVE:
-					int dx = (int) event.getRawX() - lastX;
-					int dy = (int) event.getRawY() - lastY;
-					wmParams.x = paramX + dx;
-					wmParams.y = paramY + dy;
-					mWindowManager.updateViewLayout(mFloatLayout, wmParams);
-					break;
-				}
-				return false;
-			}
-		});
-		
-		mFloatRecordButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-
-				if (mFloatRecordButton.getText().equals("record")) {
-					new EventRecordWatcher(new EventRecorder(5)).start();
-					new Thread() {
-						public void run() {
-							int num = 5;
-							Message msg = new Message();
-							Bundle bundle = new Bundle();
-							bundle.putString("text", Integer.toString(num));
-							msg.setData(bundle);
-							mHandler.sendMessage(msg);
-							while (num > 0) {
-								try {
-									sleep(1000);
-									msg = new Message();
-									bundle = new Bundle();
-									bundle.putString("text",
-											Integer.toString(--num));
-									msg.setData(bundle);
-									mHandler.sendMessage(msg);
-								} catch (InterruptedException e) {
-									e.printStackTrace();
-								}
-							}
-							try {
-								sleep(1000);
-								msg = new Message();
-								bundle = new Bundle();
-								bundle.putString("text", "confirm");
-								msg.setData(bundle);
-								mHandler.sendMessage(msg);
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-						}
-					}.start();
-				} else if (mFloatRecordButton.getText().equals("confirm")) {
-					Message msg = new Message();
-					Bundle bundle = new Bundle();
-					bundle.putString("text", "record");
-					msg.setData(bundle);
-					mHandler.sendMessage(msg);
-				}
-			}
-		});
-		
-		mFloatPlaybackButton.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View arg0) {
-				new EventSenderForPlayback("last_events").start();
-			}
-		});
-
-	}
-
-	public void showFloatView() {
-		mWindowManager.addView(mFloatLayout, wmParams);
-	}
-	
-	public void hideFloatView() {
-		mWindowManager.removeView(mFloatLayout);
-	}
-	
 	public String getForegroundActivityName() {
 		ComponentName cn = mActivityManager.getRunningTasks(1).get(0).topActivity;
 		return cn.getClassName();
@@ -560,6 +459,8 @@ public class RemoteService extends Service {
     
     public void stopRecognition() {
     	Log.e(TAG, "stoping dolphin");
+    	motionSensor.stop();
+    	
 		if(refresher != null) {
 			refresher.stopGracefully();
 		}
@@ -605,7 +506,10 @@ public class RemoteService extends Service {
         notification.setLatestEventInfo(mContext, "title","message", pendingIntent);
         
         startForeground(ONGOING_NOTIFICATION, notification);
-        createFloatView();
+        floatViewManager = FloatViewManager.getFlowViewManager(mContext);
+        floatViewManager.createFloatView();
+        
+        motionSensor = new MotionSensor(mContext, motionSensorCallback);
         
 		try {
 			dolphin = Dolphin.getInstance(
@@ -662,10 +566,7 @@ public class RemoteService extends Service {
 	@Override
 	public void onDestroy() {
 		Log.e(TAG, "onDestroy");
-		if (mFloatLayout != null) {
-			Log.e(TAG, "remove float layout");
-			mWindowManager.removeView(mFloatLayout);
-		}
+		floatViewManager.hideFloatView();
 		stopForeground(true);
 		if(refresher != null) {
 			refresher.stopGracefully();
@@ -722,6 +623,8 @@ public class RemoteService extends Service {
 			
 			Query<DolphinContext> query = findDolphinContextByActivityNameQuery.forCurrentThread();
 			String activityName = null;
+			long eventDuration;
+			lastEventTime = System.currentTimeMillis();
 			while (isRunning) {
 				try {
 					sleep(DolphinServerVariables.DOLPHIN_CONTEXT_FRESH_INTERVAL*1000);
@@ -729,12 +632,17 @@ public class RemoteService extends Service {
 					Log.e(TAG, e.toString());
 				}
 				
+				eventDuration = System.currentTimeMillis() - lastEventTime;
+				
+				if(UserPreferences.needAutoSleep 
+						&& eventDuration > DolphinServerVariables.DOLPHIN_SLEEP_TIME){
+					stopRecognition();
+					continue;
+				}
 				screenlocked = isScreenLocked();
 				screenOn = isScreenOn();
-				Log.i(TAG, "screenlocked "+screenlocked);
-				Log.i(TAG, "screenOn "+screenOn);
 
-				if(!UserPreferences.needUnlockScreen){
+				if(!UserPreferences.needEnableUnlock){
 					screenlocked = false;
 					screenOn = true;
 				}
@@ -748,9 +656,6 @@ public class RemoteService extends Service {
 				activityName = getForegroundActivityName();
 				
 				Log.i(TAG, "matching context for "+activityName);
-				
-				Log.i(TAG, "currentModelConfig.getModel_ids"+currentModelConfig.getModel_ids());
-				Log.i(TAG, "currentModelConfig.getMasks"+currentModelConfig.getMasks());
 
 				if(activityName.equals(currentDolphinContext.getActivity_name()))
 					continue;

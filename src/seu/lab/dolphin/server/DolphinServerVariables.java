@@ -13,6 +13,7 @@ public class DolphinServerVariables {
 	public static final String BROADCAST_CLIENT_NAME = "seu.lab.dolphin.server.BROADCAST_CLIENT";
 	public static final String MODEL_PROVIDE_NAME = "seu.lab.dolphin.server.MODEL_PROVIDER";
 	public static final int DOLPHIN_CONTEXT_FRESH_INTERVAL = 2;
+	public static final int DOLPHIN_SLEEP_TIME = 5*60*1000;
 	
 	public static final String[] MODEL_PREFIX = new String[]{
 		"nf_","fn_","nfnf_","cr_"

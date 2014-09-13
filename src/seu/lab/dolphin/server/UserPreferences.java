@@ -3,6 +3,7 @@ package seu.lab.dolphin.server;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 
 public class UserPreferences {
 	
@@ -11,9 +12,9 @@ public class UserPreferences {
 	public static void init(Context context){
 		if(userPreferences == null)
 			userPreferences = context.getSharedPreferences("user", Activity.MODE_PRIVATE);
-		SharedPreferences.Editor editor = userPreferences.edit();
-		editor.putBoolean("init	", true);
-		editor.commit();
+//		SharedPreferences.Editor editor = userPreferences.edit();
+//		editor.putBoolean("init	", true);
+//		editor.commit();
 	}
 	public static void clear(Context context){
 		if(userPreferences == null)
@@ -22,12 +23,24 @@ public class UserPreferences {
 		editor.clear();
 		editor.commit();
 	}
-	public static boolean needUnlockScreen = true;
+	public static boolean needEnableUnlock = true;
+	public static boolean needMotionMask = false;
+	public static boolean needAutoStart = false;
+	public static boolean needAutoSleep = false;
 	
-	public static void resume(Context context){
+	public static void refresh(Context context){
 		if(userPreferences == null)
 			userPreferences = context.getSharedPreferences("user", Activity.MODE_PRIVATE);
-		needUnlockScreen = userPreferences.getBoolean("unlock_screen", true);
+		needEnableUnlock = userPreferences.getBoolean("enable_unlock", true);
+		needMotionMask = userPreferences.getBoolean("motion_mask", false);
+		needAutoStart = userPreferences.getBoolean("auto_start", false);
+		needAutoSleep = userPreferences.getBoolean("auto_sleep", false);
+	}
+	
+	public static void set(String key, boolean value) {
+		Editor editor = userPreferences.edit();
+		editor.putBoolean(key, value);
+    	editor.commit();
 	}
 	
 }

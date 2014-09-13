@@ -58,8 +58,8 @@ public final class R {
         public static final int layout_gesture_detail_samples=0x7f09001e;
         public static final int layout_gesture_list_cell=0x7f090022;
         public static final int layout_guide_about_dolphin=0x7f09002a;
-        public static final int layout_guide_acuity=0x7f090024;
         public static final int layout_guide_default_settings=0x7f090029;
+        public static final int layout_guide_record_unlock=0x7f090028;
         public static final int layout_guide_update=0x7f09002b;
         public static final int listView_plug_actions=0x7f090009;
         public static final int lyt_fragment_tab_expansion=0x7f090018;
@@ -69,10 +69,10 @@ public final class R {
         public static final int switch_dolphin_bar=0x7f090004;
         public static final int switch_expansion_detail_plug_manager=0x7f090007;
         public static final int switch_expansion_list_cell=0x7f090010;
-        public static final int switch_guide_app_switch=0x7f090026;
-        public static final int switch_guide_auto_start=0x7f090025;
-        public static final int switch_guide_preference_learning=0x7f090028;
-        public static final int switch_guide_screen_capture=0x7f090027;
+        public static final int switch_guide_auto_sleep=0x7f090025;
+        public static final int switch_guide_auto_start=0x7f090024;
+        public static final int switch_guide_enable_unlock=0x7f090027;
+        public static final int switch_guide_motion_mask=0x7f090026;
         public static final int test_btn=0x7f090001;
         public static final int textView_expansion_detail_plug_instruction=0x7f090008;
         public static final int textView_expansion_detail_plug_name=0x7f090006;
@@ -89,21 +89,22 @@ public final class R {
     public static final class layout {
         public static final int activity_graph=0x7f030000;
         public static final int activity_main=0x7f030001;
-        public static final int add_swipe=0x7f030002;
-        public static final int dolphin_bar=0x7f030003;
-        public static final int expansion=0x7f030004;
-        public static final int expansion_detail=0x7f030005;
-        public static final int expansion_detail_action_list_cell=0x7f030006;
-        public static final int expansion_list_cell=0x7f030007;
-        public static final int float_layout=0x7f030008;
-        public static final int fragment_bar=0x7f030009;
-        public static final int fragment_main=0x7f03000a;
-        public static final int gesture=0x7f03000b;
-        public static final int gesture_detail=0x7f03000c;
-        public static final int gesture_list_cell=0x7f03000d;
-        public static final int guide=0x7f03000e;
-        public static final int index=0x7f03000f;
-        public static final int test_activity=0x7f030010;
+        public static final int activity_record_unlock=0x7f030002;
+        public static final int add_swipe=0x7f030003;
+        public static final int dolphin_bar=0x7f030004;
+        public static final int expansion=0x7f030005;
+        public static final int expansion_detail=0x7f030006;
+        public static final int expansion_detail_action_list_cell=0x7f030007;
+        public static final int expansion_list_cell=0x7f030008;
+        public static final int float_layout=0x7f030009;
+        public static final int fragment_bar=0x7f03000a;
+        public static final int fragment_main=0x7f03000b;
+        public static final int gesture=0x7f03000c;
+        public static final int gesture_detail=0x7f03000d;
+        public static final int gesture_list_cell=0x7f03000e;
+        public static final int guide=0x7f03000f;
+        public static final int index=0x7f030010;
+        public static final int test_activity=0x7f030011;
     }
     public static final class menu {
         public static final int main=0x7f080000;

@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.jar.Attributes.Name;
+
 import android.R.integer;
 import android.os.Environment;
 import android.os.Handler;
@@ -23,14 +25,17 @@ public class EventRecorder extends Thread{
 	public int recordSeconds = 5;
 	static String TAG = "EventRecorder";
 	ShellUtils shell = new ShellUtils();
+	String scriptName;
 	
-	public EventRecorder(int seconds) {
+	public EventRecorder(int seconds, String name) {
+		scriptName = name;
 		recordSeconds = seconds;
 	}
 	
 	@Override
 	public void run() {
 		Log.i(TAG, "run");
+			
         Handler handler1 = new Handler(Looper.getMainLooper());  
         handler1.post(new Runnable(){
             public void run(){  
@@ -40,15 +45,15 @@ public class EventRecorder extends Thread{
                 		Toast.LENGTH_SHORT).show();  
             }  
         });
-		
+        
 		CommandResult result = shell.execCommand(
 				"dolphinget /dev/input/event"+EventSettings.EVENT_ID+" "
 							+DolphinServerVariables.DOLPHIN_HOME
-							+"scripts/last_events "+recordSeconds,
+							+"scripts/"+scriptName+" "+recordSeconds,
 				ShellUtils.COMMAND_DOLPHIN);
 		Log.i(TAG, "dolphinget /dev/input/event"+EventSettings.EVENT_ID+" "
 				+DolphinServerVariables.DOLPHIN_HOME
-				+"scripts/last_events "+recordSeconds);
+				+"scripts/"+scriptName+" "+recordSeconds);
 
 		int size = result.successMsg.size();
 		for (int i = 0; i < result.successMsg.size(); i++) {

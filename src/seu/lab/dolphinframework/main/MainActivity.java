@@ -93,7 +93,7 @@ public class MainActivity extends Activity {
 		}else {
 			// TODO restore prefs
 			AppPreferences.resume(mContext);
-			UserPreferences.resume(mContext);
+			UserPreferences.refresh(mContext);
 		}
 		
 		super.onCreate(savedInstanceState);

@@ -14,7 +14,6 @@ public class test_activity extends Activity{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.test_activity);
 		
-		
 		tvout=(TextView) findViewById(R.id.tvout);
 //		tvout.setText(getIntent().getStringExtra("txt"));
 		Bundle data=getIntent().getExtras();

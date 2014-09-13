@@ -26,21 +26,6 @@
         android:orientation="vertical" >
 
         <RelativeLayout
-            android:id="@+id/layout_guide_acuity"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" >
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="10dp"
-                android:text="调整手势触发灵敏度" />
-        </RelativeLayout>
-
-        <RelativeLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1" >
@@ -73,10 +58,10 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="手势应用切换功能" />
+                android:text="长时间无活动识别自动睡眠" />
 
             <Switch
-                android:id="@+id/switch_guide_app_switch"
+                android:id="@+id/switch_guide_auto_sleep"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
@@ -95,10 +80,10 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="手势截屏功能" />
+                android:text="降低设备运动时识别灵敏度" />
 
             <Switch
-                android:id="@+id/switch_guide_screen_capture"
+                android:id="@+id/switch_guide_motion_mask"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
@@ -117,15 +102,30 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="自动学习手势偏好" />
+                android:text="开启手势解锁屏幕" />
 
             <Switch
-                android:id="@+id/switch_guide_preference_learning"
+                android:id="@+id/switch_guide_enable_unlock"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
                 android:layout_marginRight="10dp" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/layout_guide_record_unlock"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="10dp"
+                android:text="录制解锁屏幕的屏幕事件" />
         </RelativeLayout>
 
         <RelativeLayout

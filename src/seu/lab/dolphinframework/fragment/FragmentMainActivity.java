@@ -50,17 +50,18 @@ public class FragmentMainActivity extends Activity implements OnClickListener {
 		bt_settings = (ImageButton) findViewById(R.id.btn_dolphin_bar_setting);
 		
 		switch_dolphin.setOnCheckedChangeListener(new OnCheckedChangeListener() {  
+			
             @Override  
             public void onCheckedChanged(CompoundButton buttonView,  
                     boolean isChecked) {  
                 // TODO Auto-generated method stub  
                 if (isChecked) {
                 	mService.startRecognition();
-                	mService.showFloatView();
+//                	mService..showFloatView();
                 	Toast.makeText(MainActivity.mContext, "Service is On", Toast.LENGTH_SHORT).show();
                 } else {
                 	mService.stopRecognition();
-                	mService.hideFloatView();
+//                	mService.hideFloatView();
                 	Toast.makeText(MainActivity.mContext, "Service is Off", Toast.LENGTH_SHORT).show();
                 }  
             }  
