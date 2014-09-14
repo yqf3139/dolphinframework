@@ -44,6 +44,7 @@ import seu.lab.dolphin.sysplugin.EventSenderForPlayback;
 import seu.lab.dolphin.sysplugin.EventSenderForSwipe;
 import seu.lab.dolphinframework.R;
 import seu.lab.dolphinframework.fragment.FragmentMainActivity;
+import seu.lab.dolphinframework.main.MainActivity;
 import android.R.integer;
 import android.R.string;
 import android.app.ActivityManager;
@@ -77,7 +78,9 @@ import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RemoteViews;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 public class RemoteService extends Service {
 
@@ -116,7 +119,7 @@ public class RemoteService extends Service {
 	FloatViewManager floatViewManager = null; 
 	
 	MotionSensor motionSensor = null;
-	MotionSensorCallback motionSensorCallback = new MotionSensorCallback() {
+	IMotionSensorCallback motionSensorCallback = new IMotionSensorCallback() {
 		
 		@Override
 		public void onMotionStateChanged(boolean isInMotion) {
@@ -499,13 +502,8 @@ public class RemoteService extends Service {
 		swipeEventDao = daoSession.getSwipeEventDao();
 		playbackEventDao = daoSession.getPlaybackEventDao();
 		
-        Notification notification = new Notification(R.drawable.dolphin_server,
-        		"ticket", System.currentTimeMillis());
-        Intent notificationIntent = new Intent(mContext, seu.lab.dolphinframework.main.MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, notificationIntent, 0);
-        notification.setLatestEventInfo(mContext, "title","message", pendingIntent);
+		showNotification();
         
-        startForeground(ONGOING_NOTIFICATION, notification);
         floatViewManager = FloatViewManager.getFlowViewManager(mContext);
         floatViewManager.createFloatView();
         
@@ -526,6 +524,26 @@ public class RemoteService extends Service {
 		dolphin.switchToEarphoneSpeaker();
 		
 		super.onCreate();
+	}
+	
+	void showNotification(){
+        Notification notification = new Notification(R.drawable.single_dolphin_clear,
+        		"Dolphin 后台服务启动", System.currentTimeMillis());
+        
+        Intent notificationIntent = new Intent(mContext, seu.lab.dolphinframework.main.MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, notificationIntent, 0);
+        notification.flags = Notification.FLAG_ONGOING_EVENT;
+        
+        RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notification_dialog);
+        
+        contentView.setImageViewResource(R.id.noti_icon, android.R.drawable.ic_media_play);
+        contentView.setImageViewResource(R.id.noti_close, android.R.drawable.ic_delete);
+        contentView.setOnClickPendingIntent(R.id.noti_close, PendingIntent.getService(mContext, 1, new Intent(mContext, RemoteService.class).putExtra("close", true), 0));
+        contentView.setOnClickPendingIntent(R.id.noti_main, PendingIntent.getActivity(mContext, 1, new Intent(mContext, MainActivity.class), 0));
+
+        notification.contentView = contentView;
+        
+        startForeground(ONGOING_NOTIFICATION, notification);
 	}
 	
 	public void borrowDataReceiver(IDataReceiver receiver) throws DolphinException {
@@ -552,7 +570,12 @@ public class RemoteService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.e(TAG, "onStartCommand");
-        
+        Bundle bundle = intent.getExtras();
+        if(bundle != null && bundle.containsKey("close")){
+            Log.e(TAG, "close self");
+            stopForeground(true);
+        	stopSelf();
+        }
 		return super.onStartCommand(intent, flags, startId);
     }
 

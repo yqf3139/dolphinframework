@@ -1,7 +1,9 @@
 package seu.lab.dolphinframework.fragment;
 
 import seu.lab.dolphin.client.Dolphin;
+import seu.lab.dolphin.server.DolphinServerVariables;
 import seu.lab.dolphin.server.RemoteService;
+import seu.lab.dolphin.server.RemoteService.RemoteBinder;
 import seu.lab.dolphinframework.R;
 import seu.lab.dolphinframework.main.GuideActivity;
 import seu.lab.dolphinframework.main.MainActivity;
@@ -9,9 +11,14 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -24,7 +31,11 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 
 public class FragmentMainActivity extends Activity implements OnClickListener {
 	
+	static final String TAG = "FragmentMainActivity";
+	
 	public static RemoteService mService = null;
+	
+	Context mContext = this;
 	
 	private TabIndex tab_index;
 	private TabGesture tab_gesture;
@@ -38,10 +49,33 @@ public class FragmentMainActivity extends Activity implements OnClickListener {
 
 	private FragmentManager fragmentManager;
 
+	private ServiceConnection mConn = new ServiceConnection() {
+		
+		@Override
+		public void onServiceDisconnected(ComponentName arg0) {
+			Log.d(TAG, "Service Disconnected.");
+            Toast.makeText(mContext, TAG + " Service Disconnected.", Toast.LENGTH_SHORT).show();
+            mService = null;
+		}
+		
+		@Override
+		public void onServiceConnected(ComponentName arg0, IBinder binder) {
+			mService = ((RemoteBinder)binder).getRemoteService();
+			Log.d(TAG, " Service Connected.");
+			
+            Toast.makeText(mContext, mService.hello(""), Toast.LENGTH_SHORT).show();  
+			
+		}
+	};
+	
+	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.fragment_main);
-		this.mService = MainActivity.mService;
+
+		startService(new Intent(DolphinServerVariables.REMOTE_SERVICE_NAME));
+		bindService(new Intent(DolphinServerVariables.REMOTE_SERVICE_NAME), mConn, Context.BIND_AUTO_CREATE);
+
 		initViews();
 		fragmentManager = getFragmentManager();
 		setTabSelection(0);

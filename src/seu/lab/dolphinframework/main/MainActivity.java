@@ -50,50 +50,23 @@ public class MainActivity extends Activity {
 
 	static final String TAG = "DFMainActivity";
 	public static Context mContext;
-	public static RemoteService mService = null;
-	
-	private ServiceConnection mConn = new ServiceConnection() {
-		
-		@Override
-		public void onServiceDisconnected(ComponentName arg0) {
-			Log.d(TAG, "Service Disconnected.");
-            Toast.makeText(mContext, TAG + " Service Disconnected.", Toast.LENGTH_SHORT).show();
-            mService = null;
-		}
-		
-		@Override
-		public void onServiceConnected(ComponentName arg0, IBinder binder) {
-			mService = ((RemoteBinder)binder).getRemoteService();
-			Log.d(TAG, " Service Connected.");
-			
-            Toast.makeText(mContext, mService.hello(""), Toast.LENGTH_SHORT).show();  
-			
-		}
-	};
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		mContext = this;
 		if(!AppPreferences.isInitialized(mContext)){
 			Log.i(TAG, "first run: initing Plugin & DB");
-			new Thread(){
-				@Override
-				public void run() {	
-					EventSettings settings = new EventSettings();
-					ScreenSetter setter = settings.new ScreenSetter(mContext); 
-					setter.start();
-					Installer.installAll(mContext);
-					DaoManager daoManager = DaoManager.getDaoManager(mContext);
-					daoManager.createDB();
-					daoManager.updateAllPlugins();
-					AppPreferences.init(mContext);
-					UserPreferences.init(mContext);
-				}
-			}.start();
+			
+			Intent i=new Intent(mContext,FreshmanActivity.class);
+			startActivity(i);
+			finish();
 		}else {
 			// TODO restore prefs
 			AppPreferences.resume(mContext);
 			UserPreferences.refresh(mContext);
+			Intent i=new Intent(mContext,FragmentMainActivity.class);
+			startActivity(i);
+			finish();
 		}
 		
 		super.onCreate(savedInstanceState);
@@ -120,8 +93,9 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				//startActivity(new Intent(getApplicationContext(), GraphActivity.class));
-				Intent i=new Intent(MainActivity.this,FragmentMainActivity.class);
+				Intent i=new Intent(mContext,FreshmanActivity.class);
 				startActivity(i);
+				finish();
 			}
 		});
 		
@@ -179,8 +153,6 @@ public class MainActivity extends Activity {
 			}
 		});
 		
-		startService(new Intent(DolphinServerVariables.REMOTE_SERVICE_NAME));
-		bindService(new Intent(DolphinServerVariables.REMOTE_SERVICE_NAME), mConn, Context.BIND_AUTO_CREATE);
 
 	}
 	

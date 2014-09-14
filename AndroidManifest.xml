@@ -93,6 +93,11 @@
         <activity android:name="seu.lab.dolphinframework.fragment.test_activity"></activity>
         
         <activity android:name="seu.lab.dolphinframework.main.GuideActivity"></activity>
+
+        <activity 
+            android:name="seu.lab.dolphinframework.main.FreshmanActivity"
+            android:theme="@android:style/Theme.NoTitleBar">
+        </activity>
         
     </application>
 

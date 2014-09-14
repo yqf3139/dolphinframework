@@ -18,16 +18,16 @@ public class MotionSensor {
 	private SensorEventListener mListener = new LinearAccelerationListener();
 	float[] accelerometerValues = new float[3];
 	private Context mContext;
-	private MotionSensorCallback callback;
+	private IMotionSensorCallback callback;
 	
-	MotionSensor(Context context, MotionSensorCallback callback){
+	public MotionSensor(Context context, IMotionSensorCallback callback){
 		this.callback = callback;
 		mContext = context;
 		mSensorManager = (SensorManager) mContext.getSystemService(Context.SENSOR_SERVICE);
 		mSensorLinearAcceleration = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 	}
 	
-	void start(){
+	public void start(){
 		if(mSensorLinearAcceleration == null){
 			Log.e(TAG, "mSensorLinearAcceleration = null, nothing to do");
 			return;
@@ -36,7 +36,7 @@ public class MotionSensor {
 		mSensorManager.registerListener(mListener, mSensorLinearAcceleration, SensorManager.SENSOR_DELAY_NORMAL);
 	}
 	
-	void stop(){
+	public void stop(){
 		Log.i(TAG, "stop");
 		mSensorManager.unregisterListener(mListener);
 
@@ -76,9 +76,5 @@ public class MotionSensor {
 		}
 
 	}
-}
-
-abstract class MotionSensorCallback {
-	public abstract void onMotionStateChanged(boolean isInMotion);
 }
 
