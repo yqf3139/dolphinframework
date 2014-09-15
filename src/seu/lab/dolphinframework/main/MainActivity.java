@@ -54,9 +54,95 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		mContext = this;
+		
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		
+//		Button test = (Button) findViewById(R.id.test_btn);
+//		test.setOnClickListener(new OnClickListener() {
+//			
+//			@Override
+//			public void onClick(View arg0) {
+//				//startActivity(new Intent(getApplicationContext(), GraphActivity.class));
+//				DaoManager manager = DaoManager.getDaoManager(mContext);
+//				DaoSession session = manager.getDaoSession();
+//				Plugin plugin = session.getPluginDao().load(1l);
+////				List<Pla>manager.listPlaybackEventsRecord(plugin);
+//			}
+//		});
+//
+//		Button start = (Button) findViewById(R.id.start_btn);
+//		start.setOnClickListener(new OnClickListener() {
+//			
+//			@Override
+//			public void onClick(View arg0) {
+//				//startActivity(new Intent(getApplicationContext(), GraphActivity.class));
+//				Intent i=new Intent(mContext,FreshmanActivity.class);
+//				startActivity(i);
+//				finish();
+//			}
+//		});
+//		
+//		Button trainButton = (Button) findViewById(R.id.train);
+//
+//		trainButton.setOnClickListener(new OnClickListener() {
+//			
+//			@Override
+//			public void onClick(View arg0) {
+//				new Thread(){
+//					@Override
+//					public void run() {
+//						
+//						GestureDao dao = DaoManager.getDaoManager(mContext).getDaoSession().getGestureDao();
+//						
+//						DolphinTrainner trainner = new DolphinTrainner();
+//						try {
+//							JSONArray output;
+//							output = DolphinTrainner.createModel("nf_default.dolphin", new Gesture[]{
+//								dao.load((long) GestureEvent.Gestures.PUSH_PULL.ordinal()),
+//								dao.load((long) GestureEvent.Gestures.SWIPE_LEFT_L.ordinal()),
+//								dao.load((long) GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()),
+//								dao.load((long) GestureEvent.Gestures.SWIPE_LEFT_P.ordinal()),
+//								dao.load((long) GestureEvent.Gestures.SWIPE_RIGHT_P.ordinal()),
+//							});
+//							System.err.println(output.toString());
+//							output = DolphinTrainner.createModel("fn_default.dolphin", new Gesture[]{
+//									dao.load((long) GestureEvent.Gestures.PULL_PUSH.ordinal()),
+//									dao.load((long) GestureEvent.Gestures.SWING_LEFT_L.ordinal()),
+//									dao.load((long) GestureEvent.Gestures.SWING_RIGHT_L.ordinal()),
+//									dao.load((long) GestureEvent.Gestures.SWING_LEFT_P.ordinal()),
+//									dao.load((long) GestureEvent.Gestures.SWING_RIGHT_P.ordinal()),
+//								});
+//							System.err.println(output.toString());
+//							output = DolphinTrainner.createModel("nfnf_default.dolphin", new Gesture[]{
+//									dao.load((long) GestureEvent.Gestures.PUSH_PULL_PUSH_PULL.ordinal()),
+//									dao.load((long) GestureEvent.Gestures.SWIPE_BACK_LEFT_L.ordinal()),
+//									dao.load((long) GestureEvent.Gestures.SWIPE_BACK_RIGHT_L.ordinal()),
+//									dao.load((long) GestureEvent.Gestures.SWIPE_BACK_LEFT_P.ordinal()),
+//									dao.load((long) GestureEvent.Gestures.SWIPE_BACK_RIGHT_P.ordinal()),
+//								});
+//							System.err.println(output.toString());
+//							output = DolphinTrainner.createModel("cr_default.dolphin", new Gesture[]{
+//									dao.load((long) GestureEvent.Gestures.CROSSOVER_CLOCKWISE.ordinal()),
+//									dao.load((long) GestureEvent.Gestures.CROSSOVER_ANTICLOCK.ordinal()),
+//								});
+//							System.err.println(output.toString());
+//						} catch (IOException e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						}
+//					}
+//				}.start();
+//			}
+//		});
+		
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
 		if(!AppPreferences.isInitialized(mContext)){
 			Log.i(TAG, "first run: initing Plugin & DB");
-			
 			Intent i=new Intent(mContext,FreshmanActivity.class);
 			startActivity(i);
 			finish();
@@ -68,107 +154,5 @@ public class MainActivity extends Activity {
 			startActivity(i);
 			finish();
 		}
-		
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		
-
-		
-		Button test = (Button) findViewById(R.id.test_btn);
-		test.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View arg0) {
-				//startActivity(new Intent(getApplicationContext(), GraphActivity.class));
-				DaoManager manager = DaoManager.getDaoManager(mContext);
-				DaoSession session = manager.getDaoSession();
-				Plugin plugin = session.getPluginDao().load(1l);
-//				List<Pla>manager.listPlaybackEventsRecord(plugin);
-			}
-		});
-
-		Button start = (Button) findViewById(R.id.start_btn);
-		start.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View arg0) {
-				//startActivity(new Intent(getApplicationContext(), GraphActivity.class));
-				Intent i=new Intent(mContext,FreshmanActivity.class);
-				startActivity(i);
-				finish();
-			}
-		});
-		
-		Button trainButton = (Button) findViewById(R.id.train);
-
-		trainButton.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View arg0) {
-				new Thread(){
-					@Override
-					public void run() {
-						
-						GestureDao dao = DaoManager.getDaoManager(mContext).getDaoSession().getGestureDao();
-						
-						DolphinTrainner trainner = new DolphinTrainner();
-						try {
-							JSONArray output;
-							output = DolphinTrainner.createModel("nf_default.dolphin", new Gesture[]{
-								dao.load((long) GestureEvent.Gestures.PUSH_PULL.ordinal()),
-								dao.load((long) GestureEvent.Gestures.SWIPE_LEFT_L.ordinal()),
-								dao.load((long) GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()),
-								dao.load((long) GestureEvent.Gestures.SWIPE_LEFT_P.ordinal()),
-								dao.load((long) GestureEvent.Gestures.SWIPE_RIGHT_P.ordinal()),
-							});
-							System.err.println(output.toString());
-							output = DolphinTrainner.createModel("fn_default.dolphin", new Gesture[]{
-									dao.load((long) GestureEvent.Gestures.PULL_PUSH.ordinal()),
-									dao.load((long) GestureEvent.Gestures.SWING_LEFT_L.ordinal()),
-									dao.load((long) GestureEvent.Gestures.SWING_RIGHT_L.ordinal()),
-									dao.load((long) GestureEvent.Gestures.SWING_LEFT_P.ordinal()),
-									dao.load((long) GestureEvent.Gestures.SWING_RIGHT_P.ordinal()),
-								});
-							System.err.println(output.toString());
-							output = DolphinTrainner.createModel("nfnf_default.dolphin", new Gesture[]{
-									dao.load((long) GestureEvent.Gestures.PUSH_PULL_PUSH_PULL.ordinal()),
-									dao.load((long) GestureEvent.Gestures.SWIPE_BACK_LEFT_L.ordinal()),
-									dao.load((long) GestureEvent.Gestures.SWIPE_BACK_RIGHT_L.ordinal()),
-									dao.load((long) GestureEvent.Gestures.SWIPE_BACK_LEFT_P.ordinal()),
-									dao.load((long) GestureEvent.Gestures.SWIPE_BACK_RIGHT_P.ordinal()),
-								});
-							System.err.println(output.toString());
-							output = DolphinTrainner.createModel("cr_default.dolphin", new Gesture[]{
-									dao.load((long) GestureEvent.Gestures.CROSSOVER_CLOCKWISE.ordinal()),
-									dao.load((long) GestureEvent.Gestures.CROSSOVER_ANTICLOCK.ordinal()),
-								});
-							System.err.println(output.toString());
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				}.start();
-				
-			}
-		});
-		
-
-	}
-	
-	@Override
-	protected void onResume() {
-		super.onResume();
-	}
-	
-	@Override
-	protected void onPause() {
-		super.onPause();
-	}
-	
-	@Override
-	protected void onDestroy() {
-        Log.d(TAG, "onDestroy");  
-        super.onDestroy();
 	}
 }

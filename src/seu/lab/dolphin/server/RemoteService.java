@@ -527,7 +527,7 @@ public class RemoteService extends Service {
 	}
 	
 	void showNotification(){
-        Notification notification = new Notification(R.drawable.single_dolphin_clear,
+        Notification notification = new Notification(R.drawable.ic_launcher,
         		"Dolphin 后台服务启动", System.currentTimeMillis());
         
         Intent notificationIntent = new Intent(mContext, seu.lab.dolphinframework.main.MainActivity.class);

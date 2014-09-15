@@ -68,6 +68,8 @@ public class DaoManager implements IDaoManager{
 	
 	private static QueryBuilder<RawGestureData> rawDataQueryBuilder;
 	private static CountQuery<RawGestureData> countQuery;
+	private static CountQuery<DolphinContext> dolphinContextExistQuery;
+
 
 	private static final int[] featureToGestureID = {
 		0,//dummy
@@ -99,6 +101,7 @@ public class DaoManager implements IDaoManager{
 		daoSession = getDaoSession();
 		rawDataQueryBuilder = daoSession.getRawGestureDataDao().queryBuilder();
 		countQuery = rawDataQueryBuilder.where(Properties.Gesture_id.eq(0)).buildCount();
+		dolphinContextExistQuery = daoSession.getDolphinContextDao().queryBuilder().where(seu.lab.dolphin.dao.DolphinContextDao.Properties.Activity_name.eq("")).buildCount();
 	}
 	
 	public static DaoManager getDaoManager(Context context) {
@@ -512,8 +515,10 @@ public class DaoManager implements IDaoManager{
 	public boolean updatePluginWithRuleChanged(Plugin plugin) {
 		Log.i(TAG, "updatePluginWithRuleChanged");
 		// get masks
-		//plugin.refresh();
+		// plugin.refresh();
 		List<Rule> rules = plugin.getRules();
+		Log.e(TAG,"rules "+(rules == null));
+		if(rules == null)return false;
 //		boolean[] masks = new boolean[GestureEvent.gesture.length];
 //		for (int i = 0; i < rules.size(); i++) {
 //			masks[(int) rules.get(i).getGesture_id()] = true;
@@ -529,7 +534,11 @@ public class DaoManager implements IDaoManager{
 			e.printStackTrace();
 		}
 		
+		if(plugin.getDolphinContext() == null)return false;
+		
 		ModelConfig config = plugin.getDolphinContext().getModelConfig();
+		Log.e(TAG,"config "+(config == null));
+
 		JSONArray model_ids = getModel_idsFromMasks(masks);
 		config.setMasks(masks.toString());
 		config.setModel_ids(model_ids.toString());
@@ -557,7 +566,15 @@ public class DaoManager implements IDaoManager{
 
 	@Override
 	public List<Plugin> listAllPlugins() {
-		return daoSession.getPluginDao().loadAll();
+		List<Plugin> list = daoSession.getPluginDao().loadAll();
+		for (int i = 0; i < list.size(); i++) {
+			Plugin plugin = list.get(i);
+			if(plugin.getPlugin_type() == -1){
+				plugin.delete();
+				list.remove(i);
+			}
+		}
+		return list;
 	}
 
 	@Override
@@ -612,20 +629,33 @@ public class DaoManager implements IDaoManager{
 	}
 
 	@Override
-	public boolean addDolphinContextAndPlugin(DolphinContext dolphinContext,
-			Plugin plugin) {
+	public long addPlugin(Plugin plugin) {
+		plugin.setPlugin_type(-1);
 		long plugin_id = daoSession.getPluginDao().insert(plugin);
 		
+		// TODO generate model and get id
+		// updatePluginWithRuleChanged(plugin);
+		
+		return plugin_id;
+	}
+	
+	public long addDolphinContext(DolphinContext dolphinContext, long plugin_id) {
 		dolphinContext.setPlugin_id(plugin_id);
 		dolphinContext.setModelConfig(new ModelConfig(null, "", ""));
 		long dolphin_context_id = daoSession.getDolphinContextDao().insert(dolphinContext);
+		
+		CountQuery<DolphinContext> query = dolphinContextExistQuery.forCurrentThread();
+		query.setParameter(0, dolphinContext.getActivity_name());
+		Plugin plugin = daoSession.getPluginDao().load(plugin_id);
+
+		if(query.count() != 0){
+			plugin.delete();
+			return 0;
+		}
+		
 		plugin.setDolphin_context_id(dolphin_context_id);
 		plugin.update();
-		
-		// TODO generate model and get id
-		updatePluginWithRuleChanged(plugin);
-		
-		return true;
+		return dolphin_context_id;
 	}
 
 	@Override
@@ -645,7 +675,7 @@ public class DaoManager implements IDaoManager{
 	}
 
 	@Override
-	public boolean deleteDolphinContextAndPlugin(Plugin plugin) {
+	public boolean deletePlugin(Plugin plugin) {
 		// TODO Auto-generated method stub
 		// delete rules under a plugin
 		PlaybackEventDao playbackEventDao = daoSession.getPlaybackEventDao();
@@ -663,8 +693,13 @@ public class DaoManager implements IDaoManager{
 		}
 		// delete the dolphin context
 		DolphinContext dolphinContext = plugin.getDolphinContext();
-		ModelConfig modelConfig = dolphinContext.getModelConfig();
-		
+		if(dolphinContext != null){
+			ModelConfig modelConfig = dolphinContext.getModelConfig();
+			if(modelConfig != null)
+				daoSession.getModelConfigDao().delete(modelConfig);
+			dolphinContext.delete();
+
+		}
 			// delete modelconfig
 				// delete models & files
 //		String[] modelString = modelConfig.getModel_ids().split(Pattern.quote("+"));
@@ -719,7 +754,7 @@ public class DaoManager implements IDaoManager{
 	@Override
 	public long countGestureRawData(Gesture gesture) {
 		CountQuery<RawGestureData> query = countQuery.forCurrentThread();
-		query.setParameter(1, gesture.getId());
+		query.setParameter(0, gesture.getId());
 		return query.count();
 	}
 	

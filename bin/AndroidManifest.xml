@@ -82,7 +82,6 @@
             android:name=".main.GraphActivity"
             android:label="title_activity_graph" >
         </activity>
-
         
         <activity android:name="seu.lab.dolphinframework.fragment.FragmentMainActivity"></activity>
         
@@ -93,6 +92,9 @@
         <activity android:name="seu.lab.dolphinframework.fragment.test_activity"></activity>
         
         <activity android:name="seu.lab.dolphinframework.main.GuideActivity"></activity>
+        
+        <activity android:name="seu.lab.dolphinframework.main.InfoActivity"></activity>
+        
 
         <activity 
             android:name="seu.lab.dolphinframework.main.FreshmanActivity"

@@ -70,7 +70,7 @@ public class GuideActivity extends Activity{
 				startActivity(i);
 				
 				FloatViewManager manager = FloatViewManager.getFlowViewManager(mContext);
-				manager.showFloatView(GuideActivity.class, GuideActivity.this, "unlock_script");
+				manager.showFloatViewForRecord(GuideActivity.class, GuideActivity.this, "unlock_script");
 			}
 		});
 		layout_default_settings.setOnClickListener(new OnClickListener() {
@@ -101,11 +101,8 @@ public class GuideActivity extends Activity{
 			@Override
 			public void onClick(View v) {
 				//open guide page
-				Intent i=new Intent(GuideActivity.this, test_activity.class);
-				Bundle data=new Bundle();
-				data.putString("txt"," layout_about_dolphin");
-				i.putExtras(data);
-				GuideActivity.this.startActivity(i);
+				Intent i=new Intent(GuideActivity.this, InfoActivity.class);
+				startActivity(i);
 			}
 		});
 		layout_update.setOnClickListener(new OnClickListener() {

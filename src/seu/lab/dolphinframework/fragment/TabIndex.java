@@ -55,14 +55,6 @@ public class TabIndex extends Fragment implements SurfaceHolder.Callback{
 		hold = sfv.getHolder();
 		hold.addCallback(this);
 		
-		try {
-			FragmentMainActivity.mService.borrowDataReceiver(receiver);
-			Log.i(TAG,"borrowed DataReceiver");
-		} catch (DolphinException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 		return newsLayout;
 	}
 	
@@ -109,11 +101,16 @@ public class TabIndex extends Fragment implements SurfaceHolder.Callback{
 	}
 		
 	class Drawer{
-		int w_screen;
-        int h_screen;
+		float w_screen;
+		float h_screen;
+        
+        float w_feature;		
+        float w_info;
+        
         int density;
     	private Paint mainPaint;
-    	private Paint extraPaint;
+    	private Paint featurePaint;
+		private Paint infoPaint;
     	
     	Drawer(){
     		DisplayMetrics dm = getResources().getDisplayMetrics();
@@ -124,34 +121,43 @@ public class TabIndex extends Fragment implements SurfaceHolder.Callback{
     		mainPaint.setColor(Color.CYAN);
     		mainPaint.setStrokeWidth(1);
     		mainPaint.setAntiAlias(true);
-    		mainPaint.setTextSize(24f);
     		
-    		extraPaint = new Paint();
-    		extraPaint.setColor(Color.BLUE);
-    		extraPaint.setStrokeWidth(20);
-    		extraPaint.setAntiAlias(true);
+    		w_feature = w_screen/20;
+    		w_info = w_screen/100;
+    		
+    		featurePaint = new Paint();
+    		featurePaint.setColor(Color.CYAN);
+    		featurePaint.setStrokeWidth(w_feature);
+    		featurePaint.setAntiAlias(true);
+    		
+    		infoPaint = new Paint();
+    		infoPaint.setColor(Color.BLUE);
+    		infoPaint.setStrokeWidth(w_info);
+    		infoPaint.setAntiAlias(true);
     	}
         
     	private void simpleDraw(double radius, double[] feature, double[] info ) {
-    		Canvas canvas = sfv.getHolder().lockCanvas(new Rect(0, 0, w_screen, sfv.getHeight()));
+    		Canvas canvas = sfv.getHolder().lockCanvas(new Rect(0, 0, (int) w_screen, sfv.getHeight()));
     		if(canvas == null)return;
     		canvas.drawColor(Color.WHITE);
     		//canvas.drawBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.single_dolphin), 100, 100, mainPaint);
     		mainPaint.setAlpha((int) (100*(radius + 1)/4)+50);
+    		featurePaint.setAlpha((int) (100*(radius + 1)/2)+50);
+    		infoPaint.setAlpha((int) (100*(radius + 1)/2)+50);
     		canvas.drawCircle(w_screen/2, sfv.getHeight()/2, (float) (((radius + 1) * w_screen/6) + w_screen/8), mainPaint);
     		
-    		int middle = 100;
+    		int middle = 0;
     		if (null != feature) {
     			for (int i = 0; i < feature.length; i++) {
-    				canvas.drawLine(20 * i + 50, middle, 20 * i + 50, middle
-    						- (float) feature[i] * 1000, extraPaint);
+    				canvas.drawLine(w_feature * i, middle, w_feature * i, middle
+    						- (float) feature[i] * 3000 * density/240, featurePaint);
     			}
     		}
     		middle = sfv.getHeight();
     		if (null != info) {
-    			for (int i = 0; i < info.length; i++) {
-    				canvas.drawLine(10 * i - 800, middle, 10 * i - 800, middle
-    						- (float) info[i] * 600, extraPaint);
+    			for (int i = 50; i < info.length-50; i++) {
+    				canvas.drawLine(w_info * (i-50), middle, w_info * (i-50), middle
+    						- (float)info[i] * 1500 * density /240, infoPaint);
     			}
     		}
     		canvas.save();
@@ -159,9 +165,10 @@ public class TabIndex extends Fragment implements SurfaceHolder.Callback{
     	}
     	
     	private void drawGreetings(){
-    		Canvas canvas = sfv.getHolder().lockCanvas(new Rect(0, 0, w_screen, sfv.getHeight()));
+    		Canvas canvas = sfv.getHolder().lockCanvas(new Rect(0, 0, (int) w_screen, sfv.getHeight()));
     		canvas.drawColor(Color.WHITE);
-    		
+    		mainPaint.setTextSize((float)w_screen/20);
+
     		String greetings = "Dolphin is standing by";
     		canvas.drawText(greetings, 0, greetings.length(), w_screen/4, sfv.getHeight()/4, mainPaint);
     		

@@ -6,23 +6,28 @@
     android:orientation="vertical" >
 
     <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/toggle_sfv" >
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
 
         <SurfaceView
             android:id="@+id/SurfaceView01"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content" />
-        
-        <ImageView
-            android:id="@+id/imageView1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:scaleType="fitCenter"
-            android:src="@drawable/single_dolphin_clear" />
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" >
+
+            <ImageView
+                android:id="@+id/imageView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_centerHorizontal="true"
+                android:scaleType="center"
+                android:src="@drawable/single_dolphin_clear" />
+
+        </RelativeLayout>
 
     </FrameLayout>
 

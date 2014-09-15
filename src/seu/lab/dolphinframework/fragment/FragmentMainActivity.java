@@ -1,6 +1,7 @@
 package seu.lab.dolphinframework.fragment;
 
 import seu.lab.dolphin.client.Dolphin;
+import seu.lab.dolphin.client.DolphinException;
 import seu.lab.dolphin.server.DolphinServerVariables;
 import seu.lab.dolphin.server.RemoteService;
 import seu.lab.dolphin.server.RemoteService.RemoteBinder;
@@ -64,10 +65,15 @@ public class FragmentMainActivity extends Activity implements OnClickListener {
 			Log.d(TAG, " Service Connected.");
 			
             Toast.makeText(mContext, mService.hello(""), Toast.LENGTH_SHORT).show();  
-			
+			try {
+				mService.borrowDataReceiver(tab_index.receiver);
+				Log.i(TAG,"borrowed DataReceiver");
+			} catch (DolphinException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	};
-	
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -188,7 +194,6 @@ public class FragmentMainActivity extends Activity implements OnClickListener {
 		(tab_btn_index.findViewById(R.id.btn_index_pressed)).setBackgroundColor(getcolor_normal);
 		(tab_btn_gesture.findViewById(R.id.btn_gesture_pressed)).setBackgroundColor(getcolor_normal);
 		(tab_btn_expansion.findViewById(R.id.btn_expansion_pressed)).setBackgroundColor(getcolor_normal);
-
 	}
 	
 	@SuppressLint("NewApi")

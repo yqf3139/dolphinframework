@@ -8,7 +8,7 @@
         android:id="@+id/float_bar"
         android:layout_width="62dp"
         android:layout_height="62dp"
-        android:src="@drawable/dolphin_server" />
+        android:src="@drawable/ic_launcher" />
     
 	<Button
         android:id="@+id/float_record_button"
@@ -23,5 +23,11 @@
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:text="playback" />
+	<Button
+        android:id="@+id/float_pick_button"
+       	style="?android:attr/buttonStyleSmall"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:text="pick" />
 
 </LinearLayout>

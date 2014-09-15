@@ -15,6 +15,8 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -22,6 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import org.json.JSONException;
@@ -33,6 +36,7 @@ import seu.lab.dolphin.client.DolphinException;
 import seu.lab.dolphin.client.GestureEvent;
 import seu.lab.dolphin.client.IDolphinStateCallback;
 import seu.lab.dolphin.client.IGestureListener;
+import seu.lab.dolphin.server.AppPreferences;
 import seu.lab.dolphin.server.DaoManager;
 import seu.lab.dolphin.server.IMotionSensorCallback;
 import seu.lab.dolphin.server.MotionSensor;
@@ -51,7 +55,7 @@ public class FreshmanActivity extends Activity {
 	boolean canTouch = false;
 	boolean inMotion = false;
 	boolean coreReady = false;
-
+	
     // 显示导航页面的viewpager
     private ViewPager guideViewPager;
 
@@ -63,7 +67,8 @@ public class FreshmanActivity extends Activity {
 
     // 图片资源，这里我们放入了5张图片，因为第6张图片，我们已经在freshman_content_view.xml中加载好了
     private final int images[] = {
-            R.drawable.freshman_page1_welcome, R.drawable.freshman_page2_close, R.drawable.freshman_page3_away, R.drawable.freshman_page4_clap, R.drawable.freshman_page5_horizon
+            R.drawable.freshman_page1_welcome, R.drawable.freshman_page2_close, R.drawable.freshman_page3_away, R.drawable.freshman_page4_clap,
+            R.drawable.freshman_page5_up_down_up, R.drawable.freshman_page6_freq, R.drawable.freshman_page7_horizon
     };
 
     // 底部导航的小点
@@ -75,16 +80,12 @@ public class FreshmanActivity extends Activity {
     private Button startBtn;
     private Button skipBtn;
     private TextView completeTextView;
+    private TextView freqTextView;
     private ProgressBar completeProcessBar;
 
-    public Handler handler = new Handler(){
-    	public void handleMessage(android.os.Message msg) {
-    		Toast.makeText(mContext, "install complete", Toast.LENGTH_SHORT).show();
-			completeProcessBar.setVisibility(View.GONE);
-			completeTextView.setText("Dolphin初始化完成");
-			startBtn.setVisibility(View.VISIBLE);
-    	}
-    };
+    public Handler handler = new Handler();
+    
+    DecimalFormat format = new DecimalFormat("0.00");
     
     Context mContext = this;
     
@@ -101,7 +102,7 @@ public class FreshmanActivity extends Activity {
 				e.printStackTrace();
 			}
 			canTouch = true;
-			new Handler(mContext.getMainLooper()).post(new Runnable() {
+			handler.post(new Runnable() {
 				@Override
 				public void run() {
 					selectPage(1);
@@ -119,36 +120,114 @@ public class FreshmanActivity extends Activity {
     
     IGestureListener listener = new IGestureListener() {
 		
+    	int next = 0;
+    	boolean[] two = new boolean[2];
+    	String msg = null;
+
 		@Override
 		public void onGesture(GestureEvent event) {
 			if(event.isConclusion){
-				if(currentIndex < 5){
-					new Handler(mContext.getMainLooper()).post(new Runnable() {
-						@Override
-						public void run() {
-							selectPage(currentIndex+1);
-						}
-					});
+				next = 0;
+				msg = null;
+				switch (currentIndex) {
+				case 0:
+					if(event.isFast)
+						next = 1;
+					break;
+				case 1:
+					if(event.type == GestureEvent.Gestures.PUSH.ordinal())
+						next = 2;
+					break;
+				case 2:
+					if(event.type == GestureEvent.Gestures.PULL.ordinal())
+						next = 3;
+					break;
+				case 3:
+					if(event.type == GestureEvent.Gestures.PUSH_PULL.ordinal()
+							|| event.type == GestureEvent.Gestures.SWIPE_LEFT_P.ordinal()
+							|| event.type == GestureEvent.Gestures.SWIPE_RIGHT_P.ordinal())
+						next = 4;
+					break;
+				case 4:
+					if(event.type == GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal()){
+						next = 5;
+					}
+					break;
+				case 5:
+					msg = "请连续挥动";
+					break;
+				case 6:
+					if(event.type == GestureEvent.Gestures.SWIPE_LEFT_L.ordinal()){
+						two[0] = true;
+						if(!two[1])msg = "再试试右滑";
+						if(two[0] && two[1])next = 7;
+					}
+					if(event.type == GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()){
+						two[1] = true;
+						if(!two[0])msg = "再试试左滑";
+						if(two[0] && two[1])next = 7;
+					}
+//					if(event.type == GestureEvent.Gestures.SWIPE_LEFT_L.ordinal()
+//						||event.type == GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()){
+//						next = 7;
+//					} 
+					break;
+				default:
+					break;
 				}
+				handler.post(new Runnable() {
+					@Override
+					public void run() {
+						if(next != 0) selectPage(next);
+						if(msg != null)
+							Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
+					}
+				});
 			}
 		}
 		
 		@Override
 		public void onContinuousGestureUpdate(ContinuousGestureEvent arg0) {
 			// TODO Auto-generated method stub
-			
+			final String freq = format.format(arg0.freq);
+			if(currentIndex == 5)
+				handler.post(new Runnable() {
+					
+					@Override
+					public void run() {
+						freqTextView.setText("频率："+freq+" Hz");
+					}
+				});
 		}
 		
 		@Override
 		public void onContinuousGestureStart(ContinuousGestureEvent arg0) {
 			// TODO Auto-generated method stub
-			
+			final String freq = format.format(arg0.freq);
+			if(currentIndex == 5)
+				handler.post(new Runnable() {
+					
+					@Override
+					public void run() {
+						freqTextView.setVisibility(View.VISIBLE);
+						freqTextView.setText("频率："+freq+" Hz");
+					}
+				});
+
 		}
 		
 		@Override
 		public void onContinuousGestureEnd() {
 			// TODO Auto-generated method stub
-			
+			if(currentIndex == 5)
+				handler.post(new Runnable() {
+					
+					@Override
+					public void run() {
+						freqTextView.setVisibility(View.GONE);
+						selectPage(6);
+					}
+				});
 		}
 		
 		@Override
@@ -163,6 +242,7 @@ public class FreshmanActivity extends Activity {
 				masks.put(""+GestureEvent.Gestures.SWIPE_LEFT_L.ordinal(),true);
 				masks.put(""+GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal(),true);
 				masks.put(""+GestureEvent.Gestures.PUSH_PULL.ordinal(),true);
+				masks.put(""+GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal(),true);
 				config.put("masks", masks);
 			} catch (JSONException e) {
 				Log.e(TAG, e.toString());
@@ -190,6 +270,8 @@ public class FreshmanActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        
         setContentView(R.layout.freshman_view_main);
 
         initView();
@@ -230,19 +312,23 @@ public class FreshmanActivity extends Activity {
 
             @Override
             public void onClick(View v) {
+                FreshmanActivity.this.finish();
+            	try {
+        			dolphin.stop();
+        		} catch (DolphinException e) {
+        			// TODO Auto-generated catch block
+        			e.printStackTrace();
+        		}
                 // 我们随便跳转一个页面
                 Intent intent = new Intent(FreshmanActivity.this, FragmentMainActivity.class);
                 startActivity(intent);
-                FreshmanActivity.this.finish();
             }
         });
         skipBtn.setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(FreshmanActivity.this, FragmentMainActivity.class);
-                startActivity(intent);
-                FreshmanActivity.this.finish();
+            	selectPage(5);
             }
         });
         
@@ -285,11 +371,21 @@ public class FreshmanActivity extends Activity {
         startBtn = (Button) view.findViewById(R.id.freshman_start_btn);
         skipBtn=(Button) findViewById(R.id.freshman_button_skip);
         completeTextView=(TextView) view.findViewById(R.id.freshman_textView_complete);
+        freqTextView = (TextView) findViewById(R.id.freq);
         completeProcessBar=(ProgressBar) view.findViewById(R.id.freshman_progressBar);
+        
         // 现在用到我们的页面适配器了
         guideViewAdapter = new ViewPagerAdapter(mViews);
 
         guideViewPager.setAdapter(guideViewAdapter);
+        guideViewPager.setOnTouchListener(new OnTouchListener() {
+			
+			@Override
+			public boolean onTouch(View arg0, MotionEvent arg1) {
+				// TODO Auto-generated method stub
+				return !canTouch;
+			}
+		});
     }
 
     // 初始化导航小点
@@ -344,23 +440,7 @@ public class FreshmanActivity extends Activity {
 		}
     	super.onStop();
     }
-    
-//    @Override
-//    public boolean onTouchEvent(MotionEvent arg0) {
-//    	Log.e("onTouchEvent", ""+canTouch);
-//      if(canTouch)
-//    	  return super.onTouchEvent(arg0);
-//      else return false;
-//    }
-    
-//    @Override
-//    public boolean dispatchTouchEvent(MotionEvent ev) {
-//    	Log.e("dispatchTouchEvent", ""+canTouch);
-//
-//    	if(canTouch)
-//    		return super.dispatchGenericMotionEvent(ev);
-//    	else return false;
-//    }
+
     
     class InstallThread extends Thread{
 		@Override
@@ -372,10 +452,18 @@ public class FreshmanActivity extends Activity {
 			DaoManager daoManager = DaoManager.getDaoManager(mContext);
 			daoManager.createDB();
 			daoManager.updateAllPlugins();
-			//AppPreferences.init(mContext);
+			AppPreferences.init(mContext);
 			UserPreferences.init(mContext);
 			
-			handler.obtainMessage().sendToTarget();
+			handler.post(new Runnable() {
+				
+				@Override
+				public void run() {
+					completeProcessBar.setVisibility(View.GONE);
+					completeTextView.setText("Dolphin初始化完成");
+					startBtn.setVisibility(View.VISIBLE);
+				}
+			});
 		}
     }
     

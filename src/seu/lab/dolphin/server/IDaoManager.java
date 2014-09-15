@@ -29,11 +29,11 @@ public interface IDaoManager {
 	
 	long addPlaybackEvent(PlaybackEvent playbackEvent);
 	long addRule(Rule rule);
-	boolean addDolphinContextAndPlugin(DolphinContext dolphinContext, Plugin plugin);
+	long addPlugin(Plugin plugin);
 	
 	boolean deletePlaybackEvent(PlaybackEvent playbackEvent);
 	boolean deleteRule(Rule rule);
-	boolean deleteDolphinContextAndPlugin(Plugin plugin);
+	boolean deletePlugin(Plugin plugin);
 	
 	boolean deleteRawGestureData(RawGestureData rawGestureData);
 	

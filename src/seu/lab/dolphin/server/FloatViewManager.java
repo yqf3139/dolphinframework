@@ -1,11 +1,14 @@
 package seu.lab.dolphin.server;
 
+import seu.lab.dolphin.dao.DolphinContext;
 import seu.lab.dolphin.sysplugin.EventRecordWatcher;
 import seu.lab.dolphin.sysplugin.EventRecorder;
 import seu.lab.dolphin.sysplugin.EventSenderForPlayback;
 import seu.lab.dolphinframework.R;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
@@ -38,6 +41,8 @@ public class FloatViewManager {
 	WindowManager mWindowManager;
 	Button mFloatRecordButton;
 	Button mFloatPlaybackButton;
+	Button mFloatPickButton;
+
 	ImageView mFloatbarImage;
 
 	Handler mHandler = new Handler() {
@@ -49,13 +54,7 @@ public class FloatViewManager {
 			mFloatRecordButton.setText(Text);
 			
 			if(Text.equals("record") && backClass != null && backActivity != null){
-				Intent intent = new Intent(mContext, backClass);
-				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				hideFloatView();
-				backActivity.finish();
-
-				Toast.makeText(mContext, "录制成功", Toast.LENGTH_SHORT).show();
-				mContext.startActivity(intent);
+				jumpBack("录制成功");
 			}
 		}
 	};
@@ -65,6 +64,8 @@ public class FloatViewManager {
 	private Activity backActivity;
 
 	private String scriptName;
+
+	private long pluginId;
 	
 	private FloatViewManager(Context context){
 		this.mContext = context;
@@ -95,6 +96,7 @@ public class FloatViewManager {
 		mFloatbarImage = (ImageView) mFloatLayout.findViewById(R.id.float_bar);
 		mFloatRecordButton = (Button) mFloatLayout.findViewById(R.id.float_record_button);
 		mFloatPlaybackButton = (Button) mFloatLayout.findViewById(R.id.float_playback_button);
+		mFloatPickButton = (Button) mFloatLayout.findViewById(R.id.float_pick_button);
 		mFloatLayout.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), 
 				View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
 		
@@ -180,15 +182,57 @@ public class FloatViewManager {
 			}
 		});
 
+		mFloatPickButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				ActivityManager am = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
+				ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
+				final String name = cn.getClassName();
+				mHandler.post(new Runnable() {
+					
+					@Override
+					public void run() {
+						DolphinContext context = new DolphinContext(null, name, "still", 0l, 0l);
+						long id = DaoManager.getDaoManager(mContext).addDolphinContext(context, pluginId);
+						if(id == 0){
+							jumpBack("重复的插件环境");
+						}else {
+							jumpBack("插件环境选择成功");
+						}
+					}
+				});
+			}
+		});
+		
 	}
 
-	public void showFloatView(Class<?> back, Activity backActivity, String name) {
+	public void showFloatViewForRecord(Class<?> back, Activity backActivity, String name) {
 		backClass = back;
 		scriptName = name;
 		this.backActivity = backActivity;
 		if(mFloatLayout == null)createFloatView();
-		if(!mFloatLayout.isShown())
+		if(!mFloatLayout.isShown()){
+			mFloatRecordButton.setVisibility(View.VISIBLE);
+			mFloatPlaybackButton.setVisibility(View.VISIBLE);
+			mFloatPickButton.setVisibility(View.GONE);
+
 			mWindowManager.addView(mFloatLayout, wmParams);
+		}
+	}
+	
+	public void showFloatViewForActivity(Class<?> back, Activity backActivity, long plugin_id) {
+		backClass = back;
+		pluginId = plugin_id;
+		this.backActivity = backActivity;
+		if(mFloatLayout == null)createFloatView();
+		if(!mFloatLayout.isShown()){
+			mFloatRecordButton.setVisibility(View.GONE);
+			mFloatPlaybackButton.setVisibility(View.GONE);
+			mFloatPickButton.setVisibility(View.VISIBLE);
+			
+			mWindowManager.addView(mFloatLayout, wmParams);
+		}
 	}
 	
 	public void hideFloatView() {
@@ -196,5 +240,14 @@ public class FloatViewManager {
 		if(mFloatLayout.isShown())
 			mWindowManager.removeView(mFloatLayout);
 	}
-	
+		
+	void jumpBack(String toastMsg){
+		Intent intent = new Intent(mContext, backClass);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		hideFloatView();
+		backActivity.finish();
+
+		Toast.makeText(mContext, toastMsg, Toast.LENGTH_SHORT).show();
+		mContext.startActivity(intent);
+	}
 }
