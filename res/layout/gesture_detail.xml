@@ -56,57 +56,79 @@
             android:textAppearance="?android:attr/textAppearanceMedium" />
     </RelativeLayout>
 
-    <RelativeLayout
-        android:id="@+id/layout_gesture_detail_samples"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" >
-
-        <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="查看并管理样本数据"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    </RelativeLayout>
-
-   <RelativeLayout
-        android:id="@+id/layout_gesture_detail_new_sample"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" >
-
-        <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="增加新样本"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    </RelativeLayout>
+  	<ScrollView
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content" >
+            <LinearLayout
+                android:orientation="vertical" 
+           	    android:layout_width="match_parent"
+	    		android:layout_height="wrap_content" >
+	    		    <RelativeLayout
+				        android:id="@+id/layout_gesture_detail_samples"
+				        android:layout_width="fill_parent"
+				        android:layout_height="wrap_content" >
+				
+				        <TextView
+				        android:layout_width="wrap_content"
+				        android:layout_height="wrap_content"
+				        android:layout_margin="10dp"
+				        android:text="查看并管理样本数据"
+				        android:textAppearance="?android:attr/textAppearanceMedium" />
+				
+				    </RelativeLayout>
+				
+				   <RelativeLayout
+				        android:id="@+id/layout_gesture_detail_new_sample"
+				        android:layout_width="fill_parent"
+				        android:layout_height="wrap_content" >
+				
+				        <TextView
+				        android:layout_width="wrap_content"
+				        android:layout_height="wrap_content"
+				        android:layout_margin="10dp"
+				        android:text="增加新样本"
+				        android:textAppearance="?android:attr/textAppearanceMedium" />
+				
+				    </RelativeLayout>
+				    
+				    <RelativeLayout
+				        android:layout_width="wrap_content"
+				        android:layout_height="wrap_content"
+				        android:id="@+id/layout_gesture_detail_accuracy" >
+				
+				        <TextView
+				            android:layout_width="wrap_content"
+				            android:layout_height="wrap_content"
+				            android:layout_alignParentLeft="true"
+				            android:layout_centerVertical="true"
+				            android:layout_margin="10dp"
+				            android:text="准确度"
+				            android:textAppearance="?android:attr/textAppearanceMedium" />
+				        <TextView
+				            android:id="@+id/textView_gesture_detail_accuracy"
+				            android:layout_width="wrap_content"
+				            android:layout_height="wrap_content"
+				            android:layout_alignParentRight="true"
+				            android:layout_centerVertical="true"
+				            android:layout_marginRight="30dp"
+				            android:text="temp"
+				            android:background="@drawable/boder"
+				            android:textAppearance="?android:attr/textAppearanceMedium" />
+				    </RelativeLayout>
     
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/layout_gesture_detail_accuracy" >
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_centerVertical="true"
-            android:layout_margin="10dp"
-            android:text="准确度"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-        <TextView
-            android:id="@+id/textView_gesture_detail_accuracy"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="30dp"
-            android:text="temp"
-            android:background="@drawable/boder"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-    </RelativeLayout>
+	
+			    <LinearLayout
+			        android:id="@+id/graph_linear_layout"
+			        android:layout_width="match_parent"
+			        android:layout_height="wrap_content"
+			        android:orientation="vertical" >
+			    </LinearLayout>
+   			</LinearLayout>
+
+
+	    
+	
+	</ScrollView>
 
 </LinearLayout>

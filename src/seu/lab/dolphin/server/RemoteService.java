@@ -161,10 +161,19 @@ public class RemoteService extends Service {
 			if(!event.isConclusion){
 				return;
 			}
+			Log.e(TAG, event.toString());
+			
+			final String rs = event.result;
+			new Handler(getMainLooper()).post(new Runnable() {
+				
+				@Override
+				public void run() {
+					Toast.makeText(mContext, rs, Toast.LENGTH_SHORT).show();
+				}
+			});
 			
 			lastEventTime = System.currentTimeMillis();
 			
-			Log.e(TAG, event.toString());
 			
 			screenlocked = isScreenLocked();
 			screenOn = isScreenOn();
@@ -206,6 +215,11 @@ public class RemoteService extends Service {
 					Log.e(TAG, "unlock");
 
 				}
+				return;
+			}
+			
+			if(currentPlugin.getPlugin_type() != 0){
+				Log.i(TAG, "currentPlugin is disabled, drop event");
 				return;
 			}
 			
@@ -570,6 +584,9 @@ public class RemoteService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.e(TAG, "onStartCommand");
+        if(intent == null)		
+        	return super.onStartCommand(intent, flags, startId);
+
         Bundle bundle = intent.getExtras();
         if(bundle != null && bundle.containsKey("close")){
             Log.e(TAG, "close self");
@@ -680,9 +697,12 @@ public class RemoteService extends Service {
 				
 				Log.i(TAG, "matching context for "+activityName);
 
+				Log.i(TAG, currentDolphinContext.getModelConfig().getMasks());
+				Log.i(TAG, currentDolphinContext.getModelConfig().getModel_ids());
+
 				if(activityName.equals(currentDolphinContext.getActivity_name()))
 					continue;
-				
+								
 				query.setParameter(0, activityName);
 				List<DolphinContext> res = query.list();
 				if(res.size() == 1){

@@ -1,16 +1,19 @@
 package seu.lab.dolphin.server;
 
 import seu.lab.dolphin.dao.DolphinContext;
+import seu.lab.dolphin.dao.Plugin;
 import seu.lab.dolphin.sysplugin.EventRecordWatcher;
 import seu.lab.dolphin.sysplugin.EventRecorder;
 import seu.lab.dolphin.sysplugin.EventSenderForPlayback;
 import seu.lab.dolphinframework.R;
+import android.R.integer;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.Handler;
@@ -42,22 +45,11 @@ public class FloatViewManager {
 	Button mFloatRecordButton;
 	Button mFloatPlaybackButton;
 	Button mFloatPickButton;
+	Button mFloatDropButton;
 
 	ImageView mFloatbarImage;
 
-	Handler mHandler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			super.handleMessage(msg);
-			Bundle bundle = msg.getData();
-			String Text = bundle.getString("text");
-			mFloatRecordButton.setText(Text);
-			
-			if(Text.equals("record") && backClass != null && backActivity != null){
-				jumpBack("录制成功");
-			}
-		}
-	};
+	Handler mHandler = new Handler();
 
 	private Class<?> backClass = null;
 
@@ -66,6 +58,10 @@ public class FloatViewManager {
 	private String scriptName;
 
 	private long pluginId;
+	
+	private int type = 0;
+	
+	private int state = -1;
 	
 	private FloatViewManager(Context context){
 		this.mContext = context;
@@ -97,6 +93,7 @@ public class FloatViewManager {
 		mFloatRecordButton = (Button) mFloatLayout.findViewById(R.id.float_record_button);
 		mFloatPlaybackButton = (Button) mFloatLayout.findViewById(R.id.float_playback_button);
 		mFloatPickButton = (Button) mFloatLayout.findViewById(R.id.float_pick_button);
+		mFloatDropButton = (Button) mFloatLayout.findViewById(R.id.float_drop_button);
 		mFloatLayout.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), 
 				View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
 		
@@ -129,47 +126,59 @@ public class FloatViewManager {
 			@Override
 			public void onClick(View v) {
 
-				if (mFloatRecordButton.getText().equals("record")) {
+				switch (state) {
+				case -1: // not start
 					new EventRecordWatcher(new EventRecorder(5,scriptName)).start();
+					state = 5;
 					new Thread() {
 						public void run() {
 							int num = 5;
-							Message msg = new Message();
-							Bundle bundle = new Bundle();
-							bundle.putString("text", Integer.toString(num));
-							msg.setData(bundle);
-							mHandler.sendMessage(msg);
+							mHandler.post(new Runnable() {
+								
+								@Override
+								public void run() {
+									mFloatRecordButton.setText(Integer.toString(5));
+									mFloatRecordButton.setBackgroundColor(Color.BLACK);
+								}
+							});
 							while (num > 0) {
 								try {
 									sleep(1000);
-									msg = new Message();
-									bundle = new Bundle();
-									bundle.putString("text",
-											Integer.toString(--num));
-									msg.setData(bundle);
-									mHandler.sendMessage(msg);
+									final int a = --num;
+									mHandler.post(new Runnable() {
+										
+										@Override
+										public void run() {
+											mFloatRecordButton.setText(Integer.toString(a));
+										}
+									});
+
 								} catch (InterruptedException e) {
 									e.printStackTrace();
 								}
 							}
 							try {
 								sleep(1000);
-								msg = new Message();
-								bundle = new Bundle();
-								bundle.putString("text", "confirm");
-								msg.setData(bundle);
-								mHandler.sendMessage(msg);
+								state = -1;// tobe confirmed
+								mHandler.post(new Runnable() {
+									
+									@Override
+									public void run() {
+										mFloatRecordButton.setText("");
+										mFloatRecordButton.setBackgroundResource(android.R.drawable.ic_menu_add);
+										mFloatPickButton.setVisibility(View.VISIBLE);
+										mFloatPlaybackButton.setVisibility(View.VISIBLE);
+									}
+								});
 							} catch (InterruptedException e) {
 								e.printStackTrace();
 							}
 						}
 					}.start();
-				} else if (mFloatRecordButton.getText().equals("confirm")) {
-					Message msg = new Message();
-					Bundle bundle = new Bundle();
-					bundle.putString("text", "record");
-					msg.setData(bundle);
-					mHandler.sendMessage(msg);
+					break;
+
+				default:
+					break;
 				}
 			}
 		});
@@ -186,6 +195,10 @@ public class FloatViewManager {
 			
 			@Override
 			public void onClick(View arg0) {
+				if(type == 1){
+					jumpBack("录制成功");
+					return;
+				}
 				ActivityManager am = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
 				ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
 				final String name = cn.getClassName();
@@ -205,16 +218,26 @@ public class FloatViewManager {
 			}
 		});
 		
+		mFloatDropButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				clean();
+				jumpBack("放弃选取");
+			}
+		});
+		
 	}
 
 	public void showFloatViewForRecord(Class<?> back, Activity backActivity, String name) {
+		type = 1;
 		backClass = back;
 		scriptName = name;
 		this.backActivity = backActivity;
 		if(mFloatLayout == null)createFloatView();
 		if(!mFloatLayout.isShown()){
 			mFloatRecordButton.setVisibility(View.VISIBLE);
-			mFloatPlaybackButton.setVisibility(View.VISIBLE);
+			mFloatPlaybackButton.setVisibility(View.GONE);
 			mFloatPickButton.setVisibility(View.GONE);
 
 			mWindowManager.addView(mFloatLayout, wmParams);
@@ -222,6 +245,7 @@ public class FloatViewManager {
 	}
 	
 	public void showFloatViewForActivity(Class<?> back, Activity backActivity, long plugin_id) {
+		type = 2;
 		backClass = back;
 		pluginId = plugin_id;
 		this.backActivity = backActivity;
@@ -240,7 +264,22 @@ public class FloatViewManager {
 		if(mFloatLayout.isShown())
 			mWindowManager.removeView(mFloatLayout);
 	}
-		
+
+	void clean(){
+		switch (type) {
+		case 1:
+			
+			break;
+		case 2:
+			Plugin plugin = DaoManager.getDaoManager(mContext).getDaoSession().getPluginDao().load(pluginId);
+			if(plugin != null)
+				DaoManager.getDaoManager(mContext).deletePlugin(plugin);
+			break;
+		default:
+			break;
+		}
+	}
+	
 	void jumpBack(String toastMsg){
 		Intent intent = new Intent(mContext, backClass);
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

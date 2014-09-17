@@ -332,8 +332,6 @@ public class FreshmanActivity extends Activity {
             }
         });
         
-        new InstallThread().start();
-                
         try {
 			dolphin = Dolphin.getInstance(
 					(AudioManager) getSystemService(Context.AUDIO_SERVICE), 
@@ -346,6 +344,9 @@ public class FreshmanActivity extends Activity {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+        
+        new InstallThread().start();
+
     }
 
     // 初始化页面
@@ -421,12 +422,6 @@ public class FreshmanActivity extends Activity {
 
     @Override
     protected void onStart() {
-    	try {
-			dolphin.prepare();
-		} catch (DolphinException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
     	super.onStart();
     }
     
@@ -444,11 +439,19 @@ public class FreshmanActivity extends Activity {
     
     class InstallThread extends Thread{
 		@Override
-		public void run() {	
+		public void run() {
+			Installer.installAll(mContext);
+
+	    	try {
+				dolphin.prepare();
+			} catch (DolphinException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			EventSettings settings = new EventSettings();
 			ScreenSetter setter = settings.new ScreenSetter(mContext); 
 			setter.start();
-			Installer.installAll(mContext);
 			DaoManager daoManager = DaoManager.getDaoManager(mContext);
 			daoManager.createDB();
 			daoManager.updateAllPlugins();

@@ -180,8 +180,7 @@ public class GuideActivity extends Activity{
                 	Log.i(TAG,"switch_guide_sleep switch off");
                 }  
             }  
-        }); 
-
+        });
 	}
 	
 	void setSwitches(){

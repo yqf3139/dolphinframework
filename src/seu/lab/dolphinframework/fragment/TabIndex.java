@@ -141,9 +141,9 @@ public class TabIndex extends Fragment implements SurfaceHolder.Callback{
     		if(canvas == null)return;
     		canvas.drawColor(Color.WHITE);
     		//canvas.drawBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.single_dolphin), 100, 100, mainPaint);
-    		mainPaint.setAlpha((int) (100*(radius + 1)/4)+50);
-    		featurePaint.setAlpha((int) (100*(radius + 1)/2)+50);
-    		infoPaint.setAlpha((int) (100*(radius + 1)/2)+50);
+    		mainPaint.setAlpha((int) (200*(radius + 1)/4)+50);
+    		featurePaint.setAlpha((int) (200*(radius + 1)/2)+50);
+    		infoPaint.setAlpha((int) (200*(radius + 1)/2)+50);
     		canvas.drawCircle(w_screen/2, sfv.getHeight()/2, (float) (((radius + 1) * w_screen/6) + w_screen/8), mainPaint);
     		
     		int middle = 0;
@@ -166,10 +166,12 @@ public class TabIndex extends Fragment implements SurfaceHolder.Callback{
     	
     	private void drawGreetings(){
     		Canvas canvas = sfv.getHolder().lockCanvas(new Rect(0, 0, (int) w_screen, sfv.getHeight()));
+    		if(canvas == null)return;
     		canvas.drawColor(Color.WHITE);
     		mainPaint.setTextSize((float)w_screen/20);
+    		mainPaint.setAlpha(255);
 
-    		String greetings = "Dolphin is standing by";
+    		String greetings = "Dolphin 准备就绪";
     		canvas.drawText(greetings, 0, greetings.length(), w_screen/4, sfv.getHeight()/4, mainPaint);
     		
     		canvas.save();

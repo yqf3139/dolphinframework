@@ -2,32 +2,44 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="vertical" >
+    android:gravity="center_horizontal"
+    android:orientation="horizontal" >
 
     <ImageView
         android:id="@+id/float_bar"
-        android:layout_width="62dp"
-        android:layout_height="62dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:src="@drawable/ic_launcher" />
     
 	<Button
         android:id="@+id/float_record_button"
        	style="?android:attr/buttonStyleSmall"
+       	android:textSize="20sp"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:text="record" />
+        android:background="@android:drawable/ic_menu_add"
+        android:text="" />
 	
 	<Button
         android:id="@+id/float_playback_button"
        	style="?android:attr/buttonStyleSmall"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:text="playback" />
+        android:background="@android:drawable/ic_menu_slideshow"/>
+	
 	<Button
         android:id="@+id/float_pick_button"
        	style="?android:attr/buttonStyleSmall"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:text="pick" />
+        android:background="@android:drawable/ic_menu_save" />
+	
+	<Button
+        android:id="@+id/float_drop_button"
+       	style="?android:attr/buttonStyleSmall"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:background="@android:drawable/ic_menu_delete" />
+
 
 </LinearLayout>

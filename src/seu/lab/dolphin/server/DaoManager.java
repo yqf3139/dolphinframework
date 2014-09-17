@@ -70,7 +70,6 @@ public class DaoManager implements IDaoManager{
 	private static CountQuery<RawGestureData> countQuery;
 	private static CountQuery<DolphinContext> dolphinContextExistQuery;
 
-
 	private static final int[] featureToGestureID = {
 		0,//dummy
 		GestureEvent.Gestures.PUSH_PULL.ordinal(),
@@ -93,6 +92,72 @@ public class DaoManager implements IDaoManager{
 
 		GestureEvent.Gestures.CROSSOVER_CLOCKWISE.ordinal(),
 		GestureEvent.Gestures.CROSSOVER_ANTICLOCK.ordinal(),
+
+	};
+	
+	private static final String[] gestureToChinese = {
+		"静止",//dummy
+		"推",
+		"拉",
+		"推拉推",
+		"拉推拉",
+		"拉推拉推",
+		
+		"推拉",
+		"拉推",
+		"推拉推拉",
+
+		"横屏左滑",
+		"横屏右滑",
+		"竖屏左滑",
+		"竖屏右滑",
+
+		"横屏左摆",
+		"横屏右摆",
+		"竖屏左摆",
+		"竖屏右摆",
+		
+		"横屏左滑回",
+		"横屏右滑回",
+		"竖屏左滑回",
+		"竖屏右滑回",
+		
+		"双手交错",
+		"顺时针交错",
+		"逆时针交错"
+
+	};
+	
+	private static final String[] gestureDiscription = {
+		"静止",//dummy
+		"持续接近设备",
+		"持续远离设备",
+		"先接近设备，而后远离，最终接近",
+		"先远离设备，而后接近，最终远离",
+		"连续做两次拉推动作",
+		
+		"先接近设备，而后远离",
+		"先远离设备，而后接近",
+		"连续做两次推拉动作",
+
+		"设备横屏放置，手沿设备右端向左端自然滑过",
+		"设备横屏放置，手沿设备左端向右端自然滑过",
+		"设备竖屏放置，手沿设备右端向左端自然滑过",
+		"设备竖屏放置，手沿设备左端向右端自然滑过",
+		
+		"设备横屏放置，手置于设备中心，手滑向左端然后返回初始位置",
+		"设备横屏放置，手置于设备中心，手滑向右端然后返回初始位置",
+		"设备竖屏放置，手置于设备中心，手滑向左端然后返回初始位置",
+		"设备竖屏放置，手置于设备中心，手滑向右端然后返回初始位置",
+		
+		"设备横屏放置，手沿设备右端向左端自然滑过，再返回初始位置",
+		"设备横屏放置，手沿设备左端向右端自然滑过，再返回初始位置",
+		"设备竖屏放置，手沿设备右端向左端自然滑过，再返回初始位置",
+		"设备竖屏放置，手沿设备左端向右端自然滑过，再返回初始位置",
+		
+		"左右手分别远离和接近设备",
+		"左手远离，右手接近设备",
+		"右手远离，左手接近设备"
 
 	};
 	
@@ -139,41 +204,57 @@ public class DaoManager implements IDaoManager{
 		TrainingRelationDao trainingRelationDao = daoSession.getTrainingRelationDao();
 		
 		KeyEvent[] keyEvents = new KeyEvent[]{
-				new KeyEvent(null, "back", EventSenderForKey.KEYCODE_BACK),
-				new KeyEvent(null, "call", EventSenderForKey.KEYCODE_CALL),
-				new KeyEvent(null, "camera", EventSenderForKey.KEYCODE_CAMERA),
-				new KeyEvent(null, "clear", EventSenderForKey.KEYCODE_CLEAR),
-				new KeyEvent(null, "dpad center", EventSenderForKey.KEYCODE_DPAD_CENTER),
-				new KeyEvent(null, "dpad down", EventSenderForKey.KEYCODE_DPAD_DOWN),
-				new KeyEvent(null, "dpad left", EventSenderForKey.KEYCODE_DPAD_LEFT),
-				new KeyEvent(null, "dpad right", EventSenderForKey.KEYCODE_DPAD_RIGHT),
-				new KeyEvent(null, "dpad up", EventSenderForKey.KEYCODE_DPAD_UP),
-				new KeyEvent(null, "end call", EventSenderForKey.KEYCODE_ENDCALL),
-				new KeyEvent(null, "enter", EventSenderForKey.KEYCODE_ENTER),
-				new KeyEvent(null, "home", EventSenderForKey.KEYCODE_HOME),
-				new KeyEvent(null, "menu", EventSenderForKey.KEYCODE_MENU),
-				new KeyEvent(null, "notification", EventSenderForKey.KEYCODE_NOTIFICATION),
-				new KeyEvent(null, "pound", EventSenderForKey.KEYCODE_POUND),
-				new KeyEvent(null, "power", EventSenderForKey.KEYCODE_POWER),
-				new KeyEvent(null, "search", EventSenderForKey.KEYCODE_SEARCH),
-				new KeyEvent(null, "soft right", EventSenderForKey.KEYCODE_SOFT_RIGHT),
-				new KeyEvent(null, "star", EventSenderForKey.KEYCODE_STAR),
-				new KeyEvent(null, "volume down", EventSenderForKey.KEYCODE_VOLUME_DOWN),
-				new KeyEvent(null, "volume up", EventSenderForKey.KEYCODE_VOLUME_UP)
+				new KeyEvent(null, "回退", EventSenderForKey.KEYCODE_BACK),
+				new KeyEvent(null, "拨号", EventSenderForKey.KEYCODE_CALL),
+				new KeyEvent(null, "相机", EventSenderForKey.KEYCODE_CAMERA),
+				new KeyEvent(null, "清除", EventSenderForKey.KEYCODE_CLEAR),
+				new KeyEvent(null, "中心", EventSenderForKey.KEYCODE_DPAD_CENTER),
+				new KeyEvent(null, "向下", EventSenderForKey.KEYCODE_DPAD_DOWN),
+				new KeyEvent(null, "向左", EventSenderForKey.KEYCODE_DPAD_LEFT),
+				new KeyEvent(null, "向右", EventSenderForKey.KEYCODE_DPAD_RIGHT),
+				new KeyEvent(null, "向上", EventSenderForKey.KEYCODE_DPAD_UP),
+				new KeyEvent(null, "电话挂断", EventSenderForKey.KEYCODE_ENDCALL),
+				new KeyEvent(null, "回车", EventSenderForKey.KEYCODE_ENTER),
+				new KeyEvent(null, "主屏", EventSenderForKey.KEYCODE_HOME),
+				new KeyEvent(null, "菜单", EventSenderForKey.KEYCODE_MENU),
+				new KeyEvent(null, "通知", EventSenderForKey.KEYCODE_NOTIFICATION),
+				new KeyEvent(null, "英镑", EventSenderForKey.KEYCODE_POUND),
+				new KeyEvent(null, "电源键", EventSenderForKey.KEYCODE_POWER),
+				new KeyEvent(null, "搜素", EventSenderForKey.KEYCODE_SEARCH),
+				new KeyEvent(null, "轻向右", EventSenderForKey.KEYCODE_SOFT_RIGHT),
+				new KeyEvent(null, "星标", EventSenderForKey.KEYCODE_STAR),
+				new KeyEvent(null, "升高音量", EventSenderForKey.KEYCODE_VOLUME_DOWN),
+				new KeyEvent(null, "降低音量", EventSenderForKey.KEYCODE_VOLUME_UP)
 		};
 
 		SwipeEvent[] swipeEvents = new SwipeEvent[]{
-				new SwipeEvent(null, "default swipe up", 100, 800, 100, 0),
-				new SwipeEvent(null, "default swipe down", 100, 0, 100, 800),
-				new SwipeEvent(null, "default swipe left", 400, 400, 100, 400),
-				new SwipeEvent(null, "default swipe right", 100, 400, 400, 400),
+				new SwipeEvent(null, "默认上滑", 100, 800, 100, 0),
+				new SwipeEvent(null, "默认下滑", 100, 0, 100, 800),
+				new SwipeEvent(null, "默认左滑", 400, 400, 100, 400),
+				new SwipeEvent(null, "默认右滑", 100, 400, 400, 400),
 		};
 		
-		PlaybackEvent playbackEvent = new PlaybackEvent(null, "last record script", "last_events");
-		
+		PlaybackEvent[] playbackEvents = new PlaybackEvent[]{
+				new PlaybackEvent(null, "上次录制", "last_events"),
+				
+				new PlaybackEvent(null, "多看下一页", "duokan_left"),
+				new PlaybackEvent(null, "多看上一页", "duokan_right"),
+				new PlaybackEvent(null, "多看加书签", "duokan_bookmark"),
+
+				new PlaybackEvent(null, "豆果下一页", "douguo_left"),
+				new PlaybackEvent(null, "豆果上一页", "douguo_right"),
+				new PlaybackEvent(null, "豆果向下滑", "douguo_down"),
+				new PlaybackEvent(null, "豆果点击", "douguo_click"),
+
+				new PlaybackEvent(null, "chrome下滑", "chrome_down"),
+				new PlaybackEvent(null, "chrome上滑", "chrome_up"),
+				new PlaybackEvent(null, "chrome放大", "chrome_bigger"),
+				new PlaybackEvent(null, "chrome缩小", "chrome_smaller"),
+
+		};
 		keyEventDao.insertInTx(keyEvents);
 		swipeEventDao.insertInTx(swipeEvents);
-		playbackEventDao.insert(playbackEvent);
+		playbackEventDao.insertInTx(playbackEvents);
 		
 		
 		TrainingDataset defaultTrainingDatasetForNF = new TrainingDataset(null, "default training set for near far", "", 1l);
@@ -228,7 +309,7 @@ public class DaoManager implements IDaoManager{
 		defaultTrainingDatasetForCR.update();
 		
 		for (int i = 1; i < GestureEvent.gesture.length; i++) {
-			gestureDao.insert(new Gesture(null, 0, GestureEvent.gesture[i], GestureEvent.learnable[i] ? 1 : 0, "null"));
+			gestureDao.insert(new Gesture(null, 0, gestureToChinese[i], GestureEvent.learnable[i] ? 1 : 0, gestureDiscription[i]));
 		}
 		
 		String defaultMasks = DolphinServerVariables.DEFAULT_MODEL_CONFIG.getJSONObject("masks").toString();
@@ -238,12 +319,30 @@ public class DaoManager implements IDaoManager{
 		
 		ModelConfig duokanModelConfig = new ModelConfig(null, "{}", "[]");
 		long duokanModelConfig_ID = modelConfigDao.insert(duokanModelConfig);
+
+		ModelConfig douguoMainModelConfig = new ModelConfig(null, "{}", "[]");
+		long douguoMainModelConfig_ID = modelConfigDao.insert(douguoMainModelConfig);
+
+		ModelConfig douguoStepModelConfig = new ModelConfig(null, "{}", "[]");
+		long douguoStepModelConfig_ID = modelConfigDao.insert(douguoStepModelConfig);
 		
-		Plugin defaultPlugin = new Plugin(null, "default plugin", 1, "", "",1l);
+		ModelConfig chromeModelConfig = new ModelConfig(null, "{}", "[]");
+		long chromeModelConfig_ID = modelConfigDao.insert(chromeModelConfig);
+		
+		Plugin defaultPlugin = new Plugin(null, "统配", 0, "", "",1l);
 		long defaultPlugin_ID = pluginDao.insert(defaultPlugin);
 		
-		Plugin duokanPlugin = new Plugin(null, "duokan plugin", 1, "", "",1l);
+		Plugin duokanPlugin = new Plugin(null, "多看", 0, "", "",1l);
 		long duokanPlugin_ID = pluginDao.insert(duokanPlugin);
+		
+		Plugin douguoMainPlugin = new Plugin(null, "豆果主界面", 0, "", "",1l);
+		long douguoMainPlugin_ID = pluginDao.insert(douguoMainPlugin);
+		
+		Plugin douguoStepPlugin = new Plugin(null, "豆果菜谱", 0, "", "",1l);
+		long douguoStepPlugin_ID = pluginDao.insert(douguoStepPlugin);
+		
+		Plugin chromePlugin = new Plugin(null, "浏览器", 0, "", "",1l);
+		long chromePlugin_ID = pluginDao.insert(chromePlugin);
 		
 		Rule[] defaultRules = new Rule[]{
 				// default rules
@@ -251,14 +350,32 @@ public class DaoManager implements IDaoManager{
 				new Rule(null, "default to left p", "", true, 2, 3l, defaultPlugin_ID, (long)GestureEvent.Gestures.SWIPE_LEFT_P.ordinal()),
 				new Rule(null, "default to right l", "", true, 2, 4l, defaultPlugin_ID, (long)GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()),
 				new Rule(null, "default to rgiht p", "", true, 2, 4l, defaultPlugin_ID, (long)GestureEvent.Gestures.SWIPE_RIGHT_P.ordinal()),
-				new Rule(null, "default to home", "", true, 1, 12l, defaultPlugin_ID, (long)GestureEvent.Gestures.PULL.ordinal()),
-				new Rule(null, "default to home 2", "", true, 1, 12l, defaultPlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL.ordinal()),
-				new Rule(null, "default to last record", "", true, 3, 1l, defaultPlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal()),
+//				new Rule(null, "default to home 2", "", true, 1, 12l, defaultPlugin_ID, (long)GestureEvent.Gestures.PULL_PUSH_PULL.ordinal()),
+//				new Rule(null, "default to last record", "", true, 3, 1l, defaultPlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal()),
 				
 				// duokan rules
-				new Rule(null, "duokan to left", "", true, 2, 3l, duokanPlugin_ID, (long)GestureEvent.Gestures.PULL_PUSH_PULL.ordinal()),
-				new Rule(null, "duokan to right", "", true, 2, 4l, duokanPlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal()),
+				new Rule(null, "duokan to left", "", true, 3, 2l, duokanPlugin_ID, (long)GestureEvent.Gestures.PUSH.ordinal()),
 
+				new Rule(null, "duokan to left", "", true, 3, 2l, duokanPlugin_ID, (long)GestureEvent.Gestures.SWIPE_LEFT_L.ordinal()),
+				new Rule(null, "duokan to right", "", true, 3, 3l, duokanPlugin_ID, (long)GestureEvent.Gestures.PULL.ordinal()),
+				new Rule(null, "duokan to right", "", true, 3, 3l, duokanPlugin_ID, (long)GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()),
+				new Rule(null, "duokan bookmark", "", true, 3, 4l, duokanPlugin_ID, (long)GestureEvent.Gestures.PULL_PUSH_PULL.ordinal()),
+
+				// douguo main rules
+				new Rule(null, "douguo down", "", true, 3, 7l, douguoMainPlugin_ID, (long)GestureEvent.Gestures.PULL.ordinal()),
+				new Rule(null, "douguo click", "", true, 3, 8l, douguoMainPlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal()),
+				
+				// douguo step rules
+				new Rule(null, "douguo to left", "", true, 3, 5l, douguoStepPlugin_ID, (long)GestureEvent.Gestures.SWIPE_LEFT_L.ordinal()),
+				new Rule(null, "douguo to right", "", true, 3, 6l, douguoStepPlugin_ID, (long)GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()),
+				new Rule(null, "douguo to left", "", true, 3, 5l, douguoStepPlugin_ID, (long)GestureEvent.Gestures.PUSH.ordinal()),
+				new Rule(null, "douguo to right", "", true, 3, 6l, douguoStepPlugin_ID, (long)GestureEvent.Gestures.PULL.ordinal()),
+
+				// chrome rules
+				new Rule(null, "chrome to down", "", true, 3, 9l, chromePlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL_PUSH_PULL.ordinal()),
+				new Rule(null, "chrome to up", "", true, 3, 10l, chromePlugin_ID, (long)GestureEvent.Gestures.PULL_PUSH_PULL_PUSH.ordinal()),
+				new Rule(null, "chrome bigger", "", true, 3, 11l, chromePlugin_ID, (long)GestureEvent.Gestures.PULL_PUSH.ordinal()),
+				new Rule(null, "chrome smaller", "", true, 3, 12l, chromePlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL.ordinal()),
 		};
 	
 		ruleDao.insertInTx(defaultRules);
@@ -266,12 +383,22 @@ public class DaoManager implements IDaoManager{
 		DolphinContext[] dolphinContexts = new DolphinContext[]{
 				new DolphinContext(null, "*", "still", defaultModelConfig_ID, defaultPlugin_ID),
 				new DolphinContext(null, "com.duokan.reader.DkMainActivity", "still", duokanModelConfig_ID, duokanPlugin_ID),
+				new DolphinContext(null, "com.douguo.recipe.RecipeActivity", "still", douguoMainModelConfig_ID, douguoMainPlugin_ID),
+				new DolphinContext(null, "com.douguo.recipe.RecipeStepActivity", "still", douguoStepModelConfig_ID, douguoStepPlugin_ID),
+				new DolphinContext(null, "com.google.android.apps.chrome.ChromeTabbedActivity", "still", chromeModelConfig_ID, chromePlugin_ID),
 		};
+		
 		dolphinContextDao.insertInTx(dolphinContexts);
 		defaultPlugin.setDolphin_context_id(1l);
 		defaultPlugin.update();
 		duokanPlugin.setDolphin_context_id(2l);
 		duokanPlugin.update();
+		douguoMainPlugin.setDolphin_context_id(3l);
+		douguoMainPlugin.update();
+		douguoStepPlugin.setDolphin_context_id(4l);
+		douguoStepPlugin.update();		
+		chromePlugin.setDolphin_context_id(5l);
+		chromePlugin.update();
 		
 		TrainingRelation[] trainingRelations = new TrainingRelation[]{
 				// nf
@@ -476,7 +603,7 @@ public class DaoManager implements IDaoManager{
 				new String[]{ids}
 		);
 		if(cursor.getCount() > 0){
-			Log.i(TAG, "getSingleModel_id already has one");
+			Log.i(TAG, "getSingleModel_id already has one for "+ids);
 
 			cursor.moveToFirst();
 			long trainset_id = cursor.getLong(0);
@@ -513,7 +640,7 @@ public class DaoManager implements IDaoManager{
 	}
 	
 	public boolean updatePluginWithRuleChanged(Plugin plugin) {
-		Log.i(TAG, "updatePluginWithRuleChanged");
+		Log.i(TAG, "updatePluginWithRuleChanged for "+plugin.getDolphinContext().getActivity_name());
 		// get masks
 		// plugin.refresh();
 		List<Rule> rules = plugin.getRules();
@@ -549,8 +676,6 @@ public class DaoManager implements IDaoManager{
 	public void updateAllPlugins(){
 		List<Plugin> plugins = listAllPlugins();
 		for (int i = 0; i < plugins.size(); i++) {
-			if(plugins.get(i).getDolphin_context_id() == 1l)
-				continue;
 			updatePluginWithRuleChanged(plugins.get(i));
 		}
 	}
@@ -653,6 +778,7 @@ public class DaoManager implements IDaoManager{
 			return 0;
 		}
 		
+		plugin.setPlugin_type(0);
 		plugin.setDolphin_context_id(dolphin_context_id);
 		plugin.update();
 		return dolphin_context_id;
@@ -715,8 +841,8 @@ public class DaoManager implements IDaoManager{
 //			model.delete();
 //		}
 		
-		daoSession.getModelConfigDao().delete(modelConfig);
-		dolphinContext.delete();
+//		daoSession.getModelConfigDao().delete(modelConfig);
+//		dolphinContext.delete();
 		
 		// delete plugin
 		plugin.delete();
