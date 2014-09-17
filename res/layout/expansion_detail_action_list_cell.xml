@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_rule_list"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content" >
+    android:layout_height="wrap_content"
+    android:layout_weight="1" >
 
+	<Button 
+        android:id="@+id/rule_list_cell_add_one"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"
+        android:text="添加一个新规则" />
+    
     <Button
         android:id="@+id/button_plug_action_gesture"
         android:layout_width="wrap_content"
@@ -12,10 +23,10 @@
         android:layout_marginLeft="40dp"
         android:layout_marginTop="20dp"
         android:background="@color/deep_sky_blue"
-        android:text="左滑"
         android:textColor="@android:color/white" />
+    
      <Button
-        android:id="@+id/button_plug_action_gesture"
+        android:id="@+id/button_plug_action_arrows"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
@@ -34,7 +45,6 @@
         android:layout_marginRight="40dp"
         android:layout_marginTop="20dp"
         android:background="@color/deep_sky_blue"
-        android:text="翻页"
         android:textColor="@android:color/white" />
 
 </RelativeLayout>

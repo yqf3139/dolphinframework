@@ -2,6 +2,13 @@ package seu.lab.dolphinframework.fragment;
 
 import java.util.List;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import seu.lab.dolphin.client.ContinuousGestureEvent;
+import seu.lab.dolphin.client.Dolphin;
+import seu.lab.dolphin.client.GestureEvent;
+import seu.lab.dolphin.client.IGestureListener;
 import seu.lab.dolphin.dao.Gesture;
 import seu.lab.dolphin.dao.RawGestureData;
 import seu.lab.dolphin.server.DaoManager;
@@ -103,11 +110,55 @@ public class TabGestureDetailActivity extends Activity {
 		layout_new_sample.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent i=new Intent(TabGestureDetailActivity.this, test_activity.class);
-				Bundle data=new Bundle();
-				data.putString("txt", gesture.getName()+" new sample");
-				i.putExtras(data);
-				TabGestureDetailActivity.this.startActivity(i);
+				
+				// 检测手势识别是否开启
+				// FragmentMainActivity.mService.getDolphinState() == Dolphin.States.WORKING.ordinal()
+				
+				// 借用手势监听器
+//				FragmentMainActivity.mService.borrowGestureListener(new IGestureListener() {
+//					
+//					@Override
+//					public void onGesture(GestureEvent arg0) {
+//						// TODO Auto-generated method stub
+//						
+//					}
+//					
+//					@Override
+//					public void onContinuousGestureUpdate(ContinuousGestureEvent arg0) {
+//						// TODO Auto-generated method stub
+//						
+//					}
+//					
+//					@Override
+//					public void onContinuousGestureStart(ContinuousGestureEvent arg0) {
+//						// TODO Auto-generated method stub
+//						
+//					}
+//					
+//					@Override
+//					public void onContinuousGestureEnd() {
+//						// TODO Auto-generated method stub
+//						
+//					}
+//					
+//					@Override
+//					public JSONObject getGestureConfig() {
+//						JSONObject config = new JSONObject();
+//						JSONObject masks = new JSONObject();
+//						
+//						for (int j = 0; j < GestureEvent.gesture.length; j++) {
+//							masks.put(""+j,true);
+//						}
+//						
+//						return config;
+//					}
+//				});
+				
+				// 添加新样本 
+				// DaoManager.getDaoManager(mContext).addRawGestureData(gesture, event);
+				
+				// 全部添加完毕后调用
+//				DaoManager.getDaoManager(mContext).refreshGesture(gesture);
 			}
 		});
 	}

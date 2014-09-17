@@ -666,6 +666,7 @@ public class DaoManager implements IDaoManager{
 		ModelConfig config = plugin.getDolphinContext().getModelConfig();
 		Log.e(TAG,"config "+(config == null));
 
+		if(config == null)return false;
 		JSONArray model_ids = getModel_idsFromMasks(masks);
 		config.setMasks(masks.toString());
 		config.setModel_ids(model_ids.toString());
@@ -692,13 +693,13 @@ public class DaoManager implements IDaoManager{
 	@Override
 	public List<Plugin> listAllPlugins() {
 		List<Plugin> list = daoSession.getPluginDao().loadAll();
-		for (int i = 0; i < list.size(); i++) {
-			Plugin plugin = list.get(i);
-			if(plugin.getPlugin_type() == -1){
-				plugin.delete();
-				list.remove(i);
-			}
-		}
+//		for (int i = 0; i < list.size(); i++) {
+//			Plugin plugin = list.get(i);
+//			if(plugin.getPlugin_type() == -1){
+//				plugin.delete();
+//				list.remove(i);
+//			}
+//		}
 		return list;
 	}
 
@@ -735,7 +736,16 @@ public class DaoManager implements IDaoManager{
 
 	@Override
 	public List<PlaybackEvent> listPlaybackEventsRecord(Plugin plugin) {
-		return daoSession.getPlaybackEventDao().loadAll();
+		List<Rule> rules = plugin.getRules();
+		List<PlaybackEvent> events = new LinkedList<PlaybackEvent>();
+
+		for (int i = 0; i < rules.size(); i++) {
+			Rule rule = rules.get(i);
+			if(rule.getEvent_type() == 3)
+				events.add(daoSession.getPlaybackEventDao().load(rule.getEvent_id()));
+		}
+		
+		return events;
 	}
 
 	@Override
@@ -765,18 +775,23 @@ public class DaoManager implements IDaoManager{
 	}
 	
 	public long addDolphinContext(DolphinContext dolphinContext, long plugin_id) {
-		dolphinContext.setPlugin_id(plugin_id);
-		dolphinContext.setModelConfig(new ModelConfig(null, "", ""));
-		long dolphin_context_id = daoSession.getDolphinContextDao().insert(dolphinContext);
+		Log.i(TAG, "addDolphinContext for "+dolphinContext.getActivity_name());
 		
 		CountQuery<DolphinContext> query = dolphinContextExistQuery.forCurrentThread();
 		query.setParameter(0, dolphinContext.getActivity_name());
 		Plugin plugin = daoSession.getPluginDao().load(plugin_id);
+		
+		long count = query.count();
+		Log.i(TAG, "count: "+count);
 
-		if(query.count() != 0){
+		if(count!= 0){
 			plugin.delete();
 			return 0;
 		}
+		
+		dolphinContext.setPlugin_id(plugin_id);
+		dolphinContext.setModelConfig(new ModelConfig(null, "", ""));
+		long dolphin_context_id = daoSession.getDolphinContextDao().insert(dolphinContext);
 		
 		plugin.setPlugin_type(0);
 		plugin.setDolphin_context_id(dolphin_context_id);
@@ -810,9 +825,11 @@ public class DaoManager implements IDaoManager{
 			if(rule.getEvent_type() == 3){
 				// delete playback events under a rule
 				PlaybackEvent playbackEvent = playbackEventDao.load(rule.getEvent_id());
-				File script = new File(DolphinServerVariables.DOLPHIN_HOME+"scripts/"+playbackEvent.getScript_name());
-				if(script.exists())script.delete();
-				playbackEventDao.delete(playbackEvent);
+				if(playbackEvent != null){
+					File script = new File(DolphinServerVariables.DOLPHIN_HOME+"scripts/"+playbackEvent.getScript_name());
+					if(script.exists())script.delete();
+					playbackEventDao.delete(playbackEvent);
+				}
 			}
 			// delete rules
 			rule.delete();
@@ -873,7 +890,9 @@ public class DaoManager implements IDaoManager{
 //	}
 	
 	@Override
-	public long addRawGestureData(RawGestureData rawGestureData) {
+	public long addRawGestureData(Gesture gesture, GestureEvent event) {
+		RawGestureData rawGestureData = new RawGestureData(null, toByteArray(event.rich_feature_data.data), gesture.getId());
+		gesture.getRaw_gesuture_data().add(rawGestureData);
 		return daoSession.getRawGestureDataDao().insert(rawGestureData);
 	}
 

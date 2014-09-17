@@ -4,6 +4,7 @@ import java.util.List;
 
 import android.R.integer;
 
+import seu.lab.dolphin.client.GestureEvent;
 import seu.lab.dolphin.dao.DolphinContext;
 import seu.lab.dolphin.dao.Gesture;
 import seu.lab.dolphin.dao.KeyEvent;
@@ -41,7 +42,7 @@ public interface IDaoManager {
 	boolean updateRule(Rule rule);
 //	boolean updateRuleWithGestureChanged(Rule rule);
 
-	long addRawGestureData(RawGestureData rawGestureData);
+	long addRawGestureData(Gesture gesture, GestureEvent event);
 	long countGestureRawData(Gesture gesture);
 	void refreshGesture(Gesture gesture);
 	void refreshModel(Model model);

@@ -19,7 +19,7 @@ public class TabExpansion extends ListFragment {
     @Override  
     public void onCreate(Bundle savedInstanceState) {  
         super.onCreate(savedInstanceState);  
-          
+        
         adapter = new TabExpansionAdapter(getActivity());  
         setListAdapter(adapter);
         plugins = DaoManager.getDaoManager(getActivity()).listAllPlugins();
@@ -32,6 +32,13 @@ public class TabExpansion extends ListFragment {
             Bundle savedInstanceState) {  
         View v = inflater.inflate(R.layout.expansion, container, false);  
         return v;  
+    }
+    
+    @Override
+    public void onResume() {
+    	// TODO Auto-generated method stub
+    	super.onResume();
+    	adapter.notifyDataSetChanged();
     }
     
 }  

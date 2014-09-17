@@ -28,7 +28,6 @@ public class TabExpansionDetailActivity extends Activity {
 	private TextView plug_name;
 	private TextView plug_instruction;
 	private ListView lv_plug_actions;
-	private Button bt_new_action;
     private Switch plug_switcher;
     
 	private PlugActionAdapter adapter = null;
@@ -39,6 +38,9 @@ public class TabExpansionDetailActivity extends Activity {
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		
+		Log.i(TAG, "onCreate");
+		
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.expansion_detail);
@@ -46,12 +48,13 @@ public class TabExpansionDetailActivity extends Activity {
 		plug_name = (TextView) findViewById(R.id.textView_expansion_detail_plug_name);
 		plug_instruction = (TextView) findViewById(R.id.textView_expansion_detail_plug_instruction);
 		lv_plug_actions = (ListView) findViewById(R.id.listView_plug_actions);
-		bt_new_action=(Button) findViewById(R.id.button_expansion_detail_new_action);
 		plug_switcher=(Switch) findViewById(R.id.switch_expansion_detail_plug_manager);
 		
 		Bundle data = getIntent().getExtras();
+//		TabExpansion.plugins = DaoManager.getDaoManager(mContext).listAllPlugins();
+
 		plugin = TabExpansion.plugins.get(data.getInt("num"));
-		
+		plugin.refresh();
 		plug_name.setText(plugin.getName());
 		plug_instruction.setText(plugin.getDiscription());
 		
@@ -59,21 +62,8 @@ public class TabExpansionDetailActivity extends Activity {
 		adapter.add(plugin);
 		lv_plug_actions.setAdapter(adapter);
 		
-		//button:add a new action
-		bt_new_action.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-			//	adapter.add("下滑", "滚动");//why cannot work?!!!!!!!
-
-				//open the detail activity when click on the corresponding layout,deliver the plug name
-				Intent i=new Intent(TabExpansionDetailActivity.this, test_activity.class);
-				Bundle data=new Bundle();
-				data.putString("txt", plugin.getName()+" new action");
-				i.putExtras(data);
-				TabExpansionDetailActivity.this.startActivity(i);
-			}
-		});
 		
+		plug_switcher.setChecked(plugin.getPlugin_type() == 0);
 		plug_switcher.setOnCheckedChangeListener(new OnCheckedChangeListener() {  
 			  
             @Override  
@@ -81,8 +71,12 @@ public class TabExpansionDetailActivity extends Activity {
                     boolean isChecked) {  
                 // TODO Auto-generated method stub  
                 if (isChecked) {  
+                	plugin.setPlugin_type(0);
+                	plugin.update();
                 	System.out.println(plugin.getName()+" switch on");
                 } else {  
+                	plugin.setPlugin_type(1);
+                	plugin.update();
                 	System.out.println(plugin.getName()+" switch off");
                 }  
             }  
@@ -98,7 +92,6 @@ public class TabExpansionDetailActivity extends Activity {
 			public void run() {
 				// TODO dirty
 				Log.i(TAG, "updatePluginWithRuleChanged");
-
 				DaoManager.getDaoManager(mContext).updatePluginWithRuleChanged(plugin);
 			};
 		}.start();
