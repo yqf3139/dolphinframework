@@ -561,19 +561,26 @@ public class RemoteService extends Service {
 	}
 	
 	public void borrowDataReceiver(IDataReceiver receiver) throws DolphinException {
-		dolphin.setDataReceiver(receiver);
+		Log.e(TAG, "borrowDataReceiver");
 
+		dolphin.setDataReceiver(receiver);
 	}
 	
 	public void returnDataReceiver() throws DolphinException {
+		Log.e(TAG, "returnDataReceiver");
+
 		dolphin.setDataReceiver(null);
 	}
 	
 	public void borrowGestureListener(IGestureListener listener) throws DolphinException, JSONException {
+		Log.e(TAG, "borrowGestureListener");
+
 		dolphin.setGestureListener(listener);
 	}
 	
 	public void returnGestureListener() throws DolphinException, JSONException {
+		Log.e(TAG, "returnGestureListener");
+
 		dolphin.setGestureListener(gestureListener);
 	}
 	

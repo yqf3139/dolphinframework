@@ -102,7 +102,7 @@
 				            android:layout_alignParentLeft="true"
 				            android:layout_centerVertical="true"
 				            android:layout_margin="10dp"
-				            android:text="准确度"
+				            android:text="样本数"
 				            android:textAppearance="?android:attr/textAppearanceMedium" />
 				        <TextView
 				            android:id="@+id/textView_gesture_detail_accuracy"

@@ -790,7 +790,8 @@ public class DaoManager implements IDaoManager{
 		}
 		
 		dolphinContext.setPlugin_id(plugin_id);
-		dolphinContext.setModelConfig(new ModelConfig(null, "", ""));
+		long model_config_id = daoSession.getModelConfigDao().insert(new ModelConfig(null, "", ""));
+		dolphinContext.setModel_config_id(model_config_id);
 		long dolphin_context_id = daoSession.getDolphinContextDao().insert(dolphinContext);
 		
 		plugin.setPlugin_type(0);
@@ -891,6 +892,8 @@ public class DaoManager implements IDaoManager{
 	
 	@Override
 	public long addRawGestureData(Gesture gesture, GestureEvent event) {
+		Log.i("E", Boolean.toString(event.rich_feature_data==null));
+		Log.i("E", Boolean.toString(event.rich_feature_data.data==null));
 		RawGestureData rawGestureData = new RawGestureData(null, toByteArray(event.rich_feature_data.data), gesture.getId());
 		gesture.getRaw_gesuture_data().add(rawGestureData);
 		return daoSession.getRawGestureDataDao().insert(rawGestureData);
