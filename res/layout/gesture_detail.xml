@@ -52,7 +52,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:text="修改手势基本信息"
+            android:text="modify gesture description"
             android:textAppearance="?android:attr/textAppearanceMedium" />
     </RelativeLayout>
 
@@ -72,7 +72,7 @@
 				        android:layout_width="wrap_content"
 				        android:layout_height="wrap_content"
 				        android:layout_margin="10dp"
-				        android:text="查看并管理样本数据"
+				        android:text="manage gesture samples"
 				        android:textAppearance="?android:attr/textAppearanceMedium" />
 				
 				    </RelativeLayout>
@@ -86,7 +86,7 @@
 				        android:layout_width="wrap_content"
 				        android:layout_height="wrap_content"
 				        android:layout_margin="10dp"
-				        android:text="增加新样本"
+				        android:text="add a new sample"
 				        android:textAppearance="?android:attr/textAppearanceMedium" />
 				
 				    </RelativeLayout>
@@ -102,7 +102,7 @@
 				            android:layout_alignParentLeft="true"
 				            android:layout_centerVertical="true"
 				            android:layout_margin="10dp"
-				            android:text="样本数"
+				            android:text="sample count"
 				            android:textAppearance="?android:attr/textAppearanceMedium" />
 				        <TextView
 				            android:id="@+id/textView_gesture_detail_accuracy"

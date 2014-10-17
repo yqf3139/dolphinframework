@@ -309,7 +309,7 @@ public class DaoManager implements IDaoManager{
 		defaultTrainingDatasetForCR.update();
 		
 		for (int i = 1; i < GestureEvent.gesture.length; i++) {
-			gestureDao.insert(new Gesture(null, 0, gestureToChinese[i], GestureEvent.learnable[i] ? 1 : 0, gestureDiscription[i]));
+			gestureDao.insert(new Gesture(null, 0, GestureEvent.gesture[i], GestureEvent.learnable[i] ? 1 : 0, "Swipe from the left edge to the right edge of the device."));
 		}
 		
 		String defaultMasks = DolphinServerVariables.DEFAULT_MODEL_CONFIG.getJSONObject("masks").toString();
@@ -329,19 +329,19 @@ public class DaoManager implements IDaoManager{
 		ModelConfig chromeModelConfig = new ModelConfig(null, "{}", "[]");
 		long chromeModelConfig_ID = modelConfigDao.insert(chromeModelConfig);
 		
-		Plugin defaultPlugin = new Plugin(null, "统配", 0, "", "",1l);
+		Plugin defaultPlugin = new Plugin(null, "Default", 0, "", "",1l);
 		long defaultPlugin_ID = pluginDao.insert(defaultPlugin);
 		
-		Plugin duokanPlugin = new Plugin(null, "多看", 0, "", "",1l);
+		Plugin duokanPlugin = new Plugin(null, "EBook", 0, "", "",1l);
 		long duokanPlugin_ID = pluginDao.insert(duokanPlugin);
 		
-		Plugin douguoMainPlugin = new Plugin(null, "豆果主界面", 0, "", "",1l);
+		Plugin douguoMainPlugin = new Plugin(null, "Douguo", 0, "", "",1l);
 		long douguoMainPlugin_ID = pluginDao.insert(douguoMainPlugin);
 		
-		Plugin douguoStepPlugin = new Plugin(null, "豆果菜谱", 0, "", "",1l);
+		Plugin douguoStepPlugin = new Plugin(null, "Douguo Recipe", 0, "", "",1l);
 		long douguoStepPlugin_ID = pluginDao.insert(douguoStepPlugin);
 		
-		Plugin chromePlugin = new Plugin(null, "浏览器", 0, "", "",1l);
+		Plugin chromePlugin = new Plugin(null, "Chrome", 0, "", "",1l);
 		long chromePlugin_ID = pluginDao.insert(chromePlugin);
 		
 		Rule[] defaultRules = new Rule[]{

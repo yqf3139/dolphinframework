@@ -29,7 +29,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
-                    android:text="首页" />
+                    android:text="Index" />
 
                 <Button
                     android:id="@+id/btn_index_pressed"
@@ -59,7 +59,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
-                    android:text="手势" />
+                    android:text="Gesture" />
 
                 <Button
                     android:id="@+id/btn_gesture_pressed"
@@ -89,7 +89,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
-                    android:text="扩展" />
+                    android:text="Plugin" />
 
                 <Button
                     android:id="@+id/btn_expansion_pressed"

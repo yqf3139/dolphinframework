@@ -24,6 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
@@ -112,6 +113,23 @@ public class FreshmanActivity extends Activity {
 
 		@Override
 		public void onNoisy() {
+
+		}
+
+		@Override
+		public void onCoreFail() {
+			handler.post(new Runnable() {
+				
+				@Override
+				public void run() {
+					Toast.makeText(mContext, "Dolphin 被硬件降噪干扰", Toast.LENGTH_SHORT).show();
+					
+				}
+			});
+		}
+
+		@Override
+		public void onNormal() {
 			// TODO Auto-generated method stub
 			
 		}
@@ -312,16 +330,41 @@ public class FreshmanActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                FreshmanActivity.this.finish();
             	try {
         			dolphin.stop();
         		} catch (DolphinException e) {
         			// TODO Auto-generated catch block
         			e.printStackTrace();
         		}
-                // 我们随便跳转一个页面
-                Intent intent = new Intent(FreshmanActivity.this, FragmentMainActivity.class);
-                startActivity(intent);
+            	
+            	startBtn.setClickable(false);
+            	
+            	Toast.makeText(mContext, "请在屏幕上随意滑动一会", Toast.LENGTH_SHORT).show();
+            	
+            	// 设置屏幕
+            	new Thread(){
+            		public void run() {
+            			EventSettings settings = new EventSettings();
+            			ScreenSetter setter = settings.new ScreenSetter(mContext); 
+            			setter.set();
+                    	
+            			handler.post(new Runnable() {
+							
+							@Override
+							public void run() {
+		            			// 初始化偏好设置
+		            			AppPreferences.init(mContext);
+		            			UserPreferences.init(mContext);
+		            			
+		                        FreshmanActivity.this.finish();
+		                        // 我们跳转一个页面
+		                        Intent intent = new Intent(FreshmanActivity.this, FragmentMainActivity.class);
+		                        startActivity(intent);
+							}
+						});
+
+            		}
+            	}.start();
             }
         });
         skipBtn.setOnClickListener(new OnClickListener() {
@@ -438,10 +481,49 @@ public class FreshmanActivity extends Activity {
 
     
     class InstallThread extends Thread{
+    	
+		boolean err = false;
+		String errString = "";
+    	
 		@Override
 		public void run() {
-			Installer.installAll(mContext);
+			
+			try {
+				Installer.installAll(mContext);
+			} catch (IOException e1) {
+				Log.e(TAG, "安装复制文件出现异常，程序即将退出");
+				Log.e(TAG, e1.toString());
+				err = true;
+				errString = "安装复制文件出现异常，程序即将退出";
+			} catch (DolphinException e) {
+				Log.e(TAG, "超级权限未获得，程序即将退出");
+				Log.e(TAG, e.toString());
+				err = true;
+				errString = "超级权限未获得，程序即将退出";
+			}
 
+			if(err){
+				handler.post(new Runnable() {
+					
+					@Override
+					public void run() {
+						Toast.makeText(mContext, errString, Toast.LENGTH_SHORT).show();
+						new Thread(){
+							public void run() {
+								try {
+									sleep(5000);
+								} catch (InterruptedException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+								FreshmanActivity.this.finish();
+							}
+						}.start();
+					}
+				});
+				return;
+			}
+			
 	    	try {
 				dolphin.prepare();
 			} catch (DolphinException e) {
@@ -449,14 +531,9 @@ public class FreshmanActivity extends Activity {
 				e.printStackTrace();
 			}
 			
-			EventSettings settings = new EventSettings();
-			ScreenSetter setter = settings.new ScreenSetter(mContext); 
-			setter.start();
 			DaoManager daoManager = DaoManager.getDaoManager(mContext);
 			daoManager.createDB();
 			daoManager.updateAllPlugins();
-			AppPreferences.init(mContext);
-			UserPreferences.init(mContext);
 			
 			handler.post(new Runnable() {
 				

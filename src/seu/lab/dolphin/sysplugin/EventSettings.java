@@ -23,13 +23,13 @@ public class EventSettings {
 		recordCommandsList.add("getevent -q -t -c 50");
 	}
 
-	public class ScreenSetter extends Thread {
+	public class ScreenSetter {
 		private Context mContext = null;
 		public ScreenSetter(Context context) {
 			this.mContext  = context;
 		}
-		@Override
-		public void run() {
+
+		public void set() {
 			Log.i(TAG, "ScreenSetter run");
 
 			int event_id = setupScreen();

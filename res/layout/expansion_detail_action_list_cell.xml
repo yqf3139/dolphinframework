@@ -12,7 +12,7 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:visibility="gone"
-        android:text="添加一个新规则" />
+        android:text="Add a new rule" />
     
     <Button
         android:id="@+id/button_plug_action_gesture"

@@ -2,6 +2,8 @@ package seu.lab.dolphin.sysplugin;
 
 import java.io.File;
 import java.io.IOException;
+
+import seu.lab.dolphin.client.DolphinException;
 import seu.lab.dolphin.server.DolphinServerVariables;
 import seu.lab.dolphin.utility.FileUtils;
 import seu.lab.dolphin.utility.ShellUtils;
@@ -25,8 +27,11 @@ public class Installer {
 
 		File root = new File(DolphinServerVariables.DOLPHIN_HOME);
 		
+		if(root.exists())return root;
+		
 		if(!root.mkdir()){
-			Log.i(TAG, "mkdir()");
+			Log.e(TAG, "DOLPHIN_HOME mkdir failed");
+			throw new IOException("DOLPHIN_HOME mkdir failed");
 		}
 		
 		return root;
@@ -35,10 +40,6 @@ public class Installer {
 	public static void installPlugin(AssetManager am, File root) throws IOException {
 		Log.i(TAG, "installPlugin");
 
-		String[] strings = am.list("");
-		for (int i = 0; i < strings.length; i++) {
-			Log.i(TAG, strings[i]);
-		}
 		Log.i(TAG, "install "+CPU_ABI);
 		FileUtils.copy(am.open("install.sh"),root,"install.sh");
 		FileUtils.copy(am.open("uninstall.sh"),root,"uninstall.sh");
@@ -50,14 +51,14 @@ public class Installer {
 	public static void installScripts(AssetManager am, File root) throws IOException {
 		Log.i(TAG, "installScripts");
 
-		File modelsRoot = new File(root, "scripts");
-		if(modelsRoot.exists() && modelsRoot.isFile()){
-			modelsRoot.delete();
-			modelsRoot.mkdir();
-		}else {
-			modelsRoot.mkdir();
+		File scriptsRoot = new File(root, "scripts");
+		if(scriptsRoot.exists() && scriptsRoot.isFile()){
+			scriptsRoot.delete();
+			scriptsRoot.mkdir();
+		}else if(!scriptsRoot.exists()){
+			scriptsRoot.mkdir();
 		}
-		File last_events = new File(modelsRoot, "last_events");
+		File last_events = new File(scriptsRoot, "last_events");
 		if(!last_events.exists())last_events.createNewFile();//TODO dummy
 
 	}
@@ -69,26 +70,25 @@ public class Installer {
 		if(modelsRoot.exists() && modelsRoot.isFile()){
 			modelsRoot.delete();
 			modelsRoot.mkdir();
-		}else {
+		}else if(!modelsRoot.exists()){
 			modelsRoot.mkdir();
 		}
 		String[] models = am.list("models");
 		for (int i = 0; i < models.length; i++) {
-			Log.i(TAG, "copy model: "+models[i]);
+			Log.i(TAG, "copying model: "+models[i]);
 			FileUtils.copy(am.open("models/"+models[i]),modelsRoot,models[i]);
 		}
 	}
 	
-	public static boolean installAll(Context ctx){
+	public static boolean installAll(Context ctx) throws IOException, DolphinException{
 		Log.i(TAG, "installAll");
-
+		
 		File root = null;
 		try {
 			root = installRoot();
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-			return false;
+			Log.i(TAG, e1.toString());
+			throw e1;
 		}
 		
 		AssetManager am = ctx.getAssets();
@@ -97,14 +97,15 @@ public class Installer {
 			installScripts(am, root);
 			installModel(am, root);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.i(TAG, e.toString());
+			throw e;
 		}
-		ShellUtils shell = new ShellUtils();
 		
+		ShellUtils shell = new ShellUtils();
 		CommandResult result = shell.execCommand(
 				"sh "+DolphinServerVariables.DOLPHIN_HOME+"install.sh", 
 				ShellUtils.COMMAND_SU);
+		
 		for (int i = 0; i < result.successMsg.size(); i++) {
 			Log.i(TAG, "successMsg:"+result.successMsg.get(i));
 		}		
@@ -112,6 +113,11 @@ public class Installer {
 			Log.i(TAG, "errorMsg:"+result.errorMsg.get(i));
 		}		
 		Log.i(TAG, "result: "+result.result);
+		
+		if(result.errorMsg.size() == 1
+				&& result.errorMsg.get(0).toLowerCase().contains("permission"))
+			throw new DolphinException("超级权限未获得，无法安装系统插件");
+		
 		return true;
 	}
 

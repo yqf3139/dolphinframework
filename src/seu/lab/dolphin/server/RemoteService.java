@@ -128,6 +128,8 @@ public class RemoteService extends Service {
 		}
 	};
 	
+	private Handler handler = new Handler();
+	
 	Dolphin dolphin = null;
 	IDataReceiver dataReceiver = new IDataReceiver() {
 
@@ -145,6 +147,7 @@ public class RemoteService extends Service {
 
 	};
 
+	
 	IGestureListener gestureListener = new IGestureListener() {
 		
 		@Override
@@ -283,7 +286,6 @@ public class RemoteService extends Service {
 
 	IDolphinStateCallback stateCallback = new IDolphinStateCallback() {
 
-
 		@Override
 		public void onNoisy() {
 			// TODO Auto-generated method stub
@@ -303,6 +305,24 @@ public class RemoteService extends Service {
 			} catch (Exception e) {
 				Log.e(TAG, e.toString());
 			}
+		}
+
+		@Override
+		public void onCoreFail() {
+			handler.post(new Runnable() {
+				
+				@Override
+				public void run() {
+					Toast.makeText(mContext, "Dolphin 被硬件降噪干扰", Toast.LENGTH_SHORT).show();
+					
+				}
+			});
+		}
+
+		@Override
+		public void onNormal() {
+			// TODO Auto-generated method stub
+			
 		}
 	};
 
@@ -535,8 +555,7 @@ public class RemoteService extends Service {
 		} catch (JSONException e) {
 			Log.e(TAG, e.toString());
 		}
-		dolphin.switchToEarphoneSpeaker();
-		
+//		dolphin.switchToEarphoneSpeaker();
 		super.onCreate();
 	}
 	

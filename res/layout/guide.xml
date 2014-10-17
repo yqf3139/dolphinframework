@@ -15,7 +15,7 @@
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:layout_marginLeft="10dp"
-            android:text="Dolphin首选项"
+            android:text="Dolphin Options"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@android:color/white" />
     </RelativeLayout>
@@ -36,7 +36,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="开机时自动启动识别服务" />
+                android:text="Auto start after power on" />
 
             <Switch
                 android:id="@+id/switch_guide_auto_start"
@@ -58,7 +58,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="长时间无活动识别自动睡眠" />
+                android:text="Auto sleep recognition" />
 
             <Switch
                 android:id="@+id/switch_guide_auto_sleep"
@@ -80,7 +80,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="降低设备运动时识别灵敏度" />
+                android:text="Movement protection" />
 
             <Switch
                 android:id="@+id/switch_guide_motion_mask"
@@ -102,7 +102,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="开启手势解锁屏幕" />
+                android:text="Auto unlock screen" />
 
             <Switch
                 android:id="@+id/switch_guide_enable_unlock"
@@ -125,7 +125,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="录制解锁屏幕的屏幕事件" />
+                android:text="Record unlock screen" />
         </RelativeLayout>
 
         <RelativeLayout
@@ -140,7 +140,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="还原默认设置" />
+                android:text="Restore defaults" />
         </RelativeLayout>
 
         <RelativeLayout
@@ -155,7 +155,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="关于Dolphin" />
+                android:text="About Dolphin" />
         </RelativeLayout>
 
         <RelativeLayout
@@ -170,7 +170,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="软件更新" />
+                android:text="Update" />
         </RelativeLayout>
     </LinearLayout>
 
