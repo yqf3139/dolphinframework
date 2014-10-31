@@ -128,6 +128,8 @@ public class RemoteService extends Service {
 		}
 	};
 	
+	MoteClient moteClient = new MoteClient();
+	
 	private Handler handler = new Handler();
 	
 	Dolphin dolphin = null;
@@ -175,8 +177,12 @@ public class RemoteService extends Service {
 				}
 			});
 			
-			lastEventTime = System.currentTimeMillis();
+			if(event.type == GestureEvent.Gestures.PULL_PUSH_PULL_PUSH.ordinal()){
+				moteClient.toggle();
+				return;
+			}
 			
+			lastEventTime = System.currentTimeMillis();
 			
 			screenlocked = isScreenLocked();
 			screenOn = isScreenOn();
