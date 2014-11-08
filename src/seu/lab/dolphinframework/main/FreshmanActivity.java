@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
@@ -24,6 +25,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -525,7 +527,7 @@ public class FreshmanActivity extends Activity {
 			}
 			
 	    	try {
-				dolphin.prepare();
+				dolphin.prepare(getApplicationContext());
 			} catch (DolphinException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -533,7 +535,9 @@ public class FreshmanActivity extends Activity {
 			
 			DaoManager daoManager = DaoManager.getDaoManager(mContext);
 			daoManager.createDB();
-			daoManager.updateAllPlugins();
+			if(daoManager.canUpdatePlugins()){
+				daoManager.updateAllPlugins();
+			}
 			
 			handler.post(new Runnable() {
 				

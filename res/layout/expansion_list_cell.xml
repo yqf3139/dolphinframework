@@ -12,7 +12,7 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:visibility="gone"
-        android:text="Add a new plugin" />
+        android:text="添加一个新插件" />
     
     <LinearLayout
         android:layout_width="wrap_content"

@@ -41,13 +41,11 @@ public class FragmentMainActivity extends Activity implements OnClickListener {
 	private TabIndex tab_index;
 	private TabGesture tab_gesture;
 	private TabExpansion tab_expansion;
-
 	private LinearLayout tab_btn_index;
 	private LinearLayout tab_btn_gesture;
 	private LinearLayout tab_btn_expansion;
 	private Switch switch_dolphin;
 	private ImageButton bt_settings;
-
 	private FragmentManager fragmentManager;
 
 	private ServiceConnection mConn = new ServiceConnection() {
@@ -213,7 +211,8 @@ public class FragmentMainActivity extends Activity implements OnClickListener {
 	protected void onResume() {
 		if(mService == null){
 			
-		}else if(mService.getDolphinState() == Dolphin.States.WORKING.ordinal()){
+		}else if(mService.getDolphinState() == Dolphin.States.WORKING.ordinal()
+				|| mService.getDolphinState() == Dolphin.States.PREPARING.ordinal()){
 			switch_dolphin.setChecked(true);
 		}else {
 			switch_dolphin.setChecked(false);

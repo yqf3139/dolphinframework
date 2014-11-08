@@ -23,10 +23,14 @@ public class UserPreferences {
 		editor.clear();
 		editor.commit();
 	}
+	
 	public static boolean needEnableUnlock = true;
 	public static boolean needMotionMask = false;
 	public static boolean needAutoStart = false;
 	public static boolean needAutoSleep = false;
+	public static boolean needLight = false;
+	public static String lightServer = "";
+
 	
 	public static void refresh(Context context){
 		if(userPreferences == null)
@@ -35,11 +39,20 @@ public class UserPreferences {
 		needMotionMask = userPreferences.getBoolean("motion_mask", false);
 		needAutoStart = userPreferences.getBoolean("auto_start", false);
 		needAutoSleep = userPreferences.getBoolean("auto_sleep", false);
+		needLight = userPreferences.getBoolean("light", false);
+		lightServer = userPreferences.getString("light_server", "");
+
 	}
 	
 	public static void set(String key, boolean value) {
 		Editor editor = userPreferences.edit();
 		editor.putBoolean(key, value);
+    	editor.commit();
+	}
+	
+	public static void set(String key, String value) {
+		Editor editor = userPreferences.edit();
+		editor.putString(key, value);
     	editor.commit();
 	}
 	

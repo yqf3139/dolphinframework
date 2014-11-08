@@ -1,9 +1,12 @@
 package seu.lab.dolphin.server;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
@@ -21,7 +24,9 @@ import de.greenrobot.dao.query.QueryBuilder;
 import android.R.integer;
 import android.content.Context;
 import android.database.Cursor;
+import android.os.Build;
 import android.util.Log;
+import seu.lab.dolphin.client.GestureData;
 import seu.lab.dolphin.client.GestureEvent;
 import seu.lab.dolphin.client.GestureData.RichFeatureData;
 import seu.lab.dolphin.dao.DaoMaster;
@@ -92,6 +97,39 @@ public class DaoManager implements IDaoManager{
 
 		GestureEvent.Gestures.CROSSOVER_CLOCKWISE.ordinal(),
 		GestureEvent.Gestures.CROSSOVER_ANTICLOCK.ordinal(),
+
+	};
+	
+	private static final int[] gestureToFeatureID = {
+		0,//STILL,
+		0,//PUSH,
+		0,//PULL,
+		0,//PUSH_PULL_PUSH ,
+		0,//PULL_PUSH_PULL ,
+		0,//PULL_PUSH_PULL_PUSH ,
+		
+		1,//PUSH_PULL ,
+		6,//PULL_PUSH ,
+		11,//PUSH_PULL_PUSH_PULL ,
+
+		2,//SWIPE_LEFT_L ,
+		3,//SWIPE_RIGHT_L ,
+		4,//SWIPE_LEFT_P ,
+		5,//SWIPE_RIGHT_P ,
+		
+		7,//SWING_LEFT_L ,
+		8,//SWING_RIGHT_L ,
+		9,//SWING_LEFT_P ,
+		10,//SWING_RIGHT_P ,
+		
+		12,//SWIPE_BACK_LEFT_L ,
+		13,//SWIPE_BACK_RIGHT_L ,
+		14,//SWIPE_BACK_LEFT_P ,
+		15,//SWIPE_BACK_RIGHT_P ,
+		
+		0,//CROSSOVER,
+		16,//CROSSOVER_CLOCKWISE,
+		17,//CROSSOVER_ANTICLOCK
 
 	};
 	
@@ -246,10 +284,12 @@ public class DaoManager implements IDaoManager{
 				new PlaybackEvent(null, "豆果向下滑", "douguo_down"),
 				new PlaybackEvent(null, "豆果点击", "douguo_click"),
 
-				new PlaybackEvent(null, "chrome下滑", "chrome_down"),
-				new PlaybackEvent(null, "chrome上滑", "chrome_up"),
-				new PlaybackEvent(null, "chrome放大", "chrome_bigger"),
-				new PlaybackEvent(null, "chrome缩小", "chrome_smaller"),
+				new PlaybackEvent(null, "browser下滑", "browser_down"),//9
+				new PlaybackEvent(null, "browser上滑", "browser_up"),
+				new PlaybackEvent(null, "browser切右标签", "browser_left"),
+				new PlaybackEvent(null, "browser切左标签", "browser_right"),
+				new PlaybackEvent(null, "browser放大", "browser_bigger"),//13
+				new PlaybackEvent(null, "browser缩小", "browser_smaller"),
 
 		};
 		keyEventDao.insertInTx(keyEvents);
@@ -309,7 +349,8 @@ public class DaoManager implements IDaoManager{
 		defaultTrainingDatasetForCR.update();
 		
 		for (int i = 1; i < GestureEvent.gesture.length; i++) {
-			gestureDao.insert(new Gesture(null, 0, GestureEvent.gesture[i], GestureEvent.learnable[i] ? 1 : 0, "Swipe from the left edge to the right edge of the device."));
+			gestureDao.insert(new Gesture(null, 0, gestureToChinese[i], GestureEvent.learnable[i] ? 1 : 0, gestureDiscription[i]));
+			//gestureDao.insert(new Gesture(null, 0, GestureEvent.gesture[i], GestureEvent.learnable[i] ? 1 : 0, "Swipe from the left edge to the right edge of the device."));
 		}
 		
 		String defaultMasks = DolphinServerVariables.DEFAULT_MODEL_CONFIG.getJSONObject("masks").toString();
@@ -326,79 +367,81 @@ public class DaoManager implements IDaoManager{
 		ModelConfig douguoStepModelConfig = new ModelConfig(null, "{}", "[]");
 		long douguoStepModelConfig_ID = modelConfigDao.insert(douguoStepModelConfig);
 		
-		ModelConfig chromeModelConfig = new ModelConfig(null, "{}", "[]");
-		long chromeModelConfig_ID = modelConfigDao.insert(chromeModelConfig);
+		ModelConfig browserModelConfig = new ModelConfig(null, "{}", "[]");
+		long browserModelConfig_ID = modelConfigDao.insert(browserModelConfig);
 		
-		Plugin defaultPlugin = new Plugin(null, "Default", 0, "", "",1l);
+		Plugin defaultPlugin = new Plugin(null, "默认", 0, "", "",1l);
 		long defaultPlugin_ID = pluginDao.insert(defaultPlugin);
 		
-		Plugin duokanPlugin = new Plugin(null, "EBook", 0, "", "",1l);
-		long duokanPlugin_ID = pluginDao.insert(duokanPlugin);
+		Plugin browserPlugin = new Plugin(null, "浏览器", 0, "", "",1l);
+		long browserPlugin_ID = pluginDao.insert(browserPlugin);
 		
-		Plugin douguoMainPlugin = new Plugin(null, "Douguo", 0, "", "",1l);
+		
+		Plugin douguoMainPlugin = new Plugin(null, "豆果", 0, "", "",1l);
 		long douguoMainPlugin_ID = pluginDao.insert(douguoMainPlugin);
 		
-		Plugin douguoStepPlugin = new Plugin(null, "Douguo Recipe", 0, "", "",1l);
+		Plugin douguoStepPlugin = new Plugin(null, "豆果菜谱", 0, "", "",1l);
 		long douguoStepPlugin_ID = pluginDao.insert(douguoStepPlugin);
 		
-		Plugin chromePlugin = new Plugin(null, "Chrome", 0, "", "",1l);
-		long chromePlugin_ID = pluginDao.insert(chromePlugin);
+		Plugin duokanPlugin = new Plugin(null, "电子书", 0, "", "",1l);
+		long duokanPlugin_ID = pluginDao.insert(duokanPlugin);
 		
 		Rule[] defaultRules = new Rule[]{
 				// default rules
-				new Rule(null, "default to left l", "", true, 2, 3l, defaultPlugin_ID, (long)GestureEvent.Gestures.SWIPE_LEFT_L.ordinal()),
-				new Rule(null, "default to left p", "", true, 2, 3l, defaultPlugin_ID, (long)GestureEvent.Gestures.SWIPE_LEFT_P.ordinal()),
-				new Rule(null, "default to right l", "", true, 2, 4l, defaultPlugin_ID, (long)GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()),
-				new Rule(null, "default to rgiht p", "", true, 2, 4l, defaultPlugin_ID, (long)GestureEvent.Gestures.SWIPE_RIGHT_P.ordinal()),
-//				new Rule(null, "default to home 2", "", true, 1, 12l, defaultPlugin_ID, (long)GestureEvent.Gestures.PULL_PUSH_PULL.ordinal()),
-//				new Rule(null, "default to last record", "", true, 3, 1l, defaultPlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal()),
+				new Rule(null, "智能灯泡", "", true, 1, 15l, defaultPlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL_PUSH_PULL.ordinal()),
+				new Rule(null, "Flappy Bird", "", true, 1, 15l, defaultPlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal()),
+				new Rule(null, "粒子游戏", "", true, 1, 15l, defaultPlugin_ID, (long)GestureEvent.Gestures.PULL_PUSH_PULL.ordinal()),
+
+				// browser rules
+				new Rule(null, "放大", "", true, 1, 15l, browserPlugin_ID, (long)GestureEvent.Gestures.PULL_PUSH_PULL.ordinal()),
+				new Rule(null, "缩小", "", true, 1, 15l, browserPlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal()),
+				new Rule(null, "向下滑动", "", true, 3, 9l, browserPlugin_ID, (long)GestureEvent.Gestures.SWIPE_LEFT_P.ordinal()),
+				new Rule(null, "向上滑动", "", true, 3, 10l, browserPlugin_ID, (long)GestureEvent.Gestures.SWIPE_RIGHT_P.ordinal()),
+				new Rule(null, "左标签", "", true, 3, 11l, browserPlugin_ID, (long)GestureEvent.Gestures.SWIPE_BACK_LEFT_L.ordinal()),
+				new Rule(null, "左标签", "", true, 3, 11l, browserPlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL_PUSH_PULL.ordinal()),
+				new Rule(null, "右标签", "", true, 3, 12l, browserPlugin_ID, (long)GestureEvent.Gestures.SWIPE_BACK_RIGHT_L.ordinal()),
 				
-				// duokan rules
-				new Rule(null, "duokan to left", "", true, 3, 2l, duokanPlugin_ID, (long)GestureEvent.Gestures.PUSH.ordinal()),
-
-				new Rule(null, "duokan to left", "", true, 3, 2l, duokanPlugin_ID, (long)GestureEvent.Gestures.SWIPE_LEFT_L.ordinal()),
-				new Rule(null, "duokan to right", "", true, 3, 3l, duokanPlugin_ID, (long)GestureEvent.Gestures.PULL.ordinal()),
-				new Rule(null, "duokan to right", "", true, 3, 3l, duokanPlugin_ID, (long)GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()),
-				new Rule(null, "duokan bookmark", "", true, 3, 4l, duokanPlugin_ID, (long)GestureEvent.Gestures.PULL_PUSH_PULL.ordinal()),
-
 				// douguo main rules
-				new Rule(null, "douguo down", "", true, 3, 7l, douguoMainPlugin_ID, (long)GestureEvent.Gestures.PULL.ordinal()),
-				new Rule(null, "douguo click", "", true, 3, 8l, douguoMainPlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal()),
+				new Rule(null, "向下翻", "", true, 3, 7l, douguoMainPlugin_ID, (long)GestureEvent.Gestures.PULL.ordinal()),
+				new Rule(null, "点击", "", true, 3, 8l, douguoMainPlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL_PUSH.ordinal()),
 				
 				// douguo step rules
-				new Rule(null, "douguo to left", "", true, 3, 5l, douguoStepPlugin_ID, (long)GestureEvent.Gestures.SWIPE_LEFT_L.ordinal()),
-				new Rule(null, "douguo to right", "", true, 3, 6l, douguoStepPlugin_ID, (long)GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()),
-				new Rule(null, "douguo to left", "", true, 3, 5l, douguoStepPlugin_ID, (long)GestureEvent.Gestures.PUSH.ordinal()),
-				new Rule(null, "douguo to right", "", true, 3, 6l, douguoStepPlugin_ID, (long)GestureEvent.Gestures.PULL.ordinal()),
+				new Rule(null, "向左", "", true, 3, 5l, douguoStepPlugin_ID, (long)GestureEvent.Gestures.SWIPE_LEFT_L.ordinal()),
+				new Rule(null, "向右", "", true, 3, 6l, douguoStepPlugin_ID, (long)GestureEvent.Gestures.SWIPE_RIGHT_L.ordinal()),
+//				new Rule(null, "douguo to left", "", true, 3, 5l, douguoStepPlugin_ID, (long)GestureEvent.Gestures.PUSH.ordinal()),
+//				new Rule(null, "douguo to right", "", true, 3, 6l, douguoStepPlugin_ID, (long)GestureEvent.Gestures.PULL.ordinal()),
+				new Rule(null, "竖屏向左", "", true, 1, 15l, douguoStepPlugin_ID, (long)GestureEvent.Gestures.SWIPE_BACK_LEFT_L.ordinal()),
+				new Rule(null, "竖屏向右", "", true, 1, 15l, douguoStepPlugin_ID, (long)GestureEvent.Gestures.SWIPE_BACK_RIGHT_L.ordinal()),
 
-				// chrome rules
-				new Rule(null, "chrome to down", "", true, 3, 9l, chromePlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL_PUSH_PULL.ordinal()),
-				new Rule(null, "chrome to up", "", true, 3, 10l, chromePlugin_ID, (long)GestureEvent.Gestures.PULL_PUSH_PULL_PUSH.ordinal()),
-				new Rule(null, "chrome bigger", "", true, 3, 11l, chromePlugin_ID, (long)GestureEvent.Gestures.PULL_PUSH.ordinal()),
-				new Rule(null, "chrome smaller", "", true, 3, 12l, chromePlugin_ID, (long)GestureEvent.Gestures.PUSH_PULL.ordinal()),
+				// duokan rules
+				new Rule(null, "左翻页", "", true, 3, 2l, duokanPlugin_ID, (long)GestureEvent.Gestures.SWIPE_BACK_LEFT_L.ordinal()),
+				new Rule(null, "右翻页", "", true, 3, 3l, duokanPlugin_ID, (long)GestureEvent.Gestures.SWIPE_BACK_RIGHT_L.ordinal()),
+				new Rule(null, "添加书签", "", true, 3, 4l, duokanPlugin_ID, (long)GestureEvent.Gestures.PULL_PUSH_PULL_PUSH.ordinal()),
+
+			
 		};
 	
 		ruleDao.insertInTx(defaultRules);
 		
 		DolphinContext[] dolphinContexts = new DolphinContext[]{
 				new DolphinContext(null, "*", "still", defaultModelConfig_ID, defaultPlugin_ID),
-				new DolphinContext(null, "com.duokan.reader.DkMainActivity", "still", duokanModelConfig_ID, duokanPlugin_ID),
+				new DolphinContext(null, "com.ucweb.activity.MainActivity", "still", browserModelConfig_ID, browserPlugin_ID),
 				new DolphinContext(null, "com.douguo.recipe.RecipeActivity", "still", douguoMainModelConfig_ID, douguoMainPlugin_ID),
 				new DolphinContext(null, "com.douguo.recipe.RecipeStepActivity", "still", douguoStepModelConfig_ID, douguoStepPlugin_ID),
-				new DolphinContext(null, "com.google.android.apps.chrome.ChromeTabbedActivity", "still", chromeModelConfig_ID, chromePlugin_ID),
+				new DolphinContext(null, "com.duokan.reader.DkMainActivity", "still", duokanModelConfig_ID, duokanPlugin_ID),
 		};
 		
 		dolphinContextDao.insertInTx(dolphinContexts);
 		defaultPlugin.setDolphin_context_id(1l);
 		defaultPlugin.update();
-		duokanPlugin.setDolphin_context_id(2l);
-		duokanPlugin.update();
+		browserPlugin.setDolphin_context_id(2l);
+		browserPlugin.update();
 		douguoMainPlugin.setDolphin_context_id(3l);
 		douguoMainPlugin.update();
 		douguoStepPlugin.setDolphin_context_id(4l);
 		douguoStepPlugin.update();		
-		chromePlugin.setDolphin_context_id(5l);
-		chromePlugin.update();
+		duokanPlugin.setDolphin_context_id(5l);
+		duokanPlugin.update();
 		
 		TrainingRelation[] trainingRelations = new TrainingRelation[]{
 				// nf
@@ -430,7 +473,22 @@ public class DaoManager implements IDaoManager{
 		trainingRelationDao.insertInTx(trainingRelations);
 		
 		try {
-			readRawGesturesFromFile(mContext.getAssets().open("default.data"),rawGestureDataDao);
+//			mContext.getAssets().open("default.data");
+			boolean fromAssets = false;
+			String name = "/sdcard/default.data."+Build.DEVICE;
+			File file = new File(name);
+			String[] names = mContext.getAssets().list("");
+			for (int i = 0; i < names.length; i++) {
+				Log.i(TAG, "assets have: "+names[i]);
+				if(names[i].equals("default.data."+Build.DEVICE))fromAssets = true;
+			}
+			if(fromAssets){
+				Log.i(TAG, "default data exists from Assets");
+				readRawGesturesFromFile(mContext.getAssets().open("default.data."+Build.DEVICE),rawGestureDataDao);
+			} else if(file.exists()){
+				Log.i(TAG, "default data exists from sd card");
+				readRawGesturesFromFile(new FileInputStream(file),rawGestureDataDao);
+			}
 		} catch (IOException e) {
 			Log.e(TAG, e.toString());
 		} catch (ClassNotFoundException e) {
@@ -548,6 +606,12 @@ public class DaoManager implements IDaoManager{
 		// aggregate the ids into one array
 		JSONArray modelIds = new JSONArray();
 		
+		String boolString = "";
+		for (int i = 0; i < boolmasks.length; i++) {
+			boolString += i+":"+boolmasks[i]+" ";
+		}
+		Log.i(TAG, boolString);
+		
 		for (int i = 0; i < 4; i++) {
 			modelIds.put(getSingleModel_idWrapper(
 					i, 
@@ -654,6 +718,7 @@ public class DaoManager implements IDaoManager{
 		
 		try {
 			for (int i = 0; i < rules.size(); i++) {
+				Log.i(TAG, rules.get(i).getGesture().getName()+" enabled for "+plugin.getName());
 				masks.put(""+rules.get(i).getGesture_id(), true);
 			}
 		} catch (JSONException e) {
@@ -956,4 +1021,39 @@ public class DaoManager implements IDaoManager{
 		return true;
 	}
 
+	public void dumpGestures() throws IOException {
+		File file = new File("/sdcard/default.data."+Build.DEVICE+".new");
+		if(!file.exists()){
+			file.createNewFile();
+		}
+		ObjectOutputStream oStream = new ObjectOutputStream(new FileOutputStream(file));
+		List<Gesture> gestures = listAllGestures();
+		List<RichFeatureData> richFeatureDatas = new LinkedList<GestureData.RichFeatureData>();
+		for (Gesture gesture : gestures) {
+			if(gesture.getType() == 1){
+				List<RawGestureData> raws = gesture.getRaw_gesuture_data();
+				for (RawGestureData rawGestureData : raws) {
+					RichFeatureData richFeatureData = new RichFeatureData();
+					richFeatureData.data = toDoubleArray(rawGestureData.getData());
+					richFeatureData.feature_id = gestureToFeatureID[gesture.getId().intValue()];
+					richFeatureDatas.add(richFeatureData);
+				}
+			}
+		}
+		oStream.writeObject(richFeatureDatas);
+		oStream.close();
+	}
+	
+	public boolean canUpdatePlugins() {
+		int counter = 0;
+		List<Gesture> gestures = listAllGestures();
+		for (Gesture gesture : gestures) {
+			if(gesture.getType() == 1 && gesture.getRaw_gesuture_data().size() != 0){
+				counter++;
+			}
+		}
+		Log.i(TAG, "canUpdatePlugins ? "+counter);
+		return counter == 17;
+	}
+	
 }

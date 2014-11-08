@@ -268,7 +268,7 @@ public class TabGestureDetailActivity extends Activity {
 
         int color_range = Color.RED - Color.CYAN;
         
-		for (int i = 0; i < 10; i++) {			
+		for (int i = 0; i < 10 && i < datas.size(); i++) {
 			ImageView img = new ImageView(mContext);
 			
 			Bitmap bitmap = Bitmap.createBitmap((int) w_screen, 300, Bitmap.Config.ARGB_8888);

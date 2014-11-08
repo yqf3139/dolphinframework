@@ -38,7 +38,8 @@
         
         <activity
             android:name=".main.MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:screenOrientation="sensorPortrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -49,7 +50,7 @@
         <service
             android:name="seu.lab.dolphin.server.RemoteService"
             android:enabled="true"
-            android:exported="false" >
+            android:exported="true" >
             <intent-filter>
                 <action android:name="seu.lab.dolphin.server.REMOTE" >
                 </action>
@@ -81,25 +82,51 @@
 
         <activity
             android:name=".main.GraphActivity"
-            android:label="title_activity_graph" >
+            android:label="title_activity_graph"
+            android:screenOrientation="sensorPortrait" >
         </activity>
         
-        <activity android:name="seu.lab.dolphinframework.fragment.FragmentMainActivity"></activity>
+        <activity 
+            android:name="seu.lab.dolphinframework.fragment.FragmentMainActivity"
+            android:screenOrientation="sensorPortrait">
+            
+        </activity>
         
-        <activity android:name="seu.lab.dolphinframework.fragment.TabExpansionDetailActivity"></activity>
+        <activity 
+            android:name="seu.lab.dolphinframework.fragment.TabExpansionDetailActivity"
+            android:screenOrientation="sensorPortrait">
+            
+        </activity>
         
-        <activity android:name="seu.lab.dolphinframework.fragment.TabGestureDetailActivity"></activity>
+        <activity 
+            android:name="seu.lab.dolphinframework.fragment.TabGestureDetailActivity"
+            android:screenOrientation="sensorPortrait">
+            
+        </activity>
         
-        <activity android:name="seu.lab.dolphinframework.fragment.test_activity"></activity>
+        <activity 
+            android:name="seu.lab.dolphinframework.fragment.test_activity"
+            android:screenOrientation="sensorPortrait">
+            
+        </activity>
         
-        <activity android:name="seu.lab.dolphinframework.main.GuideActivity"></activity>
+        <activity 
+            android:name="seu.lab.dolphinframework.main.GuideActivity"
+            android:screenOrientation="sensorPortrait">
+            
+        </activity>
         
-        <activity android:name="seu.lab.dolphinframework.main.InfoActivity"></activity>
+        <activity 
+            android:name="seu.lab.dolphinframework.main.InfoActivity"
+            android:screenOrientation="sensorPortrait">
+            
+        </activity>
         
 
         <activity 
             android:name="seu.lab.dolphinframework.main.FreshmanActivity"
-            android:theme="@android:style/Theme.NoTitleBar">
+            android:theme="@android:style/Theme.NoTitleBar"
+            android:screenOrientation="sensorPortrait">
         </activity>
         
     </application>

@@ -48,8 +48,8 @@ public final class R {
         public static final int tab_settings_pressed=0x7f020012;
     }
     public static final class id {
-        public static final int SurfaceView01=0x7f09003c;
-        public static final int action_settings=0x7f090042;
+        public static final int SurfaceView01=0x7f09003e;
+        public static final int action_settings=0x7f090044;
         public static final int btn_dolphin_bar_setting=0x7f090009;
         public static final int btn_expansion_pressed=0x7f090022;
         public static final int btn_gesture_pressed=0x7f090020;
@@ -83,19 +83,19 @@ public final class R {
         public static final int layout_gesture_detail_new_sample=0x7f09002f;
         public static final int layout_gesture_detail_samples=0x7f09002e;
         public static final int layout_gesture_list_cell=0x7f090032;
-        public static final int layout_guide_about_dolphin=0x7f09003a;
-        public static final int layout_guide_default_settings=0x7f090039;
-        public static final int layout_guide_record_unlock=0x7f090038;
-        public static final int layout_guide_update=0x7f09003b;
+        public static final int layout_guide_about_dolphin=0x7f09003d;
+        public static final int layout_guide_default_settings=0x7f09003c;
+        public static final int layout_guide_light=0x7f090038;
+        public static final int layout_guide_record_unlock=0x7f09003b;
         public static final int layout_rule_list=0x7f09000e;
         public static final int listView_plug_actions=0x7f09000d;
         public static final int lyt_fragment_tab_expansion=0x7f090021;
         public static final int lyt_fragment_tab_gesture=0x7f09001f;
         public static final int lyt_fragment_tab_index=0x7f09001d;
-        public static final int noti_close=0x7f090040;
-        public static final int noti_icon=0x7f09003f;
-        public static final int noti_main=0x7f09003d;
-        public static final int noti_main_text=0x7f09003e;
+        public static final int noti_close=0x7f090042;
+        public static final int noti_icon=0x7f090041;
+        public static final int noti_main=0x7f09003f;
+        public static final int noti_main_text=0x7f090040;
         public static final int rule_list_cell_add_one=0x7f09000f;
         public static final int switch_dolphin_bar=0x7f090008;
         public static final int switch_expansion_detail_plug_manager=0x7f09000b;
@@ -103,6 +103,7 @@ public final class R {
         public static final int switch_guide_auto_sleep=0x7f090035;
         public static final int switch_guide_auto_start=0x7f090034;
         public static final int switch_guide_enable_unlock=0x7f090037;
+        public static final int switch_guide_light=0x7f09003a;
         public static final int switch_guide_motion_mask=0x7f090036;
         public static final int textView1=0x7f090002;
         public static final int textView_expansion_detail_plug_instruction=0x7f09000c;
@@ -110,7 +111,8 @@ public final class R {
         public static final int textView_gesture_detail_accuracy=0x7f090031;
         public static final int textView_gesture_instruction=0x7f09002c;
         public static final int textView_gesture_name=0x7f09002b;
-        public static final int tvout=0x7f090041;
+        public static final int text_guide_light=0x7f090039;
+        public static final int tvout=0x7f090043;
         public static final int txt_expansion_list_cell_add_one=0x7f090014;
         public static final int txt_expansion_list_cell_plug_function=0x7f090016;
         public static final int txt_expansion_list_cell_plug_name=0x7f090015;

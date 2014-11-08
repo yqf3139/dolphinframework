@@ -45,7 +45,7 @@ public class Installer {
 		FileUtils.copy(am.open("uninstall.sh"),root,"uninstall.sh");
 		FileUtils.copy(am.open("dolphincall_libs/"+CPU_ABI+"/dolphincall"),root,"dolphincall");
 		FileUtils.copy(am.open("dolphinget_libs/"+CPU_ABI+"/dolphinget"),root,"dolphinget");
-		FileUtils.copy(am.open("dolphinsu_libs/"+CPU_ABI+"/dolphinsu"),root,"dolphinsu");		
+		FileUtils.copy(am.open("dolphinsu_libs/"+CPU_ABI+"/dolphinsu"),root,"dolphinsu");	
 	}
 	
 	public static void installScripts(AssetManager am, File root) throws IOException {

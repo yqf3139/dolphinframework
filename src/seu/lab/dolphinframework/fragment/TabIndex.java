@@ -48,21 +48,64 @@ public class TabIndex extends Fragment implements SurfaceHolder.Callback{
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
-		
+		Log.i(TAG,"onCreateView");
+
 		View newsLayout = inflater.inflate(R.layout.index, container, false);
 		drawer = new Drawer();
 		sfv = (SurfaceView) newsLayout.findViewById(R.id.SurfaceView01);
 		hold = sfv.getHolder();
 		hold.addCallback(this);
 		
+		new Thread(){
+			public void run() {
+				try {
+					sleep(1000);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				if(FragmentMainActivity.mService != null){
+					try {
+						FragmentMainActivity.mService.borrowDataReceiver(receiver);
+						Log.i(TAG,"borrowed DataReceiver");
+
+					} catch (DolphinException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		}.start();
+		
 		return newsLayout;
+	}
+	
+	@Override
+	public void onResume() {
+		Log.i(TAG,"onResume");
+		
+		if(!isHidden()){
+			if(FragmentMainActivity.mService != null){
+				try {
+					FragmentMainActivity.mService.borrowDataReceiver(receiver);
+					Log.i(TAG,"borrowed DataReceiver");
+
+				} catch (DolphinException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		super.onResume();
 	}
 	
 	@Override
 	public void onPause() {
 		Log.i(TAG,"onPause");
 		try {
-			FragmentMainActivity.mService.returnDataReceiver();
+			if(FragmentMainActivity.mService != null)
+				FragmentMainActivity.mService.returnDataReceiver();
 			Log.i(TAG,"returned DataReceiver");
 			drawer.drawGreetings();
 
@@ -72,11 +115,11 @@ public class TabIndex extends Fragment implements SurfaceHolder.Callback{
 		}
 		super.onPause();
 	}
-
+	
 	@Override
 	public void onHiddenChanged(boolean hidden) {
 		Log.i(TAG, "onHiddenChanged to "+hidden);
-		
+				
 		if(hidden){
 			try {
 				FragmentMainActivity.mService.returnDataReceiver();

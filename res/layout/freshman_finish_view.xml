@@ -25,7 +25,8 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="130dp"
-        android:text="Dolphin初始化中"
+        android:textAppearance="?android:attr/textAppearanceLarge" 
+        android:text="Dolphin 初始化中"
         android:textColor="@color/freshman_green_blue" />
 
     <Button

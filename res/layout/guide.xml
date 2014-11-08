@@ -15,7 +15,7 @@
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:layout_marginLeft="10dp"
-            android:text="Dolphin Options"
+            android:text="首选项"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@android:color/white" />
     </RelativeLayout>
@@ -36,7 +36,8 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="Auto start after power on" />
+                android:textAppearance="?android:attr/textAppearanceMedium" 
+                android:text="开机自启动" />
 
             <Switch
                 android:id="@+id/switch_guide_auto_start"
@@ -46,7 +47,10 @@
                 android:layout_centerVertical="true"
                 android:layout_marginRight="10dp" />
         </RelativeLayout>
-
+		<View  
+		   		android:layout_width="fill_parent"  
+		    	android:layout_height="1px" 
+		   		android:background="@android:color/darker_gray"  />
         <RelativeLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -58,7 +62,8 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="Auto sleep recognition" />
+                android:textAppearance="?android:attr/textAppearanceMedium" 
+                android:text="识别服务自动休眠" />
 
             <Switch
                 android:id="@+id/switch_guide_auto_sleep"
@@ -68,7 +73,10 @@
                 android:layout_centerVertical="true"
                 android:layout_marginRight="10dp" />
         </RelativeLayout>
-
+		<View  
+		   		android:layout_width="fill_parent"  
+		    	android:layout_height="1px" 
+		   		android:background="@android:color/darker_gray"  />
         <RelativeLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -80,7 +88,8 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="Movement protection" />
+                android:textAppearance="?android:attr/textAppearanceMedium" 
+                android:text="运动时降低识别敏感度" />
 
             <Switch
                 android:id="@+id/switch_guide_motion_mask"
@@ -90,7 +99,10 @@
                 android:layout_centerVertical="true"
                 android:layout_marginRight="10dp" />
         </RelativeLayout>
-
+		<View  
+		   		android:layout_width="fill_parent"  
+		    	android:layout_height="1px" 
+		   		android:background="@android:color/darker_gray"  />
         <RelativeLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -102,7 +114,8 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="Auto unlock screen" />
+                android:textAppearance="?android:attr/textAppearanceMedium" 
+                android:text="解锁屏幕功能" />
 
             <Switch
                 android:id="@+id/switch_guide_enable_unlock"
@@ -112,6 +125,42 @@
                 android:layout_centerVertical="true"
                 android:layout_marginRight="10dp" />
         </RelativeLayout>
+        
+        <View  
+		   		android:layout_width="fill_parent"  
+		    	android:layout_height="1px" 
+		   		android:background="@android:color/darker_gray"  />
+
+        <RelativeLayout
+            android:id="@+id/layout_guide_light"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
+
+            <TextView
+                android:id="@+id/text_guide_light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="10dp"
+                android:text="智能家居控制"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+            
+            <Switch
+                android:id="@+id/switch_guide_light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="10dp" />
+
+        </RelativeLayout>
+        
+		<View  
+		   		android:layout_width="fill_parent"  
+		    	android:layout_height="1px" 
+		   		android:background="@android:color/darker_gray"  />
 
         <RelativeLayout
             android:id="@+id/layout_guide_record_unlock"
@@ -125,9 +174,16 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="Record unlock screen" />
+                android:text="录制解锁事件"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
         </RelativeLayout>
 
+
+
+		<View  
+		   		android:layout_width="fill_parent"  
+		    	android:layout_height="1px" 
+		   		android:background="@android:color/darker_gray"  />
         <RelativeLayout
             android:id="@+id/layout_guide_default_settings"
             android:layout_width="fill_parent"
@@ -140,9 +196,13 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="Restore defaults" />
+                android:textAppearance="?android:attr/textAppearanceMedium" 
+                android:text="设置还原" />
         </RelativeLayout>
-
+		<View  
+		   		android:layout_width="fill_parent"  
+		    	android:layout_height="1px" 
+		   		android:background="@android:color/darker_gray"  />
         <RelativeLayout
             android:id="@+id/layout_guide_about_dolphin"
             android:layout_width="fill_parent"
@@ -155,23 +215,10 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="About Dolphin" />
+                android:textAppearance="?android:attr/textAppearanceMedium" 
+                android:text="关于 Dolphin" />
         </RelativeLayout>
 
-        <RelativeLayout
-            android:id="@+id/layout_guide_update"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" >
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="10dp"
-                android:text="Update" />
-        </RelativeLayout>
     </LinearLayout>
 
 </LinearLayout>
